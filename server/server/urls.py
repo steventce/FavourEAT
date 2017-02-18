@@ -1,3 +1,6 @@
+from favoureat import views
+from rest_framework.urlpatterns import format_suffix_patterns
+
 """server URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -17,5 +20,8 @@ from django.conf.urls import url
 from django.contrib import admin
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    # url(r'^admin/', admin.site.urls),
+    url(r'^v1/users/(?P<user>[0-9]+)/swipes/$', views.UserSwipeView.as_view()),
 ]
+
+urlpatterns = format_suffix_patterns(urlpatterns)
