@@ -73,13 +73,25 @@ WSGI_APPLICATION = 'server.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
+#
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'favoureatdb',
+#         'USER': 'root',
+#         'PASSWORD': 'favoureat123',
+#     }
+# }
+
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'favoureatdb',
-        'USER': 'root',
-        'PASSWORD': 'favoureat123',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'd2h0rhsvoqrdsi',
+        'USER': 'jprkvppmxtjenm',
+        'PASSWORD': '58b2d6face6be63f5a073c088576f8be5270cba2311bb260e3daf77065ba464b',
+        'HOST': 'ec2-54-235-84-244.compute-1.amazonaws.com',
+        'PORT': '5432',
     }
 }
 
