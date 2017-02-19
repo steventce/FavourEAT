@@ -37,8 +37,25 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'oauth2_provider',
+    'social_django',
+    'rest_framework_social_oauth2',
     'server',
 ]
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.ext.rest_framework.OAuth2Authentication',
+        'rest_framework_social_oauth2.authentication.SocialAuthentication'
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -63,10 +80,13 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-            ],
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect'
+            ]
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'server.wsgi.application'
 
@@ -77,9 +97,9 @@ WSGI_APPLICATION = 'server.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'favoureatdb',
-        'USER': 'root',
-        'PASSWORD': 'favoureat123',
+        'OPTIONS': {
+            'read_default_file': 'server/env.cnf'
+        }
     }
 }
 
@@ -121,3 +141,29 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+# Authentication backends
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.facebook.FacebookAppOAuth2',
+    'social_core.backends.facebook.FacebookOAuth2',
+    'rest_framework_social_oauth2.backends.DjangoOAuth2',
+    'django.contrib.auth.backends.ModelBackend'
+)
+
+
+# Social auth Facebook settings (django-rest-frameowrk-social-oauth2)
+
+SOCIAL_AUTH_FACEBOOK_KEY = '1903340116553146'
+# SOCIAL_AUTH_FACEBOOK_SECRET
+
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+    'fields': 'id, name, email'
+}
+
+# From admin registered application
+
+SOCIAL_AUTH_CLIENT_ID = 'tMC9mBduKw3Ixpag10KCfcBQWGfA6ews7TyfxS9s'
+# SOCIAL_AUTH_CLIENT_SECRET

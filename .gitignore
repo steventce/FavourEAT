@@ -1,1 +1,6 @@
 env/*
+
+*.pyc
+*.cnf
+
+server/server/settings/__init__.py
