@@ -7,12 +7,14 @@ import configureStore from './src/config/configureStore.js';
 
 import Login from './src/scenes/Login';
 import { UserEvents as Home } from './src/scenes/Events';
+import Preferences from './src/scenes/Events/Preferences';
 
 const store = configureStore();
 
 const Navigation = StackNavigator({
   Login: { screen: Login },
-  Home: { screen: Home }
+  Home: { screen: Home },
+  Preferences: { screen: Preferences }
 });
 
 class FavourEAT extends Component {
