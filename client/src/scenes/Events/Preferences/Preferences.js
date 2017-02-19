@@ -2,10 +2,12 @@ import React, { Component, PropTypes } from 'react';
 import {
   Text,
   View,
-  TouchableHighlight,
+  TouchableNativeFeedback,
   ListView,
   Button
-} from 'react-native'
+} from 'react-native';
+
+import SettingsBtn from '../../../components/SettingsBtn';
 
 class Preferences extends Component {
   static propTypes = {
@@ -14,11 +16,16 @@ class Preferences extends Component {
     savePreferences: PropTypes.func.isRequired
   };
 
+  static navigationOptions = {
+    title: 'Restaurant Preferences'
+  }
+
    constructor(props) {
     super(props);
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
       dataSource: ds.cloneWithRows(this.props.preferences.cuisineTypes),
+
     };
   }
 
@@ -29,23 +36,22 @@ class Preferences extends Component {
   render() {
     return (
       <View>
-        <View>    
-          <Button 
-              onPress={this.changeDistance}
-              title='Maximum Travel Distance' />
-          <Text>
-            {this.props.preferences.distance}
-          </Text>
-        </View>
-        <Button
-            onPress={() => { console.log('press button') }}
-            title='Minimum Price' />
-        <Button 
-            onPress={() => { console.log('press button') }}
-            title='Maximum Price' />
-        <Button 
-            onPress={() => { console.log('press button') }}
-            title='Cuisine Type' />
+        <SettingsBtn 
+            onPress={this.changeDistance}
+            label="Maximum Travel Distance"
+            value={this.props.preferences.distance} />
+        <SettingsBtn 
+            onPress={this.changeDistance}
+            label="Minimum Price"
+            value={this.props.preferences.minPrice} />
+        <SettingsBtn 
+            onPress={this.changeDistance}
+            label="Maximum Price"
+            value={this.props.preferences.maxPrice} />
+        <SettingsBtn 
+            onPress={this.changeDistance}
+            label="Cuisine Type" />
+
         <Button
            onPress={() => this.props.savePreferences(1, {})}
            title="DONE!" />
