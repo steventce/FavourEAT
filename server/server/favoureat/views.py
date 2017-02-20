@@ -39,6 +39,9 @@ class TokenView(ConvertTokenView):
     https://github.com/PhilipGarnero/django-rest-framework-social-oauth2/blob/master/rest_framework_social_oauth2/views.py
     """
     def post(self, request, format=None):
+        global status
+        if request.user.id is None:
+            return Response('User not created', status=status.HTTP_400_BAD_REQUEST)
         request._request.POST = request._request.POST.copy()
 
         request._request.POST['grant_type'] = 'convert_token'
