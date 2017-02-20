@@ -6,6 +6,8 @@ import {
 } from 'react-native';
 import styles from './styles';
 
+import Preferences from '../Preferences/index';
+
 class UserEvents extends Component {
   static navigationOptions = {
     title: 'Events'
@@ -17,6 +19,7 @@ class UserEvents extends Component {
         <Text style={styles.event}>
           Events Screen
         </Text>
+        <Preferences />
       </View>
     );
   }
