@@ -2,8 +2,9 @@ from rest_framework.test import APITestCase
 from rest_framework.test import APIRequestFactory
 from rest_framework.test import force_authenticate
 from rest_framework import status
+from server.models import Swipe
 from django.contrib.auth.models import User
-from server.favoureat.views import UserView, TokenView
+from server.favoureat import views
 
 class UserTests(APITestCase):
     def test_success_get_user(self):
@@ -18,7 +19,7 @@ class UserTests(APITestCase):
         request = factory.get(url)
         force_authenticate(request, user=user)
 
-        view = UserView.as_view()
+        view = views.UserView.as_view()
         response = view(request, pk=user.id)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         expected = { 'first_name': '', 'last_name': '', 'id': user_id }
@@ -53,4 +54,68 @@ class TokenTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         response = self.client.post(url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+class UserSwipeTests(APITestCase):
+    def test_save_swipe(self):
+        """ Ensure we can save a user swipe decision """
+        user = User.objects.create(pk='139530')
+        user.save()
+        print "users"
+        print User.objects.values_list('id', flat=True)
+
+        data = {'user': user.id,
+                'yelp_id': 49391,
+                'right_swipe_count': 1,
+                'left_swipe_count': 0}
+        url = '/v1/users/' + str(data['user']) + '/swipes/'
+
+        factory = APIRequestFactory()
+        request = factory.post(url, data, format='json')
+        force_authenticate(request, user=user)
+        view = views.UserSwipeView.as_view()
+        response = view(request, user=user.id)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Swipe.objects.count(), 1)
+        self.assertEqual(Swipe.objects.get().yelp_id, data['yelp_id'])
+        self.assertEqual(Swipe.objects.get().right_swipe_count, data['right_swipe_count'])
+        self.assertEqual(Swipe.objects.get().left_swipe_count, data['left_swipe_count'])
+
+    def test_error_save_swipe(self):
+        """Ensure that error occurs if we try to save a swipe decision with nonexisting user"""
+        user = User.objects.create(pk='139530')
+        user.save()
+
+        data = {'user': 16,
+                'yelp_id': 54623,
+                'right_swipe_count': 9,
+                'left_swipe_count': 0}
+        url = '/v1/users/' + str(data['user']) + '/swipes/'
+
+        factory = APIRequestFactory()
+        request = factory.post(url, data, format='json')
+        force_authenticate(request, user=user)
+        view = views.UserSwipeView.as_view()
+        response = view(request, user=data['user'])
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_malformed_save_swipe(self):
+        """Ensure that error occurs if we try to save a swipe decision when data is malformed"""
+        user = User(pk='139530')
+        user.save()
+
+        data = {'user': user.id,
+                'yelp_id': 54623,
+                'right_swipe_count': 'hello',
+                'left_swipe_count': 'goodbye'}
+        url = '/v1/users/' + str(data['user']) + '/swipes/'
+
+        factory = APIRequestFactory()
+        request = factory.post(url, data, format='json')
+        force_authenticate(request, user=user)
+        view = views.UserSwipeView.as_view()
+        response = view(request, user=user.id)
+
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

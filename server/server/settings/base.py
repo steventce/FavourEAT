@@ -94,12 +94,10 @@ WSGI_APPLICATION = 'server.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
+# Override this with your database settings in __init__.py
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'OPTIONS': {
-            'read_default_file': 'server/env.cnf'
-        }
+        'ENGINE': 'django.db.backends.postgresql'
     }
 }
 
@@ -155,7 +153,8 @@ AUTHENTICATION_BACKENDS = (
 
 # Social auth Facebook settings (django-rest-frameowrk-social-oauth2)
 
-SOCIAL_AUTH_FACEBOOK_KEY = '1903340116553146'
+# Override these with your keys in __init__.py
+# SOCIAL_AUTH_FACEBOOK_KEY
 # SOCIAL_AUTH_FACEBOOK_SECRET
 
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
@@ -165,5 +164,6 @@ SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
 
 # From admin registered application
 
-SOCIAL_AUTH_CLIENT_ID = 'tMC9mBduKw3Ixpag10KCfcBQWGfA6ews7TyfxS9s'
+# Override these with your keys in __init__.py
+# SOCIAL_AUTH_CLIENT_ID
 # SOCIAL_AUTH_CLIENT_SECRET

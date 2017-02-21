@@ -62,6 +62,7 @@
       <string>Foundation.ttf</string>
       <string>Georgia.ttf</string>
       <string>Ionicons.ttf</string>
+      <string>MaterialCommunityIcons.ttf</string>
       <string>MaterialIcons.ttf</string>
       <string>Microsoft Sans Serif.ttf</string>
       <string>Octicons.ttf</string>
@@ -84,7 +85,7 @@
       <string>SF-UI-Text-Regular.otf</string>
       <string>Skia.ttf</string>
       <string>Times New Roman.ttf</string>
-      <string>Zocial.ttf</string>
+      <string>SimpleLineIcons.ttf</string>
     </array>
   </dict>
 </plist>

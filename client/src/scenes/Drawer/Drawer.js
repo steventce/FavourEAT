@@ -16,6 +16,10 @@ const navItemConfig = {
   Preferences: {
     color: 'black',
     iconName: 'md-heart-outline'
+  },
+  Swipe: {
+    color: 'black',
+    iconName: 'md-swap'
   }
 }
 
