@@ -24,12 +24,17 @@ class Swipe extends Component {
         super(props);
 
         this.state = {
-            card: Cards
+            card: Cards,
+            rightCards: [],
+            leftCards: []
         };
 
+        this.handleYup = this.handleYup.bind(this);
         this.onClickYup = this.onClickYup.bind(this);
+        this.handleNope = this.handleNope.bind(this);
         this.onClickNope = this.onClickNope.bind(this);
         this.getRating = this.getRating.bind(this);
+        this.noMore = this.noMore.bind(this);
     }
 
     static navigationOptions = {
@@ -39,8 +44,8 @@ class Swipe extends Component {
     Card(restaurant) {
         return (
             <View style={[styles.card]}>
-                <View style={{ flexDirection: 'row'}} >
-                    <Text style={{ fontSize: 40,  color: '#444' }}>{restaurant.name}</Text>
+                <View style={{ flexDirection: 'row' }} >
+                    <Text style={{ fontSize: 40, color: '#444' }}>{restaurant.name}</Text>
                 </View>
                 <Image source={restaurant.image} resizeMode="cover" style={{ width: 350, height: 350 }} />
                 {this.getRating(restaurant)}
@@ -62,6 +67,9 @@ class Swipe extends Component {
 
     handleYup(card) {
         console.log('Yup for ${card.name}');
+        this.setState({
+            rightCards: [...this.state.rightCards, card]
+        });
     }
 
     onClickYup() {
@@ -70,13 +78,18 @@ class Swipe extends Component {
 
     handleNope(card) {
         console.log('Yup for ${card.restaurantName}');
+        this.setState({
+            leftCards: [...this.state.leftCards, card]
+        });
     }
 
     onClickNope() {
-        this.swiper._goToNextCard();        
+        this.swiper._goToNextCard();
     }
 
     noMore() {
+        console.log(this.state.leftCards);
+        console.log(this.state.rightCards);
         return (
             <Text>No more</Text>
         )
