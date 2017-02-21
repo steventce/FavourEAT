@@ -8,13 +8,15 @@ import configureStore from './src/config/configureStore.js';
 import Login from './src/scenes/Login';
 import { UserEvents as Home } from './src/scenes/Events';
 import Swipe from './src/scenes/Swipe';
+import RestaurantDetails from './src/scenes/RestaurantDetails';
 
 const store = configureStore();
 
 const Navigation = StackNavigator({
   Login: { screen: Login },
   Home: { screen: Home },
-  Swipe: { screen: Swipe }
+  Swipe: { screen: Swipe },
+  RestaurantDetails: { screen: RestaurantDetails }
 });
 
 class FavourEAT extends Component {
