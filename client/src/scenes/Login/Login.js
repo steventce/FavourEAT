@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Image, View } from 'react-native';
+import { Image, View, Button } from 'react-native';
 import { Container, Content } from 'native-base';
 import LoginButton from '../../components/LoginButton';
 
@@ -17,6 +17,7 @@ class Login extends Component {
           <View style={styles.btnContainer}>
             <LoginButton handleFacebookLogin={this.props.handleFacebookLogin} />
           </View>
+          <Button onPress={() => navigate('RestaurantDetails')} title="RestaurantDetails" />
         </Content>
       </Container>
     );

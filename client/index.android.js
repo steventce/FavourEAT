@@ -10,6 +10,7 @@ import Drawer from './src/scenes/Drawer';
 import { UserEvents } from './src/scenes/Events';
 import Preferences from './src/scenes/Events/Preferences';
 import Swipe from './src/scenes/Swipe';
+import RestaurantDetails from './src/scenes/RestaurantDetails';
 
 const store = configureStore();
 
@@ -22,7 +23,8 @@ const HomeStack = StackNavigator({
 const HomeDrawer = DrawerNavigator({
   Home: { screen: HomeStack },
   Preferences: { screen: Preferences },
-  Swipe: { screen: Swipe }
+  Swipe: { screen: Swipe },
+  RestaurantDetails: { screen: RestaurantDetails }
 }, {
   initialRouteName: 'Home',
   drawerWidth: 300,
