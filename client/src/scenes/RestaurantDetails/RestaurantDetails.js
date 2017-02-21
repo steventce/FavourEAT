@@ -81,8 +81,19 @@ class RestaurantDetails extends Component {
 
         return (
             <ScrollView style={styles.container}>
+                <View style={styles.imgContainer}>
+                    <Image source={restaurant.image} resizeMode="cover" style={{ height: 250, width: width }} />
+                    <TouchableOpacity style={styles.overlapBtn} onPress={() => this.onClickNope()}>
+                        <Icon name='call' size={25} style={{color:'#bd081c'}} />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.overlapBtn} onPress={() => this.onClickNope()}>
+                        <Icon name='restaurant' size={25} style={{color:'#bd081c'}} />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.overlapBtn} onPress={() => this.onClickNope()}>
+                        <Icon name='locate' size={25} style={{color:'#bd081c'}} />
+                    </TouchableOpacity>
+                </View>
                 <View style={[styles.card]}>
-                    <Image source={restaurant.image} resizeMode="cover" style={{ height: 200 }} />
                     <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#444' }}>{restaurant.name}</Text>{this.getRating(restaurant)}
                     <Text style={{ fontSize: 16,  color: '#444' }}>{restaurant.address}</Text>
                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 5 }}>
@@ -126,6 +137,26 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    overlapBtn: {
+        width: 45,
+        height: 45,
+        borderWidth: 5,
+        borderColor: '#e7e7e7',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 22,
+        marginTop: -100,
+        backgroundColor: '#f7f7f7',
+        marginRight: 5
+    },
+    imgContainer: {
+        flex: 1,
+        backgroundColor: '#f7f7f7',
+        borderWidth: 5,
+        borderColor: '#d6d7da',
+        height: 250,
+        alignItems: 'flex-end'
     }
 })
 
