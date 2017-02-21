@@ -28,6 +28,7 @@ class Login extends Component {
         </Text>
         <LoginButton />
         <Button onPress={() => navigate('Home')} title="Events" />
+        <Button onPress={() => navigate('Swipe')} title="Swipe" />
       </View>
     );
   }
