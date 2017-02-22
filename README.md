@@ -28,13 +28,19 @@ pip install django-rest-framework-social-oauth2 # For Facebook -> access token g
 
 This app uses the [Django Rest Framework Social Oauth2](https://github.com/PhilipGarnero/django-rest-framework-social-oauth2) library for generating tokens. You have to register the social oauth app through the admin panel. The endpoint is under `/admin`. Follow the instructions from the link, specifically the section under: **Now go to django admin and add a new Application.**
 
-Create an `__init__.py` file in the `server/server/settings/` folder for your SECRET keys.
+Create an `__init__.py` file in the `server/server/settings/` folder for your ids, SECRET keys, and database information.
 ```python
 from server.settings.base import *
 
+SOCIAL_AUTH_FACEBOOK_KEY = 'XYZ...'
 SOCIAL_AUTH_FACEBOOK_SECRET = 'XYZ...'
+SOCIAL_AUTH_CLIENT_ID = 'XYZ...'
 SOCIAL_AUTH_CLIENT_SECRET = 'XYZ...'
 # ...other private keys
+
+DATABASES = {
+  # ...
+} 
 ```
 
 Navigate to the folder where `manage.py` file is in and run: 
@@ -44,7 +50,7 @@ python manage.py migrate
 
 When testing the API and need to run server locally: Run the following: 
 ```
-python manage.py runserver --settings=server.settings.__init__
+python manage.py runserver
 ```
 
 To execute the Python unit tests, run:
