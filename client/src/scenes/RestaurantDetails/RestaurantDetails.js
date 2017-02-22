@@ -45,7 +45,7 @@ class RestaurantDetails extends Component {
     getRating(restaurant) {
         var icons = []
         for (var i = 0; i < restaurant.rating; i++) {
-            icons.push(<Icon key={restaurant.name + i} name='star'></Icon>);
+            icons.push(<Icon key={restaurant.name + i} name='md-star' style={{ color:'#bd081c' }} />);
         }
         return (
             <View style={{ flexDirection: 'row' }}>
