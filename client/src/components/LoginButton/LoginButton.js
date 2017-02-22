@@ -1,14 +1,18 @@
 import React, { Component } from 'react';
-import { Button } from 'react-native';
+import { LoginManager, AccessToken } from 'react-native-fbsdk';
+import { Button, Text, Icon } from 'native-base';
 
 class LoginButton extends Component {
-  handleFacebookLogin() {
-    // TODO
+  static propTypes = {
+    handleFacebookLogin: React.PropTypes.func.isRequired
   }
 
   render() {
     return (
-      <Button title="Login with Facebook" onPress={this.handleFacebookLogin}></Button>
+      <Button block iconLeft style={{ backgroundColor: '#3b5998' }} onPress={this.props.handleFacebookLogin}>
+        <Icon name="logo-facebook" />
+        <Text>Sign in with Facebook</Text>
+      </Button>
     );
   }
 }

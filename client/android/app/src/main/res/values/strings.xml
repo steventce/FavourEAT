@@ -1,3 +1,4 @@
 <resources>
+    <string name="facebook_app_id">255965031526053</string>
     <string name="app_name">FavourEAT</string>
 </resources>
