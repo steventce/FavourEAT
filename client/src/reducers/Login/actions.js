@@ -1,10 +1,11 @@
 import { AsyncStorage } from 'react-native';
 import * as actionTypes from './actionTypes';
 import { API_BASE_URL } from '../../config/env';
+import { LoginManager } from 'react-native-fbsdk';
 
-export function sendFbAccessToken(accessToken) {
+export function login(accessToken) {
   return function(dispatch) {
-    removeAccessToken(dispatch);
+    AsyncStorage.removeItem('app_access_token');
     return fetch(`${API_BASE_URL}v1/token/`, {
       method: 'POST',
       headers: {
@@ -14,49 +15,50 @@ export function sendFbAccessToken(accessToken) {
       },
       body: JSON.stringify({ access_token: accessToken })
     }).then((response) => {
-      if (!response.ok) {
-        throw Error();
-      }
+      if (!response.ok) throw Error();
       return response.json();
     }).then((json) => {
-      addAccessToken(json, dispatch);
+      AsyncStorage.setItem('app_access_token', json.access_token);
+      AsyncStorage.setItem('user_id', String(json.user_id));
+      dispatch(loginSuccess(json));
     }).catch(() => {
-      dispatch(accessTokenError());
-    })
+      dispatch(loginError());
+    });
   }
 }
 
-function accessTokenSuccess(token) {
+export function logout() {
+  LoginManager.logOut();
+  AsyncStorage.removeItem('app_access_token');
+
+  return logoutSuccess();
+}
+
+// Login Actions
+
+function loginSuccess(token) {
   return {
-    type: actionTypes.ACCESS_TOKEN_SUCCESS,
+    type: actionTypes.LOGIN_SUCCESS,
     status: 'success',
-    response: token
+    msg: '',
+    token
   }
 }
 
-function accessTokenError() {
+function loginError() {
   return {
-    type: actionTypes.ACCESS_TOKEN_FAILURE,
+    type: actionTypes.LOGIN_ERROR,
     status: 'error',
-    error: 'Sign in failed. Please try again.'
+    msg: 'Sign in failed. Please try again.'
   }
 }
 
-export async function removeAccessToken(dispatch) {
-  try {
-    await AsyncStorage.removeItem('app_access_token');
-    console.log('removed!!!!!!!!!!!!!1');
-  } catch (error) {
-    dispatch(accessTokenError());
-  }
-}
+// Logout Actions
 
-async function addAccessToken(json, dispatch) {
-  try {
-    await AsyncStorage.setItem('app_access_token', json.access_token);
-    await AsyncStorage.setItem('user_id', String(json.user_id));
-    dispatch(accessTokenSuccess(json));
-  } catch (error) {
-    dispatch(accessTokenError());
+function logoutSuccess() {
+  return {
+    type: actionTypes.LOGOUT_SUCCESS,
+    status: 'success',
+    msg: ''
   }
 }

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Alert, AsyncStorage } from 'react-native';
 import { LoginManager, AccessToken } from 'react-native-fbsdk';
-import { sendFbAccessToken } from '../../reducers/Login/actions';
+import { login } from '../../reducers/Login/actions';
 import Login from './Login';
 
 class LoginContainer extends Component {
@@ -11,7 +11,7 @@ class LoginContainer extends Component {
       if (!result.isCancelled) {
         AccessToken.getCurrentAccessToken().then((data) => {
           const accessToken = data.accessToken.toString();
-          this.props.dispatch(sendFbAccessToken(accessToken));
+          this.props.dispatch(login(accessToken));
         });
       }
     },
@@ -22,11 +22,12 @@ class LoginContainer extends Component {
 
   componentWillReceiveProps(nextProps) {
     const { navigate } = this.props.navigation;
-    const { status, error } = nextProps;
+    const { status, msg } = nextProps;
+
     if (status === 'success') {
       navigate('HomeDrawer');
     } else {
-      Alert.alert('Error', error);
+      Alert.alert('Error', msg);
     }
   }
 
@@ -54,7 +55,7 @@ class LoginContainer extends Component {
 }
 
 const mapStateToProps = function(state) {
-  return state.login;
+  return state.auth;
 }
 
 export default connect(mapStateToProps)(LoginContainer);

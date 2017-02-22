@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { Text, Image, View, AsyncStorage, TouchableNativeFeedback } from 'react-native';
-import { Container, Content, Grid, Row, Left, Right, Body, Button, Icon } from 'native-base';
-import { LoginManager } from 'react-native-fbsdk';
-import { removeAccessToken } from '../../reducers/Login/actions';
+import { Text, Image, View } from 'react-native';
+import { Container, Content, Left, Button, Icon } from 'native-base';
 
 import styles from './styles';
 import { logo } from '../../config/images';
@@ -24,13 +21,6 @@ const navItemConfig = {
 }
 
 class Drawer extends Component {
-  handleLogout() {
-    const { navigate } = this.props.navigation;
-    LoginManager.logOut();
-    this.props.dispatch(removeAccessToken);
-    navigate('Login');
-  }
-
   render() {
     const { navigate, state } = this.props.navigation;
     const { routes } = state;
@@ -59,7 +49,7 @@ class Drawer extends Component {
                 </Button>
               );
             })}
-            <Button block transparent onPress={this.handleLogout.bind(this)} iconLeft>
+            <Button block transparent onPress={this.props.handleLogout} iconLeft>
               <Icon name="md-log-out" style={{ color: 'black' }} />
               <Left>
                 <Text style={{ color: 'black', marginLeft: 15 }}>Sign Out</Text>
@@ -72,4 +62,4 @@ class Drawer extends Component {
   }
 }
 
-export default connect()(Drawer);
+export default Drawer;

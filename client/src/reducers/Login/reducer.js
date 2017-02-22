@@ -1,17 +1,28 @@
 import * as actionTypes from './actionTypes';
 
-const initialState = {
-  token: '',
-  status: '',
-  error: ''
-}
+const initialState = { token: {}, status: '', msg: '' };
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case actionTypes.ACCESS_TOKEN_SUCCESS:
-      return { ...state, ...action };
-    case actionTypes.ACCESS_TOKEN_FAILURE:
-      return { ...state, ...action };
+    case actionTypes.LOGIN_SUCCESS:
+      return {
+        ...state,
+        status: action.status,
+        msg: action.msg,
+        token: action.token
+      };
+    case actionTypes.LOGIN_ERROR:
+      return {
+        ...state,
+        status: action.status,
+        msg: action.msg
+      };
+    case actionTypes.LOGOUT_SUCCESS:
+      return {
+        ...state,
+        status: action.status,
+        msg: action.msg
+      };
     default:
       return state;
   }
