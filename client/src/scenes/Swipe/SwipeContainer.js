@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
-import Swipe from '/Swipe';
-import { saveSwipe } from '../../../reducers/Swipe/action';
+import Swipe from './Swipe';
+import { saveSwipe } from '../../reducers/Swipe/actions';
 
 const mapStateToProps = (state, ownProps) => {
     return {}

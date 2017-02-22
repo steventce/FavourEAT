@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Button, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Container, Icon } from 'native-base';
+import SwipeContainer from './SwipeContainer';
 import SwipeCards from 'react-native-swipe-cards';
 
 // TODO: remove and use url
@@ -90,6 +91,8 @@ class Swipe extends Component {
     noMore() {
         console.log(this.state.leftCards);
         console.log(this.state.rightCards);
+        console.log("sending post");
+        SwipeContainer.saveSwipe();
         return (
             <Text>No more</Text>
         )
