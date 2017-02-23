@@ -17,13 +17,17 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from favoureat import views
 from rest_framework.urlpatterns import format_suffix_patterns
+from favoureat.yelp_api_service import YelpAPIService
 
 urlpatterns = [
     url(r'^v1/token/$', views.TokenView.as_view()),
-    url(r'^v1/users/(?P<pk>[0-9]+)/$', views.UserView.as_view()),
+    url(r'^v1/users/(?P<user_id>[0-9]+)/$', views.UserView.as_view()),
     url(r'^v1/users/(?P<user>[0-9]+)/swipes/$', views.UserSwipeView.as_view()),
+    url(r'^v1/users/(?P<user_id>[0-9]+)/events/(?P<event_id>[0-9]+)/$', views.IndividualEventView.as_view()),
     url(r'^auth/', include('rest_framework_social_oauth2.urls')),
     url(r'^admin/', admin.site.urls)
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
+
+YelpAPIService.get_and_save_restaurants()

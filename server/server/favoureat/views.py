@@ -1,8 +1,11 @@
 from django.conf import settings
 from django.contrib.auth.models import User
-from server.favoureat.serializers import UserSerializer
-from server.favoureat.serializers import SwipeSerializer
-from server.models import User, Swipe
+from server.favoureat.serializers import (
+    UserSerializer,
+    SwipeSerializer,
+    RestaurantSerializer
+)
+from server.models import User, Swipe, Restaurant
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -14,16 +17,16 @@ class UserView(APIView):
     """
     Gets a single User instance.
     """
-    def get_object(self, pk, user):
+    def get_object(self, user_id):
         try:
-            return User.objects.get(pk=pk)
+            return User.objects.get(pk=user_id)
         except User.DoesNotExist:
             return Response('User not found', status=status.HTTP_404_NOT_FOUND)
 
-    def get(self, request, pk, format=None):
-        if int(pk) != int(request.user.id):
+    def get(self, request, user_id, format=None):
+        if int(user_id) != int(request.user.id):
             return Response('Bad request', status=status.HTTP_400_BAD_REQUEST)
-        user = self.get_object(pk, request.user)
+        user = self.get_object(user_id)
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
@@ -79,3 +82,20 @@ class TokenView(ConvertTokenView):
         for k, v in headers.items():
             response[k] = v
         return response
+
+
+class IndividualEventView(APIView):
+    """
+    Gets the specified event for a particular user.
+
+    Work in progress:
+    Currently returns all restaurants in the database.
+
+    Params: user_id, event_id
+    """
+    def get(self, request, user_id, event_id, format=None):
+        querySet = Restaurant.objects.all()
+        serializer = RestaurantSerializer(querySet, many=True)
+        return Response({
+            'suggested_restaurants': serializer.data
+        })
