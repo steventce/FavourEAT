@@ -6,13 +6,12 @@ import {
 } from 'react-native';
 import { List, ListItem, Button, CheckBox } from 'native-base';
 
-import styles from './styles';
-
 class SelectList extends Component {
   static propTypes = {
     options: PropTypes.array.isRequired,
     selectedOptions: PropTypes.array.isRequired,
     onSelect: PropTypes.func.isRequired,
+    renderLabel: PropTypes.func.isRequired
   };
 
   isChecked = (value) => {
@@ -27,13 +26,12 @@ class SelectList extends Component {
       <ListItem>
         <TouchableNativeFeedback
             onPress={onSelect}>
-          <View style={styles.selectItem}>
+          <View style={{flex: 1, flexDirection: 'row'}}>
             <CheckBox 
                 checked={this.isChecked(value)}
-                onPress={onSelect} />
-            <Text style={styles.label}>
-              {label}
-            </Text>
+                onPress={onSelect}
+                style={{marginRight: 20}} />
+            {this.props.renderLabel(rowData)}
           </View>
         </TouchableNativeFeedback>
       </ListItem>

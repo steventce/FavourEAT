@@ -29,7 +29,8 @@ class Preferences extends Component {
       modalOptions: {
         options: [],
         selectedOptions: [],
-        onSelect: () => {}
+        onSelect: () => {},
+        renderLabel: () => {}
       },
       preferences: this.props.preferences
     };
@@ -42,7 +43,8 @@ class Preferences extends Component {
         modalOptions: {
           options: options.options,
           selectedOptions: options.selectedOptions,
-          onSelect: options.onSelect
+          onSelect: options.onSelect,
+          renderLabel: options.renderLabel
         }
       });
     }
@@ -131,35 +133,38 @@ class Preferences extends Component {
                 onPress={this.openModal({
                   options: distanceOptions, 
                   selectedOptions: [this.state.preferences.distance],
-                  onSelect: this.handleChangeDistance
+                  onSelect: this.handleChangeDistance,
+                  renderLabel: (option) => <Text>{`${option} km`}</Text>
                 })}
                 label="Maximum Travel Distance"
                 disabled={readOnly}
-                value={this.state.preferences.distance} />
+                value={`${this.state.preferences.distance} km`} />
             <SettingsBtn 
                 onPress={this.openModal({
                   options: priceOptions, 
                   selectedOptions: [this.state.preferences.minPrice],
-                  onSelect: this.handleChangeMinPrice
+                  onSelect: this.handleChangeMinPrice,
+                  renderLabel: (option) => <Text>{`$${option}`}</Text>
                 })}
                 label="Minimum Price"
                 disabled={readOnly}
-                value={this.state.preferences.minPrice} />
+                value={`$${this.state.preferences.minPrice}`} />
             <SettingsBtn 
                 onPress={this.openModal({
                   options: priceOptions, 
                   selectedOptions: [this.state.preferences.maxPrice],
-                  onSelect: this.handleChangeMaxPrice
+                  onSelect: this.handleChangeMaxPrice,
+                  renderLabel: (option) => <Text>{`$${option}`}</Text>
                 })}
                 label="Maximum Price"
                 disabled={readOnly}
-                value={this.state.preferences.maxPrice} />
-      
+                value={`$${this.state.preferences.maxPrice}`} />
             <SettingsBtn 
                 onPress={this.openModal({
                   options: this.props.allCuisineTypes, 
                   selectedOptions: this.state.preferences.cuisineTypes,
-                  onSelect: this.handleAddCuisineType
+                  onSelect: this.handleAddCuisineType,
+                  renderLabel: (option) => <Text>{option.label}</Text>
                 })}
                 disabled={readOnly}
                 label="Cuisine Type" />
@@ -178,7 +183,8 @@ class Preferences extends Component {
               <SelectList
                   options={this.state.modalOptions.options}
                   selectedOptions={this.state.modalOptions.selectedOptions}
-                  onSelect={this.state.modalOptions.onSelect} />
+                  onSelect={this.state.modalOptions.onSelect}
+                  renderLabel={this.state.modalOptions.renderLabel} />
             </PopupModal>
 
             {!readOnly && 
