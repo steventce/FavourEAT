@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import { Text, Alert } from 'react-native';
+import { Text } from 'react-native';
 import { Container, Content, List, Body, Right, ListItem, Icon, Button } from 'native-base';
 
 import PopupModal from '../../../components/PopupModal';
@@ -49,18 +49,6 @@ class Preferences extends Component {
       });
     }
   };
-
-  validate = () => {
-    return this.state.preferences.minPrice < this.state.preferences.maxPrice;
-  }
-
-  savePreferences = () => {
-    if (this.validate()) {
-      this.props.savePreferences(1, this.state.preferences);
-    } else {
-      Alert.alert('Error', 'Minimum Price must be lower than Maximum Price.');
-    }
-  }
 
   handleCloseModal = () => {
     this.setState({
@@ -141,7 +129,7 @@ class Preferences extends Component {
                 value={`${this.state.preferences.distance} km`} />
             <SettingsBtn 
                 onPress={this.openModal({
-                  options: priceOptions, 
+                  options: priceOptions.filter((value) => value < this.state.preferences.maxPrice), 
                   selectedOptions: [this.state.preferences.minPrice],
                   onSelect: this.handleChangeMinPrice,
                   renderLabel: (option) => <Text>{`$${option}`}</Text>
@@ -151,7 +139,7 @@ class Preferences extends Component {
                 value={`$${this.state.preferences.minPrice}`} />
             <SettingsBtn 
                 onPress={this.openModal({
-                  options: priceOptions, 
+                  options: priceOptions.filter((value) => value > this.state.preferences.minPrice), 
                   selectedOptions: [this.state.preferences.maxPrice],
                   onSelect: this.handleChangeMaxPrice,
                   renderLabel: (option) => <Text>{`$${option}`}</Text>
@@ -190,7 +178,7 @@ class Preferences extends Component {
             {!readOnly && 
               <Button
                   full success
-                  onPress={this.savePreferences}>
+                  onPress={() => this.props.savePreferences(1, this.state.preferences)}>
                 <Text>
                   DONE
                 </Text>
