@@ -2,9 +2,8 @@ import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
   settingsBtn: {
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: 'lightgray',
+    borderBottomWidth: 0.25,
+    borderColor: '#c9c9c9',
     padding: 20,
   },
   label: {
