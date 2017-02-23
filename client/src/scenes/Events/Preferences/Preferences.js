@@ -108,6 +108,9 @@ class Preferences extends Component {
   };
 
   render() {
+    const { params } = this.props.navigation.state;
+    const readOnly = (params && params.readOnly) || false;
+
     return (
       <Container>
         <Content>
@@ -119,6 +122,7 @@ class Preferences extends Component {
                   onSelect: this.handleChangeDistance
                 })}
                 label="Maximum Travel Distance"
+                disabled={readOnly}
                 value={this.state.preferences.distance} />
             <SettingsBtn 
                 onPress={this.openModal({
@@ -127,8 +131,8 @@ class Preferences extends Component {
                   onSelect: this.handleChangeMinPrice
                 })}
                 label="Minimum Price"
+                disabled={readOnly}
                 value={this.state.preferences.minPrice} />
-           
             <SettingsBtn 
                 onPress={this.openModal({
                   options: priceOptions, 
@@ -136,6 +140,7 @@ class Preferences extends Component {
                   onSelect: this.handleChangeMaxPrice
                 })}
                 label="Maximum Price"
+                disabled={readOnly}
                 value={this.state.preferences.maxPrice} />
       
             <SettingsBtn 
@@ -144,10 +149,12 @@ class Preferences extends Component {
                   selectedOptions: this.state.preferences.cuisineTypes,
                   onSelect: this.handleAddCuisineType
                 })}
+                disabled={readOnly}
                 label="Cuisine Type" />
             <RemovableItemsList
               list={this.state.preferences.cuisineTypes}
               onRemove={this.handleRemoveCuisineType}
+              readOnly={readOnly}
               renderRow={(rowData) => 
                 <Text>
                   {rowData.label}
@@ -162,13 +169,15 @@ class Preferences extends Component {
                   onSelect={this.state.modalOptions.onSelect} />
             </PopupModal>
 
-            <Button
-                full success
-                onPress={() => this.props.savePreferences(1, this.state.preferences)}>
-              <Text>
-                DONE
-              </Text>
-            </Button>
+            {!readOnly && 
+              <Button
+                  full success
+                  onPress={() => this.props.savePreferences(1, this.state.preferences)}>
+                <Text>
+                  DONE
+                </Text>
+              </Button>
+            }
           </List>
         </Content>
       </Container>

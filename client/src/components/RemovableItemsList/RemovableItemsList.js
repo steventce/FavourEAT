@@ -5,7 +5,8 @@ class RemovableItemsList extends Component {
   static propTypes = {
     list: PropTypes.array.isRequired,
     renderRow: PropTypes.func.isRequired,
-    onRemove: PropTypes.func.isRequired
+    onRemove: PropTypes.func.isRequired,
+    readOnly: PropTypes.bool.isRequired
   };
 
   render() {
@@ -17,13 +18,15 @@ class RemovableItemsList extends Component {
           <Body>
             {this.props.renderRow(rowData)}
           </Body>
-          <Right>
-            <Button 
-                transparent
-                onPress={() => this.props.onRemove(rowData)}>
-              <Icon name='md-close' />
-            </Button>
-          </Right>
+          {!this.props.readOnly && 
+            <Right>
+              <Button 
+                  transparent
+                  onPress={() => this.props.onRemove(rowData)}>
+                <Icon name='md-close' />
+              </Button>
+            </Right>
+          }
         </ListItem>
       } />
     );
