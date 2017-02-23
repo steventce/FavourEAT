@@ -1,7 +1,9 @@
 import * as actionTypes from './actionType';
 
-const reducer = (state, action) => {
-    switch(action.type) {
+const initialState = {};
+
+const reducer = (state = initialState, action) => {
+    switch (action.type) {
         // TODO: use for persistence
         /*case actionTypes.SAVE_SWIPE:
             return {

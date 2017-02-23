@@ -73,8 +73,9 @@ class Swipe extends Component {
         });
     }
 
-    onClickYup() {
+    onClickYup(card) {
         this.swiper._goToNextCard();
+        this.handleYup(card);
     }
 
     handleNope(card) {
@@ -84,23 +85,22 @@ class Swipe extends Component {
         });
     }
 
-    onClickNope() {
+    onClickNope(card) {
         this.swiper._goToNextCard();
+        this.handleNope(card);
     }
 
     noMore() {
         console.log(this.state.leftCards);
         console.log(this.state.rightCards);
         console.log("sending post");
-        SwipeContainer.saveSwipe();
+        this.props.postSwipe();
         return (
             <Text>No more</Text>
         )
     }
 
     render() {
-        const { navigate } = this.props.navigation;
-
         return (
             <View style={styles.container}>
                 <SwipeCards
@@ -113,10 +113,10 @@ class Swipe extends Component {
                     handleNope={this.handleNope}
                 />
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 5 }}>
-                    <TouchableOpacity style={styles.button} onPress={() => this.onClickNope()}>
+                    <TouchableOpacity style={styles.button} onPress={() => this.onClickNope(this.swiper)}>
                         <Icon name='close' size={45} color="#888" />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.button} onPress={() => this.onClickYup()}>
+                    <TouchableOpacity style={styles.button} onPress={() => this.onClickYup(this.swiper)}>
                         <Icon name='heart' size={36} color="#888" />
                     </TouchableOpacity>
                 </View>
