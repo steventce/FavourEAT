@@ -9,7 +9,6 @@ import RemovableItemsList from '../../../components/RemovableItemsList';
 
 const priceOptions = [5, 15, 25, 40, 60, 100];
 const distanceOptions = [1, 2, 3, 5, 10, 20];
- 
 
 class Preferences extends Component {
   static propTypes = {
@@ -154,7 +153,6 @@ class Preferences extends Component {
                   {rowData.label}
                 </Text>
             } />
-
             <PopupModal 
                 visible={this.state.modalVisible}
                 onClose={this.handleCloseModal}>
@@ -165,8 +163,12 @@ class Preferences extends Component {
             </PopupModal>
 
             <Button
-               onPress={() => this.props.savePreferences(1, {})}
-               title="DONE!" />
+                full success
+                onPress={() => this.props.savePreferences(1, this.state.preferences)}>
+              <Text>
+                DONE
+              </Text>
+            </Button>
           </List>
         </Content>
       </Container>
