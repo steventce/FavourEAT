@@ -1,34 +1,24 @@
 import React, { Component } from 'react';
-import {
-  Text,
-  Button,
-  View
-} from 'react-native';
+import { Image, View } from 'react-native';
+import { Container, Content } from 'native-base';
 import LoginButton from '../../components/LoginButton';
+
 import styles from './styles';
+import { logo } from '../../config/images';
 
 class Login extends Component {
-  static navigationOptions = {
-    title: 'Welcome'
-  };
-
   render() {
-    const { navigate } = this.props.navigation;
     return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.android.js
-        </Text>
-        <Text style={styles.instructions}>
-          Double tap R on your keyboard to reload,{'\n'}
-          Shake or press menu button for dev menu
-        </Text>
-        <LoginButton />
-        <Button onPress={() => navigate('Home')} title="Events" />
-      </View>
+      <Container>
+        <Content contentContainerStyle={styles.container}>
+          <View style={styles.imageContainer}>
+            <Image style={styles.logo} source={logo} />
+          </View>
+          <View style={styles.btnContainer}>
+            <LoginButton handleFacebookLogin={this.props.handleFacebookLogin} />
+          </View>
+        </Content>
+      </Container>
     );
   }
 }
