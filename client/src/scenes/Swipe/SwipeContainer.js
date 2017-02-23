@@ -7,9 +7,9 @@ import { saveSwipe } from '../../reducers/Swipe/actions';
 class SwipeContainer extends Component {
     async postSwipe() {
         try {
-            const user_id = await AsyncStorage.getItem('user_id');
-            console.log(user_id);
-            this.props.dispatch(saveSwipe(user_id));
+            const userId = await AsyncStorage.getItem('user_id');
+            const accessToken = await AsyncStorage.getItem('app_access_token');
+            this.props.dispatch(saveSwipe(userId, accessToken));
         } catch (error) {
             Alert.alert('Error', error.message);
         }
