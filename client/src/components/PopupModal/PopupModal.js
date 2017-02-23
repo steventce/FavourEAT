@@ -2,7 +2,8 @@ import React, { Component, PropTypes } from 'react';
 import {
   View,
   Modal,
-  Dimensions
+  Dimensions,
+  TouchableWithoutFeedback
 } from 'react-native';
 
 import styles from './styles';
@@ -23,7 +24,10 @@ class PopupModal extends Component {
           transparent={true}
           onRequestClose={this.props.onClose}>
         <View style={styles.container}>
-            <View style={styles.overlay} />
+            <TouchableWithoutFeedback
+                onPress={this.props.onClose}>
+              <View style={styles.overlay} />
+            </TouchableWithoutFeedback>
             <View style={styles.modal}>
               {this.props.children}
             </View>
