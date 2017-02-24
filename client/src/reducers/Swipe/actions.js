@@ -1,8 +1,8 @@
 import { API_BASE_URL } from '../../config/env';
 
-export function saveSwipe(userID, accessToken) {
+export function saveSwipe(userId, accessToken, restaurantId, leftCount, rightCount) {
     return function (dispatch) {
-        fetch(`${API_BASE_URL}v1/users/${userID}/swipes/`, {
+        fetch(`${API_BASE_URL}v1/users/${userId}/swipes/`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -10,8 +10,9 @@ export function saveSwipe(userID, accessToken) {
                 'Authorization': `Bearer ${accessToken}`
             },
             body: JSON.stringify({
-                /*leftArr: leftArr,
-                rightArr: rightArr,*/
+                yelp_id: restaurantId,
+                right_swipe_count: rightCount,
+                left_swipe_count: leftCount
             })
         })
         .then((response) => {

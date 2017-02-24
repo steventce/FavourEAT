@@ -38,7 +38,7 @@ class UserSwipeView(APIView):
         request.data['user'] = user
         swipe = Swipe.objects.filter(yelp_id=request.data['yelp_id'], user=request.data['user'])
         if swipe.exists():
-            serializer = SwipeSerializer(swipe, data=request.data)
+            serializer = SwipeSerializer(swipe[0], data=request.data)
         else:
             serializer = SwipeSerializer(None, data=request.data)
         if serializer.is_valid():

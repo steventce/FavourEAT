@@ -13,11 +13,11 @@ var shizenya = require('../../images/shizenya.jpg')
 
 // TODO: get list from props
 const Cards = [
-    { name: 'Miku', image: miku, rating: 5 },
-    { name: 'Kishimoto', image: kishimoto, rating: 5 },
-    { name: 'Minami', image: minami, rating: 4 },
-    { name: 'Suika', image: suika, rating: 4 },
-    { name: 'Shizen Ya', image: shizenya, rating: 4 },
+    { yelp_id: 1, name: 'Miku', image: miku, rating: 5 },
+    { yelp_id: 2, name: 'Kishimoto', image: kishimoto, rating: 5 },
+    { yelp_id: 3, name: 'Minami', image: minami, rating: 4 },
+    { yelp_id: 4, name: 'Suika', image: suika, rating: 4 },
+    { yelp_id: 5, name: 'Shizen Ya', image: shizenya, rating: 4 },
 ]
 
 class Swipe extends Component {
@@ -26,8 +26,8 @@ class Swipe extends Component {
 
         this.state = {
             card: Cards,
-            rightCards: [],
-            leftCards: []
+            rightSwipes: [],
+            leftSwipes: []
         };
 
         this.handleYup = this.handleYup.bind(this);
@@ -67,10 +67,11 @@ class Swipe extends Component {
     }
 
     handleYup(card) {
-        console.log('Yup for ${card.name}');
-        this.setState({
-            rightCards: [...this.state.rightCards, card]
-        });
+        console.log(card.state.card.yelp_id);
+        console.log(card.state.card.name);
+        var arr = this.state.rightSwipes.slice();
+        arr.push(card.state.card.yelp_id);
+        this.setState({ rightSwipes: arr });
     }
 
     onClickYup(card) {
@@ -79,10 +80,11 @@ class Swipe extends Component {
     }
 
     handleNope(card) {
-        console.log('Yup for ${card.restaurantName}');
-        this.setState({
-            leftCards: [...this.state.leftCards, card]
-        });
+        console.log(card.state.card.yelp_id);
+        console.log(card.state.card.name);
+        var arr = this.state.leftSwipes.slice();
+        arr.push(card.state.card.yelp_id);
+        this.setState({ leftSwipes: arr });
     }
 
     onClickNope(card) {
@@ -91,10 +93,10 @@ class Swipe extends Component {
     }
 
     noMore() {
-        console.log(this.state.leftCards);
-        console.log(this.state.rightCards);
+        console.log(this.state.leftSwipes);
+        console.log(this.state.rightSwipes);
         console.log("sending post");
-        this.props.postSwipe();
+        this.props.postSwipe(this.state.leftSwipes, this.state.rightSwipes);
         return (
             <Text>No more</Text>
         )

@@ -5,11 +5,16 @@ import Swipe from './Swipe';
 import { saveSwipe } from '../../reducers/Swipe/actions';
 
 class SwipeContainer extends Component {
-    async postSwipe() {
+    async postSwipe(leftSwipes, rightSwipes) {
         try {
             const userId = await AsyncStorage.getItem('user_id');
             const accessToken = await AsyncStorage.getItem('app_access_token');
-            this.props.dispatch(saveSwipe(userId, accessToken));
+            for (var i = 0; i < leftSwipes.length; i++) {
+                this.props.dispatch(saveSwipe(userId, accessToken, leftSwipes[i], 1, 0));
+            }
+            for (var i = 0; i < rightSwipes.length; i++) {
+                this.props.dispatch(saveSwipe(userId, accessToken, rightSwipes[i], 0, 1));
+            }
         } catch (error) {
             Alert.alert('Error', error.message);
         }
@@ -19,7 +24,7 @@ class SwipeContainer extends Component {
         const { navigate } = this.props.navigation;
 
         return (
-        <Swipe postSwipe={this.postSwipe.bind(this)} />
+            <Swipe postSwipe={this.postSwipe.bind(this)} />
         );
     }
 
