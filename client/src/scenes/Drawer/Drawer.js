@@ -10,6 +10,10 @@ const navItemConfig = {
     color: 'black',
     iconName: 'md-home'
   },
+  CreateEvent: {
+    color: 'black',
+    iconName: 'md-add'
+  },
   Preferences: {
     color: 'black',
     iconName: 'md-heart-outline'

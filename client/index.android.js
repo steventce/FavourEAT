@@ -10,6 +10,7 @@ import Drawer from './src/scenes/Drawer';
 import { UserEvents } from './src/scenes/Events';
 import Preferences from './src/scenes/Events/Preferences';
 import Swipe from './src/scenes/Swipe';
+import CreateEvent from './src/scenes/Events/CreateEvent';
 
 const store = configureStore();
 
@@ -21,8 +22,9 @@ const HomeStack = StackNavigator({
 
 const HomeDrawer = DrawerNavigator({
   Home: { screen: HomeStack },
+  CreateEvent: { screen: CreateEvent },
   Preferences: { screen: Preferences },
-  Swipe: { screen: Swipe }
+  Swipe: { screen: Swipe },
 }, {
   initialRouteName: 'Home',
   drawerWidth: 300,
