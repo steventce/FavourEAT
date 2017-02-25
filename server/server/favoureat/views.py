@@ -40,10 +40,8 @@ class UserSwipeView(APIView):
         if swipe is not None:
             if 'right_swipe_count' in request.data.keys():
                 request.data['right_swipe_count'] += swipe.right_swipe_count
-                request.data['left_swipe_count'] = swipe.left_swipe_count
             else:
                 request.data['left_swipe_count'] += swipe.left_swipe_count
-                request.data['right_swipe_count'] = swipe.right_swipe_count
             serializer = SwipeSerializer(swipe, data=request.data)
         else:
             serializer = SwipeSerializer(None, data=request.data)
