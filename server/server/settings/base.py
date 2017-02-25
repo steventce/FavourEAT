@@ -37,8 +37,25 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'oauth2_provider',
+    'social_django',
+    'rest_framework_social_oauth2',
     'server',
 ]
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.ext.rest_framework.OAuth2Authentication',
+        'rest_framework_social_oauth2.authentication.SocialAuthentication'
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -63,35 +80,24 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-            ],
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect'
+            ]
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'server.wsgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
-#
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'favoureatdb',
-#         'USER': 'root',
-#         'PASSWORD': 'favoureat123',
-#     }
-# }
 
-
+# Override this with your database settings in __init__.py
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backegnds.postgresql',
-        'NAME': 'd2h0rhsvoqrdsi',
-        'USER': 'jprkvppmxtjenm',
-        'PASSWORD': '58b2d6face6be63f5a073c088576f8be5270cba2311bb260e3daf77065ba464b',
-        'HOST': 'ec2-54-235-84-244.compute-1.amazonaws.com',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.postgresql'
     }
 }
 
@@ -133,3 +139,31 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+# Authentication backends
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.facebook.FacebookAppOAuth2',
+    'social_core.backends.facebook.FacebookOAuth2',
+    'rest_framework_social_oauth2.backends.DjangoOAuth2',
+    'django.contrib.auth.backends.ModelBackend'
+)
+
+
+# Social auth Facebook settings (django-rest-frameowrk-social-oauth2)
+
+# Override these with your keys in __init__.py
+# SOCIAL_AUTH_FACEBOOK_KEY
+# SOCIAL_AUTH_FACEBOOK_SECRET
+
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+    'fields': 'id, name, email'
+}
+
+# From admin registered application
+
+# Override these with your keys in __init__.py
+# SOCIAL_AUTH_CLIENT_ID
+# SOCIAL_AUTH_CLIENT_SECRET
