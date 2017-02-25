@@ -36,9 +36,15 @@ class UserSwipeView(APIView):
         if User.objects.filter(id=user).count() == 0:
             return Response("User not found", status=status.HTTP_404_NOT_FOUND)
         request.data['user'] = user
-        swipe = Swipe.objects.filter(yelp_id=request.data['yelp_id'], user=request.data['user'])
-        if swipe.exists():
-            serializer = SwipeSerializer(swipe[0], data=request.data)
+        swipe = Swipe.objects.filter(yelp_id=request.data['yelp_id'], user=request.data['user']).first()
+        if swipe is not None:
+            if 'right_swipe_count' in request.data.keys():
+                request.data['right_swipe_count'] += swipe.right_swipe_count
+                request.data['left_swipe_count'] = swipe.left_swipe_count
+            else:
+                request.data['left_swipe_count'] += swipe.left_swipe_count
+                request.data['right_swipe_count'] = swipe.right_swipe_count
+            serializer = SwipeSerializer(swipe, data=request.data)
         else:
             serializer = SwipeSerializer(None, data=request.data)
         if serializer.is_valid():
