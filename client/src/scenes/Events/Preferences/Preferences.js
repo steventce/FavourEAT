@@ -178,7 +178,7 @@ class Preferences extends Component {
             {!readOnly && 
               <Button
                   full success
-                  onPress={() => this.props.savePreferences(1, this.state.preferences)}>
+                  onPress={() => this.props.savePreferences(this.state.preferences)}>
                 <Text>
                   DONE
                 </Text>
