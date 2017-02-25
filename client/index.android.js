@@ -15,7 +15,8 @@ import CreateEvent from './src/scenes/Events/CreateEvent';
 const store = configureStore();
 
 const HomeStack = StackNavigator({
-  UserEvents: { screen: UserEvents }
+  UserEvents: { screen: UserEvents },
+  Preferences: { screen: Preferences },
 }, {
   initialRouteName: 'UserEvents'
 });
