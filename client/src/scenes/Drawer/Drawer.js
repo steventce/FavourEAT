@@ -17,6 +17,10 @@ const navItemConfig = {
   Swipe: {
     color: 'black',
     iconName: 'md-swap'
+  },
+  RestaurantDetails: {
+    color: 'black',
+    iconName: 'md-swap'
   }
 }
 
