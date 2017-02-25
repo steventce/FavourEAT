@@ -117,7 +117,6 @@ hours: [
 ],
 "total": 3};
 
-
 class RestaurantDetails extends Component {
     constructor(props) {
         super(props);

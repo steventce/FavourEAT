@@ -17,7 +17,6 @@ class Login extends Component {
           <View style={styles.btnContainer}>
             <LoginButton handleFacebookLogin={this.props.handleFacebookLogin} />
           </View>
-          <Button onPress={() => navigate('RestaurantDetails')} title="RestaurantDetails" />
         </Content>
       </Container>
     );
