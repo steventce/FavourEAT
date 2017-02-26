@@ -4,7 +4,8 @@ import { changeRadius, savePreferences } from '../../../reducers/Events/actions'
 
 const mapStateToProps = (state, ownProps) => {
   return {
-    preferences: state.event.preferences
+    preferences: state.event.preferences,
+    allCuisineTypes: state.event.allCuisineTypes
   }
 };
 
