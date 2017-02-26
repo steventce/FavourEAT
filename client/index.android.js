@@ -24,7 +24,6 @@ const HomeDrawer = DrawerNavigator({
   Home: { screen: HomeStack },
   Preferences: { screen: Preferences },
   Swipe: { screen: Swipe },
-  RestaurantDetails: { screen: RestaurantDetails }
 }, {
   initialRouteName: 'Home',
   drawerWidth: 300,
@@ -33,7 +32,8 @@ const HomeDrawer = DrawerNavigator({
 
 const MainStack = StackNavigator({
   Login: { screen: Login },
-  HomeDrawer: { screen: HomeDrawer }
+  HomeDrawer: { screen: HomeDrawer },
+  RestaurantDetails: { screen: RestaurantDetails }
 }, {
   initialRouteName: 'Login',
   backBehavior: 'none',

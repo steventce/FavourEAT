@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
-import { Button, Image, StyleSheet, Text, TouchableOpacity, View, ScrollView, Dimensions } from 'react-native';
+import { Button, Image, Navigator, StyleSheet, Text, TouchableOpacity, View, ScrollView, Dimensions } from 'react-native';
 import { Container, Icon } from 'native-base';
 import SwipeCards from 'react-native-swipe-cards';
 import common from '../../styles/common'
 import Communications from 'react-native-communications';
+import Hr from 'react-native-hr';
+
 
 // TODO: remove and use url
 var miku = require('../../images/miku.jpg')
@@ -33,89 +35,6 @@ const Cards = [
     { name: 'Shizen Ya', image: shizenya, rating: 4, address: '985 Hornby St, Vancouver, BC V6Z 1V3' },
 ]
 
-var restaurant = { name: 'Miku', image: miku, rating: 5, address: '200 Granville St #70, Vancouver, BC V6C 1S4', phone: "+14152520800",
-hours: [
-    {
-      "hours_type": "REGULAR",
-      "open": [
-        {
-          "is_overnight": false,
-          "end": "2200",
-          "day": 0,
-          "start": "1730"
-        },
-        {
-          "is_overnight": false,
-          "end": "2200",
-          "day": 1,
-          "start": "1730"
-        },
-        {
-          "is_overnight": false,
-          "end": "2200",
-          "day": 2,
-          "start": "1730"
-        },
-        {
-          "is_overnight": false,
-          "end": "2200",
-          "day": 3,
-          "start": "1730"
-        },
-        {
-          "is_overnight": false,
-          "end": "2200",
-          "day": 4,
-          "start": "1730"
-        },
-        {
-          "is_overnight": false,
-          "end": "2200",
-          "day": 5,
-          "start": "1730"
-        },
-        {
-          "is_overnight": false,
-          "end": "2200",
-          "day": 6,
-          "start": "1730"
-        }
-      ],
-      "is_open_now": false
-    }],
-"reviews": [
-{
-  "rating": 5,
-  "user": {
-    "image_url": "https://s3-media3.fl.yelpcdn.com/photo/iwoAD12zkONZxJ94ChAaMg/o.jpg",
-    "name": "Ella A."
-  },
-  "text": "Went back again to this place since the last time i visited the bay area 5 months ago, and nothing has changed. Still the sketchy Mission, Still the cashier...",
-  "time_created": "2016-08-29 00:41:13",
-  "url": "https://www.yelp.com/biz/la-palma-mexicatessen-san-francisco?hrid=hp8hAJ-AnlpqxCCu7kyCWA&adjust_creative=0sidDfoTIHle5vvHEBvF0w&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_reviews&utm_source=0sidDfoTIHle5vvHEBvF0w"
-},
-{
-  "rating": 4,
-  "user": {
-    "image_url": null,
-    "name": "Yanni L."
-  },
-  "text": "The \"restaurant\" is inside a small deli so there is no sit down area. Just grab and go.\n\nInside, they sell individually packaged ingredients so that you can...",
-  "time_created": "2016-09-28 08:55:29",
-  "url": "https://www.yelp.com/biz/la-palma-mexicatessen-san-francisco?hrid=fj87uymFDJbq0Cy5hXTHIA&adjust_creative=0sidDfoTIHle5vvHEBvF0w&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_reviews&utm_source=0sidDfoTIHle5vvHEBvF0w"
-},
-{
-  "rating": 4,
-  "user": {
-    "image_url": null,
-    "name": "Suavecito M."
-  },
-  "text": "Dear Mission District,\n\nI miss you and your many delicious late night food establishments and vibrant atmosphere.  I miss the way you sound and smell on a...",
-  "time_created": "2016-08-10 07:56:44",
-  "url": "https://www.yelp.com/biz/la-palma-mexicatessen-san-francisco?hrid=m_tnQox9jqWeIrU87sN-IQ&adjust_creative=0sidDfoTIHle5vvHEBvF0w&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_reviews&utm_source=0sidDfoTIHle5vvHEBvF0w"
-}
-],
-"total": 3};
 
 class RestaurantDetails extends Component {
     constructor(props) {
@@ -137,7 +56,7 @@ class RestaurantDetails extends Component {
         title: 'Restaurant Details'
     };
 
-    getRating(rating) {
+    getRating(rating, restaurant) {
         var icons = [];
         for (var i = 0; i < rating; i++) {
             icons.push(<Icon key={restaurant.name + i} name='md-star' style={iconCol} />);
@@ -157,20 +76,14 @@ class RestaurantDetails extends Component {
         return icons;
     }
 
-    handleYup(card) {
-        console.log('Yup for ${card.name}');
-    }
-
     onClickYup() {
-        this.swiper._goToNextCard();
-    }
-
-    handleNope(card) {
-        console.log('Yup for ${card.restaurantName}');
+        this.props.navigation.state.params.caller.onClickYup();
+        this.props.navigation.goBack();
     }
 
     onClickNope() {
-        this.swiper._goToNextCard();        
+        this.props.navigation.state.params.caller.onClickNope();
+        this.props.navigation.goBack();
     }
 
     noMore() {
@@ -191,7 +104,7 @@ class RestaurantDetails extends Component {
         return hours().toString() + ':' + minutes + meridian;
     }
 
-    getHours() {
+    getHours(restaurant) {
         var result = '';
         for (i = 0; i < restaurant.hours[0]["open"].length; i++) {
             var start = restaurant.hours[0]["open"][i].start;
@@ -201,11 +114,11 @@ class RestaurantDetails extends Component {
             result = result + currResult + '\n';
         }
         return (
-            <Text style={{lineHeight: 25, fontSize: 16, color: '#444', marginLeft: 10 }}>{result}</Text>
+            <Text style={{lineHeight: 25, fontSize: 16, color: '#444', marginLeft: 15 }}>{result}</Text>
         )
     }
 
-    getReviews() {
+    getReviews(restaurant) {
         var reviews = restaurant['reviews'];
         var result = [];
         for (i = 0; i < reviews.length; i++) {
@@ -216,8 +129,8 @@ class RestaurantDetails extends Component {
                 <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#444' }}>{rev['user']['name']} </Text>
                   {this.getReviewRating(rev)}
               </View>
-              <Text style={{ fontSize: 10, fontStyle: 'italic' }}>{rev['time_created']}</Text>
-              <Text style={{ fontSize: 15, color: '#444', marginLeft: 10 }}>{rev['text']}</Text>
+              <Text style={{ fontSize: 11, fontStyle: 'italic', marginLeft: 5 }}>{rev['time_created']}</Text>
+              <Text style={{ fontSize: 15, color: '#444', marginLeft: 15, marginBottom: 5 }}>{rev['text']}</Text>
             </View>)
         }
         return result;
@@ -225,7 +138,7 @@ class RestaurantDetails extends Component {
 
     render() {
         const { navigate } = this.props.navigation;
-
+        const restaurant = this.props.navigation.state.params.restaurant;
         return (
             <ScrollView style={styles.container}>
                 <View style={styles.imgContainer}>
@@ -241,7 +154,7 @@ class RestaurantDetails extends Component {
                     </TouchableOpacity>
                 </View>
                 <View style={[styles.card]}>
-                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#444' }}>{restaurant.name}</Text>{this.getRating(restaurant.rating)}
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#444' }}>{restaurant.name}</Text>{this.getRating(restaurant.rating, restaurant)}
                     <Text style={{ fontSize: 16,  color: '#444' }}>{restaurant.address}</Text>
                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 5 }}>
                         <TouchableOpacity style={common.swipeBtn} onPress={() => this.onClickNope()}>
@@ -252,13 +165,15 @@ class RestaurantDetails extends Component {
                         </TouchableOpacity>
                     </View>
                 </View>
-                <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                    <Text style={{ fontSize: 18, color:'#bd081c', fontWeight: 'bold', textDecorationLine: 'underline' }}>Hours</Text>
-                    {this.getHours()}
+                <View style={{ flexDirection: 'column', alignItems: 'flex-start' , flex: 1 }}>
+                    <Hr lineColor='#b3b3b3' />
+                    <Text style={{ fontSize: 18,  color: '#bd081c', fontWeight: 'bold', textDecorationLine: 'underline', marginTop: 5, marginLeft: 5 }}>Hours</Text>
+                    {this.getHours(restaurant)}
                 </View>
-                <View style={{ flexDirection: 'column', alignItems: 'flex-start', marginTop: 10 }}>
-                    <Text style={{ fontSize: 18, color:'#bd081c', fontWeight: 'bold', textDecorationLine: 'underline' }}>Reviews</Text>
-                    {this.getReviews()}
+                <View style={{ flexDirection: 'column', alignItems: 'flex-start', marginTop: 10, flex: 1, marginBottom: 10 }}>
+                    <Hr lineColor='#b3b3b3' />
+                    <Text style={{ fontSize: 18,  color: '#bd081c', fontWeight: 'bold', textDecorationLine: 'underline', marginTop: 5, marginLeft: 5 }}>Reviews</Text>
+                    {this.getReviews(restaurant)}
                 </View>
 
             </ScrollView>
