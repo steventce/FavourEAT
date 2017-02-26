@@ -19,7 +19,8 @@ class Preferences extends Component {
   };
 
   static navigationOptions = {
-    title: 'Restaurant Preferences'
+    title: 'Restaurant Preferences',
+    prev: ({ state }) => $(state.params.prev)
   }
 
   constructor(props) {
@@ -109,6 +110,16 @@ class Preferences extends Component {
     });
   };
 
+handleDone = () => {
+  // TODO: kinda hacky
+  this.props.savePreferences(this.state.preferences)
+  const { params } = this.props.navigation.state;
+  if (params && params.prev)  {
+     const { navigate } = this.props.navigation;
+     navigate(params.prev);
+  }
+}
+
   render() {
     const { params } = this.props.navigation.state;
     const readOnly = (params && params.readOnly) || false;
@@ -178,7 +189,7 @@ class Preferences extends Component {
             {!readOnly && 
               <Button
                   full success
-                  onPress={() => this.props.savePreferences(this.state.preferences)}>
+                  onPress={() => this.handleDone()}>
                 <Text>
                   DONE
                 </Text>
