@@ -2,9 +2,11 @@ import React, { Component } from 'react';
 import { Button, Image, Navigator, StyleSheet, Text, TouchableOpacity, View, ScrollView, Dimensions } from 'react-native';
 import { Container, Icon } from 'native-base';
 import SwipeCards from 'react-native-swipe-cards';
-import common from '../../styles/common'
 import Communications from 'react-native-communications';
 import Hr from 'react-native-hr';
+
+import common from '../../styles/common'
+import styles from './styles';
 
 
 // TODO: remove and use url
@@ -26,23 +28,9 @@ var hoursMap = {0: "Monday",
 
 const iconCol = StyleSheet.flatten(common.iconCol);
 
-// TODO: get list from props
-const Cards = [
-    { name: 'Miku', image: miku, rating: 5, address: '200 Granville St #70, Vancouver, BC V6C 1S4' },
-    { name: 'Kishimoto', image: kishimoto, rating: 5, address: '2054 Commercial Dr, Vancouver, BC V5N 4A9'},
-    { name: 'Minami', image: minami, rating: 4, address: '1118 Mainland St, Vancouver, BC V6B 2T9' },
-    { name: 'Suika', image: suika, rating: 4, address: '1626 W Broadway, Vancouver, BC V6J 1X8' },
-    { name: 'Shizen Ya', image: shizenya, rating: 4, address: '985 Hornby St, Vancouver, BC V6Z 1V3' },
-]
-
-
 class RestaurantDetails extends Component {
     constructor(props) {
         super(props);
-
-        this.state = {
-            card: Cards
-        };
 
         this.onClickYup = this.onClickYup.bind(this);
         this.onClickNope = this.onClickNope.bind(this);
@@ -105,6 +93,9 @@ class RestaurantDetails extends Component {
     }
 
     getHours(restaurant) {
+        if (!("hours" in restaurant)) {
+            return (<Text style={[styles.hours, styles.txtColor]}>No hours available</Text>);
+        }
         var result = '';
         for (i = 0; i < restaurant.hours[0]["open"].length; i++) {
             var start = restaurant.hours[0]["open"][i].start;
@@ -114,23 +105,27 @@ class RestaurantDetails extends Component {
             result = result + currResult + '\n';
         }
         return (
-            <Text style={{lineHeight: 25, fontSize: 16, color: '#444', marginLeft: 15 }}>{result}</Text>
+            <Text style={[styles.hours, styles.txtColor]}>{result}</Text>
         )
     }
 
     getReviews(restaurant) {
-        var reviews = restaurant['reviews'];
         var result = [];
+        if (!("reviews" in restaurant)) {
+            result.push(<Text key={'review-none'} style={[styles.reviewTxt, styles.txtColor]}>No reviews available yet</Text>);
+            return result;
+        }
+        var reviews = restaurant['reviews'];
         for (i = 0; i < reviews.length; i++) {
           var rev = reviews[i];
           result.push(
-            <View key={'review' + i}style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+            <View key={'review' + i} style={styles.infoView}>
               <View style={{ flexDirection: 'row' }}>
-                <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#444' }}>{rev['user']['name']} </Text>
+                <Text style={[styles.reviewRating, styles.txtColor]}>{rev['user']['name']} </Text>
                   {this.getReviewRating(rev)}
               </View>
-              <Text style={{ fontSize: 11, fontStyle: 'italic', marginLeft: 5 }}>{rev['time_created']}</Text>
-              <Text style={{ fontSize: 15, color: '#444', marginLeft: 15, marginBottom: 5 }}>{rev['text']}</Text>
+              <Text style={styles.reviewTime}>{rev['time_created']}</Text>
+              <Text style={[styles.reviewTxt, styles.txtColor]}>{rev['text']}</Text>
             </View>)
         }
         return result;
@@ -156,7 +151,7 @@ class RestaurantDetails extends Component {
                 <View style={[styles.card]}>
                     <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#444' }}>{restaurant.name}</Text>{this.getRating(restaurant.rating, restaurant)}
                     <Text style={{ fontSize: 16,  color: '#444' }}>{restaurant.address}</Text>
-                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 5 }}>
+                   <View style={styles.swipeBtns}>
                         <TouchableOpacity style={common.swipeBtn} onPress={() => this.onClickNope()}>
                             <Icon name='close' size={30} style={iconCol} />
                         </TouchableOpacity>
@@ -165,14 +160,14 @@ class RestaurantDetails extends Component {
                         </TouchableOpacity>
                     </View>
                 </View>
-                <View style={{ flexDirection: 'column', alignItems: 'flex-start' , flex: 1 }}>
+                <View style={styles.infoView}>
                     <Hr lineColor='#b3b3b3' />
-                    <Text style={{ fontSize: 18,  color: '#bd081c', fontWeight: 'bold', textDecorationLine: 'underline', marginTop: 5, marginLeft: 5 }}>Hours</Text>
+                    <Text style={styles.restaurantInfo}>Hours</Text>
                     {this.getHours(restaurant)}
                 </View>
-                <View style={{ flexDirection: 'column', alignItems: 'flex-start', marginTop: 10, flex: 1, marginBottom: 10 }}>
+                <View style={[styles.infoView, styles.reviewMargin]}>
                     <Hr lineColor='#b3b3b3' />
-                    <Text style={{ fontSize: 18,  color: '#bd081c', fontWeight: 'bold', textDecorationLine: 'underline', marginTop: 5, marginLeft: 5 }}>Reviews</Text>
+                    <Text style={styles.restaurantInfo}>Reviews</Text>
                     {this.getReviews(restaurant)}
                 </View>
 
@@ -180,40 +175,5 @@ class RestaurantDetails extends Component {
         );
     }
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f7f7f7',
-        borderWidth: 5,
-        borderColor: '#d6d7da',
-        height: 120
-    },
-    card: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    overlapBtn: {
-        width: 45,
-        height: 45,
-        borderWidth: 5,
-        borderColor: '#e7e7e7',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 22,
-        marginTop: -100,
-        backgroundColor: '#f7f7f7',
-        marginRight: 5
-    },
-    imgContainer: {
-        flex: 1,
-        backgroundColor: '#f7f7f7',
-        borderWidth: 5,
-        borderColor: '#d6d7da',
-        height: 250,
-        alignItems: 'flex-end'
-    }
-})
 
 export default RestaurantDetails;
