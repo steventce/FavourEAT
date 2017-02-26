@@ -141,10 +141,10 @@ class RestaurantDetails extends Component {
                     <TouchableOpacity style={styles.overlapBtn} onPress={() => Communications.phonecall(restaurant.phone, true)}>
                         <Icon name='call' size={25} style={iconCol} />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.overlapBtn} onPress={() => this.onClickNope()}>
+                    <TouchableOpacity style={styles.overlapBtn}>
                         <Icon name='restaurant' size={25} style={iconCol} />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.overlapBtn} onPress={() => this.onClickNope()}>
+                    <TouchableOpacity style={styles.overlapBtn}>
                         <Icon name='locate' size={25} style={iconCol} />
                     </TouchableOpacity>
                 </View>
