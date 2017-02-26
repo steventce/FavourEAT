@@ -23,7 +23,6 @@ const HomeStack = StackNavigator({
 
 const HomeDrawer = DrawerNavigator({
   Home: { screen: HomeStack },
-  Preferences: { screen: Preferences },
   Swipe: { screen: Swipe }
 }, {
   initialRouteName: 'Home',
