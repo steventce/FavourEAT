@@ -14,14 +14,14 @@ import Swipe from './src/scenes/Swipe';
 const store = configureStore();
 
 const HomeStack = StackNavigator({
-  UserEvents: { screen: UserEvents }
+  UserEvents: { screen: UserEvents },
+  Preferences: { screen: Preferences },
 }, {
   initialRouteName: 'UserEvents'
 });
 
 const HomeDrawer = DrawerNavigator({
   Home: { screen: HomeStack },
-  Preferences: { screen: Preferences },
   Swipe: { screen: Swipe }
 }, {
   initialRouteName: 'Home',

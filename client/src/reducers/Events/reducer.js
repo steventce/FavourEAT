@@ -4,9 +4,17 @@ const initialState = {
   preferences: {
     distance: 5,
     minPrice: 5,
-    maxPrice: 30,
+    maxPrice: 25,
     cuisineTypes: []
-  }
+  },
+  // TODO: need to fetch the list from server
+  allCuisineTypes: [
+    {value: 1, label: 'Chinese'},
+    {value: 2, label: 'Japanese'},
+    {value: 3, label: 'Indian'},
+    {value: 4, label: 'Pizza'},
+    {value: 5, label: 'Barbeque'}
+  ]
 };
 
 const reducer = (state = initialState, action) => {
