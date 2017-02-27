@@ -10,12 +10,14 @@ import Drawer from './src/scenes/Drawer';
 import { UserEvents } from './src/scenes/Events';
 import Preferences from './src/scenes/Events/Preferences';
 import Swipe from './src/scenes/Swipe';
+import Tournament from './src/scenes/Tournament';
 
 const store = configureStore();
 
 const HomeStack = StackNavigator({
   UserEvents: { screen: UserEvents },
   Preferences: { screen: Preferences },
+  Tournament: { screen: Tournament }
 }, {
   initialRouteName: 'UserEvents'
 });

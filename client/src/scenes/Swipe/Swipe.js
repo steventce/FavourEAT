@@ -13,10 +13,10 @@ var shizenya = require('../../images/shizenya.jpg')
 // TODO: get list from props
 const Cards = [
     { name: 'Miku', image: miku, rating: 5 },
-    { name: 'Kishimoto', image: kishimoto, rating: 5 },
+    /*{ name: 'Kishimoto', image: kishimoto, rating: 5 },
     { name: 'Minami', image: minami, rating: 4 },
     { name: 'Suika', image: suika, rating: 4 },
-    { name: 'Shizen Ya', image: shizenya, rating: 4 },
+    { name: 'Shizen Ya', image: shizenya, rating: 4 },*/
 ]
 
 class Swipe extends Component {
@@ -66,6 +66,8 @@ class Swipe extends Component {
 
     onClickYup() {
         this.swiper._goToNextCard();
+        const { navigate } = this.props.navigation;
+        navigate('Tournament');
     }
 
     handleNope(card) {
@@ -79,12 +81,13 @@ class Swipe extends Component {
     noMore() {
         return (
             <Text>No more</Text>
-        )
+        );
+        
     }
 
     render() {
         const { navigate } = this.props.navigation;
-
+        console.log(Cards);
         return (
             <View style={styles.container}>
                 <SwipeCards
