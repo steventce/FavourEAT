@@ -9,6 +9,7 @@ import common from '../../styles/common'
 import styles from './styles';
 
 
+var moment = require('moment');
 // TODO: remove and use url
 var miku = require('../../images/miku.jpg')
 var kishimoto = require('../../images/kishimoto.jpg')
@@ -36,7 +37,6 @@ class RestaurantDetails extends Component {
         this.onClickNope = this.onClickNope.bind(this);
         this.getRating = this.getRating.bind(this);
         this.getHours = this.getHours.bind(this);
-        this.convertTimeStr = this.convertTimeStr.bind(this);
         this.getReviews = this.getReviews.bind(this);
     }
 
@@ -74,24 +74,6 @@ class RestaurantDetails extends Component {
         this.props.navigation.goBack();
     }
 
-    noMore() {
-        return (
-            <Text>No more</Text>
-        )
-    }
-
-    convertTimeStr(time) {
-        var meridian = '';
-        var timeInt = parseInt(time, 10);
-        var minutes = (timeInt % 100 == 0) ? '00' : (timeInt % 100).toString();
-        var hours = function() {
-            var h = Math.floor(timeInt / 100);
-            meridian = (h >= 12) ? 'PM' : 'AM';
-            return (h > 12) ? (h - 12) : h;
-        }
-        return hours().toString() + ':' + minutes + meridian;
-    }
-
     getHours(restaurant) {
         if (!("hours" in restaurant)) {
             return (<Text style={[styles.hours, styles.txtColor]}>No hours available</Text>);
@@ -101,7 +83,7 @@ class RestaurantDetails extends Component {
             var start = restaurant.hours[0]["open"][i].start;
             var end = restaurant.hours[0]["open"][i].end;
             var day = restaurant.hours[0]["open"][i].day;
-            var currResult = hoursMap[day] + ': ' + this.convertTimeStr(start) + ' - ' + this.convertTimeStr(end);
+            var currResult = hoursMap[day] + ': ' + moment(start, "HHmm").format("h:mm A") + ' - ' + moment(end, "HHmm").format("h:mm A");
             result = result + currResult + '\n';
         }
         return (
