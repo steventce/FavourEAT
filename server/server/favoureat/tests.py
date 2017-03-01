@@ -1,8 +1,10 @@
+from django.core.management import call_command
+from django.test import TestCase
 from rest_framework.test import APITestCase
 from rest_framework.test import APIRequestFactory
 from rest_framework.test import force_authenticate
 from rest_framework import status
-from server.models import Swipe
+from server.models import Swipe, Restaurant
 from django.contrib.auth.models import User
 from server.favoureat import views
 
@@ -20,7 +22,7 @@ class UserTests(APITestCase):
         force_authenticate(request, user=user)
 
         view = views.UserView.as_view()
-        response = view(request, pk=user.id)
+        response = view(request, user_id=user.id)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         expected = { 'first_name': '', 'last_name': '', 'id': user_id }
         self.assertEqual(response.data, expected)
@@ -65,7 +67,7 @@ class UserSwipeTests(APITestCase):
         print User.objects.values_list('id', flat=True)
 
         data = {'user': user.id,
-                'yelp_id': 49391,
+                'yelp_id': 'yelp_business',
                 'right_swipe_count': 1,
                 'left_swipe_count': 0}
         url = '/v1/users/' + str(data['user']) + '/swipes/'
@@ -119,3 +121,12 @@ class UserSwipeTests(APITestCase):
         response = view(request, user=user.id)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+class ClearRestaurantCacheTests(TestCase):
+    def test_clear_restaurant_cache(self):
+        """Ensure that the clear cache command removes the json from the Restaurant table"""
+        data = '{"days_of_week": 7}'
+        Restaurant.objects.create(yelp_id='My Restaurant', json=data)
+        self.assertEqual(data, Restaurant.objects.get().json)
+        call_command('clear_restaurant_cache')
+        self.assertEqual(None, Restaurant.objects.get().json)
