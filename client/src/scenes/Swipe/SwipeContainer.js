@@ -24,7 +24,8 @@ class SwipeContainer extends Component {
         const { navigate } = this.props.navigation;
 
         return (
-            <Swipe postSwipe={this.postSwipe.bind(this)} />
+            <Swipe postSwipe={this.postSwipe.bind(this)}
+            navigate={navigate} />
         );
     }
 

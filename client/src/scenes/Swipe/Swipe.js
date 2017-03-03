@@ -125,12 +125,11 @@ class Swipe extends Component {
     };
 
     Card(restaurant) {
-        const { navigate } = this.props.navigation;
         return (
             <View
                 style={[styles.card]}
                 onStartShouldSetResponder={() => true}
-                onResponderRelease={() => navigate('RestaurantDetails', {restaurant: restaurant, caller: this})} >
+                onResponderRelease={() => this.props.navigate('RestaurantDetails', {restaurant: restaurant, caller: this})} >
                 <View
                     style={{ flexDirection: 'row'}} >
                     <Text style={{ fontSize: 40,  color: '#444' }}>{restaurant.name}</Text>
@@ -144,7 +143,7 @@ class Swipe extends Component {
     getRating(restaurant) {
         var icons = []
         for (var i = 0; i < restaurant.rating; i++) {
-            icons.push(<Icon key={restaurant.name + i} name='star'></Icon>);
+            icons.push(<Icon key={restaurant.name + i} name='md-star'></Icon>);
         }
         return (
             <View style={{ flexDirection: 'row' }}>
@@ -153,30 +152,28 @@ class Swipe extends Component {
         );
     }
 
-    handleYup(card) {
-        console.log(card.state.card.yelp_id);
-        console.log(card.state.card.name);
+    handleYup(restaurant) {
+        console.log(restaurant);
         var arr = this.state.rightSwipes.slice();
-        arr.push(card.state.card.yelp_id);
+        arr.push(restaurant.yelp_id);
         this.setState({ rightSwipes: arr });
     }
 
-    onClickYup(card) {
+    onClickYup(restaurant) {
         this.swiper._goToNextCard();
-        this.handleYup(card);
+        this.handleYup(restaurant);
     }
 
-    handleNope(card) {
-        console.log(card.state.card.yelp_id);
-        console.log(card.state.card.name);
+    handleNope(restaurant) {
+        console.log(restaurant);
         var arr = this.state.leftSwipes.slice();
-        arr.push(card.state.card.yelp_id);
+        arr.push(restaurant.yelp_id);
         this.setState({ leftSwipes: arr });
     }
 
-    onClickNope(card) {
+    onClickNope(restaurant) {
         this.swiper._goToNextCard();
-        this.handleNope(card);
+        this.handleNope(restaurant);
     }
 
     noMore() {
@@ -198,14 +195,14 @@ class Swipe extends Component {
 
                     renderCard={(cardData) => this.Card(cardData)}
                     renderNoMoreCards={this.noMore}
-                    handleYup={this.handleYup}
-                    handleNope={this.handleNope}
+                    handleYup={(restaurant) => this.handleYup(restaurant)}
+                    handleNope={(restaurant) => this.handleNope(restaurant)}
                 />
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 5 }}>
-                    <TouchableOpacity style={styles.button} onPress={() => this.onClickNope(this.swiper)}>
+                    <TouchableOpacity style={styles.button} onPress={() => this.onClickNope(this.swiper.state.card)}>
                         <Icon name='close' size={45} color="#888" />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.button} onPress={() => this.onClickYup(this.swiper)}>
+                    <TouchableOpacity style={styles.button} onPress={() => this.onClickYup(this.swiper.state.card)}>
                         <Icon name='heart' size={36} color="#888" />
                     </TouchableOpacity>
                 </View>
