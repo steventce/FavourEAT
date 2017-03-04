@@ -7,7 +7,8 @@ from server.favoureat.serializers import (
     UserSerializer,
     SwipeSerializer,
     RestaurantSerializer,
-    TournamentSerializer
+    TournamentSerializer,
+    EventDetailSerializer
 )
 from server.models import (
     Swipe,
@@ -114,7 +115,7 @@ class IndividualEventView(APIView):
 
     def post(self, request, user_id, format=None):
         """
-        Gets the specified event for a particular user.
+        Creates the specified event for a particular user.
         """
         categories = request.data.get('cuisine_type')
         radius = request.data.get('radius') # Meters
@@ -161,6 +162,50 @@ class IndividualEventView(APIView):
         response = Response(status=status.HTTP_201_CREATED)
         response['Location'] = '/v1/events/{id}'.format(id=event.id)
         return response
+
+
+class EventDetailsView(APIView):
+    def get_object(self, event_id):
+        try:
+            event = Event.objects.get(pk=event_id)
+            event_detail = EventDetail.objects.get(pk=event.event_detail_id)
+            return event, event_detail
+        except Event.DoesNotExist:
+            return Response("Event does not exist", status=status.HTTP_404_NOT_FOUND)
+        except EventDetail.DoesNotExist:
+            return Response("Event detail does not exist", status=status.HTTP_404_NOT_FOUND)
+
+    def get(self, request, user_id, event_id, format=None):
+        """Get an event's event detail."""
+        if User.objects.filter(id=user_id).count() == 0:
+            return Response("User not found", status=status.HTTP_404_NOT_FOUND)
+        event, event_detail = self.get_object(event_id)
+        serializer = EventDetailSerializer(event_detail)
+        return Response(serializer.data)
+
+    def put(self, request, user_id, event_id, format=None):
+        """Updates event detail. Note that only the user who created the event can update the details."""
+        if User.objects.filter(id=user_id).count() == 0:
+            return Response("User not found", status=status.HTTP_404_NOT_FOUND)
+        event, event_detail = self.get_object(event_id)
+        if event.user_id != long(user_id):
+            return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = EventDetailSerializer(event_detail, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, user_id, event_id, format=None):
+        if User.objects.filter(id=user_id).count() == 0:
+            return Response("User not found", status=status.HTTP_404_NOT_FOUND)
+        event, event_detail = self.get_object(event_id)
+        if event.user_id != long(user_id):
+            return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+        event.delete()
+        event_detail.delete()
+        return Response(status=status.HTTP_200_OK)
 
 
 class IndividualTournamentView(APIView):

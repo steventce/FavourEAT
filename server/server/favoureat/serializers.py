@@ -2,7 +2,12 @@ __author__ = 'ncboodah'
 
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from server.models import Swipe, Restaurant, Tournament
+from server.models import (
+    Swipe,
+    Restaurant,
+    Tournament,
+    EventDetail
+)
 
 import json
 
@@ -11,10 +16,12 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'first_name', 'last_name')
 
+
 class SwipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Swipe
         fields = ('id', 'user', 'yelp_id', 'right_swipe_count', 'left_swipe_count')
+
 
 class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:
@@ -31,9 +38,16 @@ class RestaurantSerializer(serializers.ModelSerializer):
 
         return restaurant
 
+
 class TournamentSerializer(serializers.ModelSerializer):
     restaurant = RestaurantSerializer()
 
     class Meta:
         model = Tournament
         fields = ('id', 'restaurant')
+
+
+class EventDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventDetail
+        fields = ('id', 'yelp_id', 'preference', 'datetime', 'name', 'description', 'invite_code', 'voting_deadline')
