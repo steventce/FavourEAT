@@ -2,7 +2,7 @@ __author__ = 'ncboodah'
 
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from server.models import Swipe, Restaurant
+from server.models import Swipe, Restaurant, Tournament
 
 import json
 
@@ -30,3 +30,10 @@ class RestaurantSerializer(serializers.ModelSerializer):
         restaurant.update(id=rid)
 
         return restaurant
+
+class TournamentSerializer(serializers.ModelSerializer):
+    restaurant = RestaurantSerializer()
+
+    class Meta:
+        model = Tournament
+        fields = ('id', 'restaurant')

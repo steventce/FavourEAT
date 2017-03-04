@@ -1,64 +1,106 @@
+import json
+import requests
+
 from django.conf import settings
 from server.models import Restaurant
-from server.favoureat.serializers import RestaurantSerializer
 
-import requests
-import json
-
-class YelpAPIService:
+class YelpAPIService(object):
     """
-    Authorizes against the Yelp API server and caches the response.
-    Currently for testing purposes only.
+    A service class for accessing the Yelp API.
+    Adapted from: https://github.com/Yelp/yelp-fusion/blob/master/fusion/python/sample.py
     """
-    @staticmethod
-    def get_and_save_restaurants():
-        if Restaurant.objects.all().count() > 0:
-            return
+    BASE_URL = 'https://api.yelp.com'
+    TOKEN_PATH = '/oauth2/token'
+    SEARCH_PATH = '/v3/businesses/search'
+    REVIEWS_PATH = '/v3/businesses/{id}/reviews'
+    BUSINESS_PATH = '/v3/businesses/{id}'
 
-        print('Fetching...')
-
-        base_url     = 'https://api.yelp.com'
-        token_url    = '/oauth2/token'
-        search_url   = '/v3/businesses/search?term=delis&latitude=37.786882&longitude=-122.399972'
-        reviews_url  = '/v3/businesses/{id}/reviews'
-        business_url = '/v3/businesses/{id}'
-
+    def get_token(self):
+        """
+        Gets an OAuth2 token from the Yelp API.
+        """
         data = {
             'grant_type': 'client_credentials',
             'client_id': settings.YELP_APP_ID,
             'client_secret': settings.YELP_APP_SECRET
         }
+        token_response = requests.post('{0}{1}'.format(self.BASE_URL, self.TOKEN_PATH), data=data)
+        return token_response.json().get('access_token')
 
-        headers = {
-            'content-type': 'application/x-www-form-urlencoded',
-        }
 
-        token_response = requests.post('{0}{1}'.format(base_url, token_url), data=data)
-        access_token = token_response.json()['access_token']
-
-        # Fetch from the Search API
+    def get_restaurants(self, access_token, params):
+        """
+        Gets restaurants from the Yelp API.
+        """
+        print 'Get restaurants'
         headers = {
             'Authorization': 'Bearer {0}'.format(access_token)
         }
+        search_response = requests.get('{0}{1}'.format(self.BASE_URL, self.SEARCH_PATH) \
+            , params=params, headers=headers)
+        return search_response.json()
 
-        search_response = requests.get('{0}{1}'.format(base_url, search_url), headers=headers)
 
-        for restaurant in search_response.json()['businesses']:
+    def get_details(self, access_token, business_id):
+        """
+        Gets restaurant details from the Yelp API.
+        """
+        print 'Get details'
+        headers = {
+            'Authorization': 'Bearer {0}'.format(access_token)
+        }
+        url = '{0}{1}'.format(self.BASE_URL, self.BUSINESS_PATH.format(id=business_id))
+        business_response = requests.get(url, headers=headers)
+        return business_response.json()
+
+
+    def get_reviews(self, access_token, business_id):
+        """
+        Gets restaurant reviews from the Yelp API.
+        """
+        print 'Get reviews'
+        headers = {
+            'Authorization': 'Bearer {0}'.format(access_token)
+        }
+        url = '{0}{1}'.format(self.BASE_URL, self.REVIEWS_PATH.format(id=business_id))
+        reviews_response = requests.get(url, headers=headers)
+        return reviews_response.json().get('reviews')
+
+
+    def get_and_save_restaurants(self, params, limit):
+        """
+        Retrieves restaurants from the Yelp API based
+        on the passed parameters and caches the restaurants.
+        """
+        print 'Fetching...'
+        # Get the token
+        access_token = self.get_token()
+        # Fetch from the Search API
+        search_results = self.get_restaurants(access_token, params)
+        restaurants = []
+
+        for i, restaurant in enumerate(search_results.get('businesses', [])):
+            yelp_id = restaurant['id']
+
             # Fetch from the Reviews API
-            url = '{0}{1}'.format(base_url, reviews_url.format(id=restaurant['id']))
-
-            reviews_response = requests.get(url, headers=headers)
-            restaurant['reviews'] = reviews_response.json()['reviews']
+            reviews = self.get_reviews(access_token, yelp_id)
+            restaurant['reviews'] = reviews
 
             # Fetch from the Business API
-            url = '{0}{1}'.format(base_url, business_url.format(id=restaurant['id']))
-            business_response = requests.get(url, headers=headers)
-            restaurant['photos'] = business_response.json()['photos']
-            restaurant['hours'] = business_response.json()['hours']
+            details = self.get_details(access_token, yelp_id)
+            if 'photos' in restaurant:
+                restaurant['photos'] = details.get('photos', [])
+            if 'hours' in restaurant:
+                restaurant['hours'] = details.get('hours', [])
 
-            Restaurant.objects.update_or_create(
-                yelp_id=restaurant['id'],
-                defaults={ 'json': json.dumps(restaurant) }
+            saved_restaurant, created = Restaurant.objects.update_or_create(
+                yelp_id=yelp_id,
+                defaults={'json': json.dumps(restaurant)}
             )
 
-        print('Done')
+            restaurants.append(saved_restaurant)
+            if i >= limit:
+                break
+
+        print 'Done'
+        return restaurants
