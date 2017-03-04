@@ -64,13 +64,13 @@ class RestaurantDetails extends Component {
         return icons;
     }
 
-    onClickYup() {
-        this.props.navigation.state.params.caller.onClickYup();
+    onClickYup(restaurant) {
+        this.props.navigation.state.params.caller.onClickYup(restaurant);
         this.props.navigation.goBack();
     }
 
-    onClickNope() {
-        this.props.navigation.state.params.caller.onClickNope();
+    onClickNope(restaurant) {
+        this.props.navigation.state.params.caller.onClickNope(restaurant);
         this.props.navigation.goBack();
     }
 
@@ -134,10 +134,10 @@ class RestaurantDetails extends Component {
                     <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#444' }}>{restaurant.name}</Text>{this.getRating(restaurant.rating, restaurant)}
                     <Text style={{ fontSize: 16,  color: '#444' }}>{restaurant.address}</Text>
                    <View style={styles.swipeBtns}>
-                        <TouchableOpacity style={common.swipeBtn} onPress={() => this.onClickNope()}>
+                        <TouchableOpacity style={common.swipeBtn} onPress={() => this.onClickNope(restaurant)}>
                             <Icon name='close' size={30} style={iconCol} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={common.swipeBtn} onPress={() => this.onClickYup()}>
+                        <TouchableOpacity style={common.swipeBtn} onPress={() => this.onClickYup(restaurant)}>
                             <Icon name='heart' size={28} style={iconCol} />
                         </TouchableOpacity>
                     </View>

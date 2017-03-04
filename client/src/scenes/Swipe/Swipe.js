@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Button, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Container, Icon } from 'native-base';
+import SwipeContainer from './SwipeContainer';
 import SwipeCards from 'react-native-swipe-cards';
 
 // TODO: remove and use url
@@ -12,7 +13,7 @@ var shizenya = require('../../images/shizenya.jpg')
 
 // TODO: get list from props
 const Cards = [
-    { name: 'Miku', image: miku, rating: 5, address: '200 Granville St #70, Vancouver, BC V6C 1S4', phone: "+14152520800",
+    { yelp_id: 1,name: 'Miku', image: miku, rating: 5, address: '200 Granville St #70, Vancouver, BC V6C 1S4', phone: "+14152520800",
 hours: [
     {
       "hours_type": "REGULAR",
@@ -95,10 +96,10 @@ hours: [
 }
 ],
 "total": 3},
-    { name: 'Kishimoto', image: kishimoto, rating: 5 },
-    { name: 'Minami', image: minami, rating: 4 },
-    { name: 'Suika', image: suika, rating: 4 },
-    { name: 'Shizen Ya', image: shizenya, rating: 4 },
+    { yelp_id: 2, name: 'Kishimoto', image: kishimoto, rating: 5 },
+    { yelp_id: 3, name: 'Minami', image: minami, rating: 4 },
+    { yelp_id: 4, name: 'Suika', image: suika, rating: 4 },
+    { yelp_id: 5, name: 'Shizen Ya', image: shizenya, rating: 4 },
 ]
 
 class Swipe extends Component {
@@ -106,12 +107,17 @@ class Swipe extends Component {
         super(props);
 
         this.state = {
-            card: Cards
+            card: Cards,
+            rightSwipes: [],
+            leftSwipes: []
         };
 
+        this.handleYup = this.handleYup.bind(this);
         this.onClickYup = this.onClickYup.bind(this);
+        this.handleNope = this.handleNope.bind(this);
         this.onClickNope = this.onClickNope.bind(this);
         this.getRating = this.getRating.bind(this);
+        this.noMore = this.noMore.bind(this);
     }
 
     static navigationOptions = {
@@ -119,12 +125,11 @@ class Swipe extends Component {
     };
 
     Card(restaurant) {
-        const { navigate } = this.props.navigation;
         return (
             <View
                 style={[styles.card]}
                 onStartShouldSetResponder={() => true}
-                onResponderRelease={() => navigate('RestaurantDetails', {restaurant: restaurant, caller: this})} >
+                onResponderRelease={() => this.props.navigate('RestaurantDetails', {restaurant: restaurant, caller: this})} >
                 <View
                     style={{ flexDirection: 'row'}} >
                     <Text style={{ fontSize: 40,  color: '#444' }}>{restaurant.name}</Text>
@@ -138,7 +143,7 @@ class Swipe extends Component {
     getRating(restaurant) {
         var icons = []
         for (var i = 0; i < restaurant.rating; i++) {
-            icons.push(<Icon key={restaurant.name + i} name='star'></Icon>);
+            icons.push(<Icon key={restaurant.name + i} name='md-star'></Icon>);
         }
         return (
             <View style={{ flexDirection: 'row' }}>
@@ -147,31 +152,41 @@ class Swipe extends Component {
         );
     }
 
-    handleYup(card) {
-        console.log('Yup for ${card.name}');
+    handleYup(restaurant) {
+        console.log(restaurant);
+        var arr = this.state.rightSwipes.slice();
+        arr.push(restaurant.yelp_id);
+        this.setState({ rightSwipes: arr });
     }
 
-    onClickYup() {
+    onClickYup(restaurant) {
         this.swiper._goToNextCard();
+        this.handleYup(restaurant);
     }
 
-    handleNope(card) {
-        console.log('Yup for ${card.restaurantName}');
+    handleNope(restaurant) {
+        console.log(restaurant);
+        var arr = this.state.leftSwipes.slice();
+        arr.push(restaurant.yelp_id);
+        this.setState({ leftSwipes: arr });
     }
 
-    onClickNope() {
-        this.swiper._goToNextCard();        
+    onClickNope(restaurant) {
+        this.swiper._goToNextCard();
+        this.handleNope(restaurant);
     }
 
     noMore() {
+        console.log(this.state.leftSwipes);
+        console.log(this.state.rightSwipes);
+        console.log("sending post");
+        this.props.postSwipe(this.state.leftSwipes, this.state.rightSwipes);
         return (
             <Text>No more</Text>
         )
     }
 
     render() {
-        const { navigate } = this.props.navigation;
-
         return (
             <View style={styles.container}>
                 <SwipeCards
@@ -180,14 +195,14 @@ class Swipe extends Component {
 
                     renderCard={(cardData) => this.Card(cardData)}
                     renderNoMoreCards={this.noMore}
-                    handleYup={this.handleYup}
-                    handleNope={this.handleNope}
+                    handleYup={(restaurant) => this.handleYup(restaurant)}
+                    handleNope={(restaurant) => this.handleNope(restaurant)}
                 />
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 5 }}>
-                    <TouchableOpacity style={styles.button} onPress={() => this.onClickNope()}>
+                    <TouchableOpacity style={styles.button} onPress={() => this.onClickNope(this.swiper.state.card)}>
                         <Icon name='close' size={45} color="#888" />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.button} onPress={() => this.onClickYup()}>
+                    <TouchableOpacity style={styles.button} onPress={() => this.onClickYup(this.swiper.state.card)}>
                         <Icon name='heart' size={36} color="#888" />
                     </TouchableOpacity>
                 </View>
