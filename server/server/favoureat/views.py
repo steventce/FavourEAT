@@ -50,8 +50,12 @@ class UserSwipeView(APIView):
         if User.objects.filter(id=user).count() == 0:
             return Response("User not found", status=status.HTTP_404_NOT_FOUND)
         request.data['user'] = user
-        swipe = Swipe.objects.filter(yelp_id=request.data['yelp_id'], user=request.data['user'])
-        if swipe.exists():
+        swipe = Swipe.objects.filter(yelp_id=request.data['yelp_id'], user=request.data['user']).first()
+        if swipe is not None:
+            if 'right_swipe_count' in request.data.keys():
+                request.data['right_swipe_count'] += swipe.right_swipe_count
+            if 'left_swipe_count' in request.data.keys():
+                request.data['left_swipe_count'] += swipe.left_swipe_count
             serializer = SwipeSerializer(swipe, data=request.data)
         else:
             serializer = SwipeSerializer(None, data=request.data)
@@ -74,7 +78,7 @@ class TokenView(ConvertTokenView):
     https://github.com/PhilipGarnero/django-rest-framework-social-oauth2/blob/master/rest_framework_social_oauth2/views.py
     """
     def post(self, request, format=None):
-        global status
+        global var_status
         if request.user.id is None:
             return Response('User not created', status=status.HTTP_400_BAD_REQUEST)
         request._request.POST = request._request.POST.copy()
@@ -85,10 +89,10 @@ class TokenView(ConvertTokenView):
         request._request.POST['backend'] = 'facebook'
         request._request.POST['token'] = request.data.get('access_token')
 
-        url, headers, body, status = self.create_token_response(request._request)
+        url, headers, body, var_status = self.create_token_response(request._request)
         data = json.loads(body)
         data['user_id'] = request.user.id
-        response = Response(data, status=status)
+        response = Response(data, status=var_status)
 
         for k, v in headers.items():
             response[k] = v

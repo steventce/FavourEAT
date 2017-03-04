@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import {
   StyleSheet,
   Text,
-  View
+  View,
+  Button
 } from 'react-native';
 import styles from './styles';
 
@@ -14,12 +15,15 @@ class UserEvents extends Component {
   };
 
   render() {
+    const { navigate } = this.props.navigation;
     return (
       <View style={styles.container}>
         <Text style={styles.event}>
           Events Screen
         </Text>
-        <Preferences />
+        <Button 
+            onPress={() => navigate('Preferences')}
+            title='Preferences' />
       </View>
     );
   }

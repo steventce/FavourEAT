@@ -10,18 +10,19 @@ import Drawer from './src/scenes/Drawer';
 import { UserEvents } from './src/scenes/Events';
 import Preferences from './src/scenes/Events/Preferences';
 import Swipe from './src/scenes/Swipe';
+import RestaurantDetails from './src/scenes/RestaurantDetails';
 
 const store = configureStore();
 
 const HomeStack = StackNavigator({
-  UserEvents: { screen: UserEvents }
+  UserEvents: { screen: UserEvents },
+  Preferences: { screen: Preferences },
 }, {
   initialRouteName: 'UserEvents'
 });
 
 const HomeDrawer = DrawerNavigator({
   Home: { screen: HomeStack },
-  Preferences: { screen: Preferences },
   Swipe: { screen: Swipe }
 }, {
   initialRouteName: 'Home',
@@ -31,7 +32,8 @@ const HomeDrawer = DrawerNavigator({
 
 const MainStack = StackNavigator({
   Login: { screen: Login },
-  HomeDrawer: { screen: HomeDrawer }
+  HomeDrawer: { screen: HomeDrawer },
+  RestaurantDetails: { screen: RestaurantDetails }
 }, {
   initialRouteName: 'Login',
   backBehavior: 'none',
