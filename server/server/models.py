@@ -21,13 +21,18 @@ class EventDetail(models.Model):
     name = models.CharField(max_length=200, null=False)
     description = models.TextField(null=True, blank=True)
     invite_code = models.CharField(max_length=200, null=True, blank=True)
-    voting_deadline = models.DateField(null=True, blank=True)
+    voting_deadline = models.DateTimeField(null=True, blank=True)
 
 
 class Event(models.Model):
-    user = models.ForeignKey(User)
+    creator = models.ForeignKey(User)
     event_detail = models.ForeignKey(EventDetail)
     round_num = models.IntegerField(default=0)
+
+
+class EventUserAttach(models.Model):
+    user = models.ForeignKey(User)
+    event = models.ForeignKey(Event)
 
 
 class PreferenceCuisine(models.Model):

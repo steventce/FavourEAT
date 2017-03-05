@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.utils import timezone
 from server.favoureat.serializers import (
     UserSerializer,
     SwipeSerializer,
@@ -15,6 +16,7 @@ from server.models import (
     Restaurant,
     Event,
     EventDetail,
+    EventUserAttach,
     Preference,
     PreferenceCuisine,
     Tournament
@@ -188,7 +190,7 @@ class EventDetailsView(APIView):
         if User.objects.filter(id=user_id).count() == 0:
             return Response("User not found", status=status.HTTP_404_NOT_FOUND)
         event, event_detail = self.get_object(event_id)
-        if event.user_id != long(user_id):
+        if int(event.creator_id) != int(user_id):
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
 
         serializer = EventDetailSerializer(event_detail, data=request.data, partial=True)
@@ -201,7 +203,7 @@ class EventDetailsView(APIView):
         if User.objects.filter(id=user_id).count() == 0:
             return Response("User not found", status=status.HTTP_404_NOT_FOUND)
         event, event_detail = self.get_object(event_id)
-        if event.user_id != long(user_id):
+        if event.creator != long(user_id):
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
         event.delete()
         event_detail.delete()
@@ -214,24 +216,81 @@ class IndividualTournamentView(APIView):
 
     HTTP methods: GET, PUT
     """
+    def get_object(self, event_id):
+        try:
+            event = Event.objects.get(pk=event_id)
+            return event
+        except Event.DoesNotExist:
+            return Response("Event does not exist", status=status.HTTP_404_NOT_FOUND)
+
+    def update_next_round(self, event_id, tournament_data):
+        num_participants = EventUserAttach.objects.filter(event=event_id).count()
+        round_completed = True
+        event = Event.objects.get(pk=event_id)
+        if timezone.now() < event.event_detail.voting_deadline:
+            if event.round_num == 0:
+                return False
+            for t in tournament_data:
+                if t[0].vote_count + t[1].vote_count != num_participants:
+                    round_completed = False
+
+        if not round_completed:
+            return False
+
+        event.round_num += 1
+        event.save()
+        # Update restaurants for next tournament round
+        if event.round_num == 1:
+            for t in tournament_data:
+                tournament = Tournament.objects.get(pk=t['id'])
+                if tournament.vote_count > 0:
+                    tournament.vote_count = 0
+                    tournament.save()
+                else:
+                    tournament.delete()
+        else:
+            for t in tournament_data:
+                tournament1 = Tournament.objects.get(pk=t[0]['id'])
+                tournament2 = Tournament.objects.get(pk=t[1]['id'])
+                if tournament1.vote_count == tournament2.vote_count:
+                    tournament1.vote_count = 0
+                    tournament1.save()
+                    tournament2.vote_count = 0
+                    tournament2.save()
+                elif tournament1.vote_count > tournament2.vote_count:
+                    tournament1.vote_count = 0
+                    tournament1.save()
+                    tournament2.delete()
+                else:
+                    tournament2 = Tournament.objects.get(pk=t[1]['id'])
+                    tournament2.save()
+                    tournament1.delete()
+
+        return True
+
     def get(self, request, event_id, format=None):
         """
         Gets the tournament restaurants that will participate in a tournament
         round. In round 0, only a list of restaurants participate. In later
         rounds, restaurants are paired up.
         """
-
+        event = self.get_object(event_id)
         tournaments = Tournament.objects.filter(event_id=event_id)
         data = TournamentSerializer(tournaments, many=True).data
 
-        # Single restaurant swiping stage
-        # return Response(data)
-        # TODO: Handle round 0 and round > 0
+        # If round 0, then return list of restaurants (no pairings)
+        if event.round_num == 0:
+            return Response(data)
 
         # Tournament restaurants swiping stage
-        # TODO: Handle odd number of restaurants
         paired_tournaments_data = [list(x) for x in zip(
             data[:len(data)/2], data[len(data)/2:])]
+        # If there are odd number of restaurants, then carry the extra one to next round.
+        if len(data) % 2 != 0:
+            num_votes = EventUserAttach.objects.filter(event=event_id).count()
+            tournament = Tournament.objects.get(pk=data[len(data) - 1]['id'])
+            tournament.vote_count = num_votes
+            tournament.save()
 
         return Response(paired_tournaments_data)
 
@@ -243,6 +302,11 @@ class IndividualTournamentView(APIView):
             tournament = Tournament.objects.get(pk=tournament_id)
             tournament.vote_count += 1
             tournament.save()
-            return Response()
+            # Check if tournament round is over. If so, handle it.
+            if 'is_finished' in request.data.keys() and request.data['is_finished']:
+                is_round_over = self.update_next_round(event_id, request.data['tournament_data'])
+                if is_round_over:
+                    return Response("Next", status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_200_OK)
         except Tournament.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
