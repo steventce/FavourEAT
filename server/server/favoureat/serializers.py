@@ -6,7 +6,8 @@ from server.models import (
     Swipe,
     Restaurant,
     Tournament,
-    EventDetail
+    EventDetail,
+    Event
 )
 
 import json
@@ -51,3 +52,12 @@ class EventDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventDetail
         fields = ('id', 'yelp_id', 'preference', 'datetime', 'name', 'description', 'invite_code', 'voting_deadline')
+
+
+class EventSerializer(serializers.ModelSerializer):
+    event_detail = EventDetailSerializer()
+    creator = UserSerializer()
+
+    class Meta:
+        model = Event
+        fields = ('id', 'creator', 'event_detail', 'round_num')

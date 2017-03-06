@@ -23,6 +23,8 @@ urlpatterns = [
     url(r'^v1/users/(?P<user_id>[0-9]+)/$', views.UserView.as_view()),
     url(r'^v1/users/(?P<user>[0-9]+)/swipes/$', views.UserSwipeView.as_view()),
     url(r'^v1/users/(?P<user_id>[0-9]+)/events/$',
+        views.EventView.as_view()),
+    url(r'^v1/users/(?P<user_id>[0-9]+)/events/$',
         views.IndividualEventView.as_view()),
     url(r'^v1/users/(?P<user_id>[0-9]+)/events/(?P<event_id>[0-9]+)/$',
         views.EventDetailsView.as_view()),

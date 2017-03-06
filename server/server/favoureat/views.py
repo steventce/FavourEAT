@@ -9,7 +9,8 @@ from server.favoureat.serializers import (
     SwipeSerializer,
     RestaurantSerializer,
     TournamentSerializer,
-    EventDetailSerializer
+    EventDetailSerializer,
+    EventSerializer
 )
 from server.models import (
     Swipe,
@@ -104,7 +105,7 @@ class TokenView(ConvertTokenView):
 
 class IndividualEventView(APIView):
     """
-    A class to handle event operations.
+    A view to handle event operations.
     """
     TERM = 'restaurants'
     YELP_LIMIT = 50
@@ -164,6 +165,20 @@ class IndividualEventView(APIView):
         response = Response(status=status.HTTP_201_CREATED)
         response['Location'] = '/v1/events/{id}'.format(id=event.id)
         return response
+
+
+class EventView(APIView):
+    """
+    A view for retrieving all of a user's events
+    """
+    def get(self, request, user_id, format=None):
+        if int(user_id) != int(request.user.id):
+            return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+        user_event_ids = EventUserAttach.objects.filter(
+            user_id=request.user.id).values_list('event_id', flat=True)
+        events = Event.objects.filter(pk__in=user_event_ids)
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
 
 
 class EventDetailsView(APIView):

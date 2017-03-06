@@ -1,10 +1,17 @@
+from django.utils import timezone
 from django.core.management import call_command
 from django.test import TestCase
 from rest_framework.test import APITestCase
 from rest_framework.test import APIRequestFactory
 from rest_framework.test import force_authenticate
 from rest_framework import status
-from server.models import Swipe, Restaurant
+from server.models import (
+    Swipe,
+    Restaurant,
+    Event,
+    EventDetail,
+    Preference
+)
 from django.contrib.auth.models import User
 from server.favoureat import views
 
@@ -24,13 +31,13 @@ class UserTests(APITestCase):
         view = views.UserView.as_view()
         response = view(request, user_id=user.id)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        expected = { 'first_name': '', 'last_name': '', 'id': user_id }
+        expected = {'first_name': '', 'last_name': '', 'id': user_id}
         self.assertEqual(response.data, expected)
 
     def test_error_no_token(self):
         """ Ensure that the endpoint requires an access token """
         user_id = 2
-        user = User.objects.create(username='bob')
+        User.objects.create(username='bob')
         self.assertEqual(User.objects.count(), 1)
 
         url = ''.join(['/v1/users', '/', str(user_id)])
@@ -50,7 +57,7 @@ class TokenTests(APITestCase):
 
     def test_error_no_token(self):
         """ Ensure that an error is handled elegantly when there is no access token """
-        data = { 'access_token': '' }
+        data = {'access_token': ''}
         url = '/v1/token/'
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -85,7 +92,7 @@ class UserSwipeTests(APITestCase):
         self.assertEqual(Swipe.objects.get().left_swipe_count, data['left_swipe_count'])
 
     def test_error_save_swipe(self):
-        """Ensure that error occurs if we try to save a swipe decision with nonexisting user"""
+        """ Ensure that error occurs if we try to save a swipe decision with nonexisting user """
         user = User.objects.create(pk='139530')
         user.save()
 
@@ -104,7 +111,7 @@ class UserSwipeTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_malformed_save_swipe(self):
-        """Ensure that error occurs if we try to save a swipe decision when data is malformed"""
+        """ Ensure that error occurs if we try to save a swipe decision when data is malformed """
         user = User(pk='139530')
         user.save()
 
@@ -124,9 +131,42 @@ class UserSwipeTests(APITestCase):
 
 class ClearRestaurantCacheTests(TestCase):
     def test_clear_restaurant_cache(self):
-        """Ensure that the clear cache command removes the json from the Restaurant table"""
+        """ Ensure that the clear cache command removes the json from the Restaurant table """
         data = '{"days_of_week": 7}'
         Restaurant.objects.create(yelp_id='My Restaurant', json=data)
         self.assertEqual(data, Restaurant.objects.get().json)
         call_command('clear_restaurant_cache')
         self.assertEqual(None, Restaurant.objects.get().json)
+
+class EventTests(APITestCase):
+    def test_get_user_events(self):
+        """ Ensures that a user can successfully retrieve their events """
+        expected_len = 5
+        user_id = 10
+        user = User(pk=user_id)
+        user.save()
+
+        for index in xrange(expected_len):
+            preference = Preference(radius=1, latitude=2, longitude=3)
+            preference.save()
+
+            event_detail = EventDetail(
+                datetime=timezone.now(),
+                name='My Event Detail {index}'.format(index=index),
+                preference=preference
+            )
+            event_detail.save()
+
+            event = Event(creator=user, event_detail=event_detail, round_num=0)
+            event.save()
+
+            user.eventuserattach_set.create(event=event, user=user)
+
+        factory = APIRequestFactory()
+        request = factory.get('v1/users/{user_id}/events'.join([str(user_id)]))
+        force_authenticate(request, user=user)
+        view = views.EventView.as_view()
+        response = view(request, user_id=user_id)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), expected_len)
