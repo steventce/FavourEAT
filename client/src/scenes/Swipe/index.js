@@ -1,3 +1,3 @@
-import Swipe from './Swipe';
+import SwipeContainer from './SwipeContainer';
 
-export default Swipe;
+export default SwipeContainer;
