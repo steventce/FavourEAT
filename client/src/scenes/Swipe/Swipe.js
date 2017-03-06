@@ -96,10 +96,10 @@ hours: [
 }
 ],
 "total": 3},
-    { yelp_id: 2, name: 'Kishimoto', image: kishimoto, rating: 5 },
+    /*{ yelp_id: 2, name: 'Kishimoto', image: kishimoto, rating: 5 },
     { yelp_id: 3, name: 'Minami', image: minami, rating: 4 },
     { yelp_id: 4, name: 'Suika', image: suika, rating: 4 },
-    { yelp_id: 5, name: 'Shizen Ya', image: shizenya, rating: 4 },
+    { yelp_id: 5, name: 'Shizen Ya', image: shizenya, rating: 4 },*/
 ]
 
 class Swipe extends Component {
@@ -181,10 +181,11 @@ class Swipe extends Component {
         console.log(this.state.rightSwipes);
         console.log("sending post");
         this.props.postSwipe(this.state.leftSwipes, this.state.rightSwipes);
+        // TODO: causes warning
+        this.props.navigate('Tournament');        
         return (
             <Text>No more</Text>
         );
-        
     }
 
     render() {

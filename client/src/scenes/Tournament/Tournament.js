@@ -1,16 +1,25 @@
 import React, { Component } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { Dimensions, Image, StyleSheet, View } from 'react-native';
 import { Container, Content, Icon, Text } from 'native-base';
+import { Col, Grid, Row } from 'react-native-easy-grid';
 import SwipeCards from 'react-native-swipe-cards';
 
 var miku = require('../../images/miku.jpg')
 var kishimoto = require('../../images/kishimoto.jpg')
+var minami = require('../../images/minami.jpg')
+var suika = require('../../images/suika.jpg')
+
+var height = Dimensions.get('window').height;
+var width = Dimensions.get('window').width;
+var borderWidth = 5;
 
 const top = [
-  { name: 'Miku', image: miku, rating: 5 },
+  { yelp_id: 1, name: 'Miku', image: miku, rating: 5 },
+  { yelp_id: 3, name: 'Minami', image: minami, rating: 4 },
 ];
 const bottom = [
-  { name: 'Kishimoto', image: kishimoto, rating: 5 },
+  { yelp_id: 2, name: 'Kishimoto', image: kishimoto, rating: 5 },
+  { yelp_id: 4, name: 'Suika', image: suika, rating: 4 },
 ];
 
 class Tournament extends Component {
@@ -18,9 +27,16 @@ class Tournament extends Component {
     super(props);
 
     this.state = {
-      topCard: top,
-      bottomCard: bottom,
+      topCards: top,
+      bottomCards: bottom,
+      roundOver: false
     };
+
+    this.topHandleYup = this.topHandleYup.bind(this);
+    this.topHandleNope = this.topHandleNope.bind(this);
+    this.botHandleYup = this.botHandleYup.bind(this);
+    this.botHandleNope = this.botHandleNope.bind(this);
+    this.noMore = this.noMore.bind(this);
   }
 
   static navigationOptions = {
@@ -29,71 +45,128 @@ class Tournament extends Component {
 
   Card(restaurant) {
     return (
-      <View style={[styles.card]}>
-        <View style={{ flexDirection: 'row' }} >
+      <View style={{ flexDirection: 'row' }} >
+        <View style={styles.cardImageContainer}>
+          <Image source={restaurant.image} resizeMode="cover" style={styles.cardImage}/>
+        </View>
+        <View style={styles.cardTextContainer}>
           <Text style={{ fontSize: 20, color: '#444' }}>{restaurant.name}</Text>
         </View>
-        <Image source={restaurant.image} resizeMode="cover" style={{ width: 200, height: 200 }} />
       </View>
     )
   }
 
-  handleYup(card) {
-    console.log('Yup for ' + card.name);
+  CardReversed(restaurant) {
+    return (
+      <View style={{ flexDirection: 'row' }} >
+        <View style={styles.cardTextContainer}>
+          <Text style={{ fontSize: 20, color: '#444' }}>{restaurant.name}</Text>
+        </View>
+        <View style={styles.cardImageContainer}>
+          <Image source={restaurant.image} resizeMode="cover" style={styles.cardImage}/>
+        </View>
+      </View>
+    )
   }
 
-  handleNope(card) {
-    console.log('Nope for ' + card.name);
+  topHandleYup(restaurant) {
+    console.log('Yup for ' + restaurant.name);
+    this.botSwiper._goToNextCard();
+  }
+
+  topHandleNope(restaurant) {
+    console.log('Nope for ' + restaurant.name);
+    this.botSwiper._goToNextCard();
+  }
+
+  botHandleYup(restaurant) {
+    console.log('Yup for ' + restaurant.name);
+    this.topSwiper._goToNextCard();
+  }
+
+  botHandleNope(restaurant) {
+    console.log('Nope for ' + restaurant.name);
+    this.topSwiper._goToNextCard();
   }
 
   noMore() {
-    console.log("test");
+    console.log("Round over");
+    this.setState({ roundOver: true });
   }
 
   render() {
     const { navigate } = this.props.navigation;
-    return (
-      <Container>
-        <Content>
-          <View style={styles.container}>
-            <SwipeCards
-              cards={this.state.topCard}
+    if (!this.state.roundOver) {
+      return (
+        <Container>
+          <Content>
+            <Grid>
+              <Row>
+                <View style={styles.container}>
+                  <SwipeCards
+                    ref={(card) => { this.topSwiper = card; }}
+                    cards={this.state.topCards}
 
-              renderCard={(cardData) => this.Card(cardData)}
-              renderNoMoreCards={this.noMore}
-              handleYup={this.handleYup}
-              handleNope={this.handleNope}
-            />
-          </View>
-          <View style={styles.container}>
-            <SwipeCards
-              cards={this.state.bottomCard}
+                    renderCard={(cardData) => this.Card(cardData)}
+                    renderNoMoreCards={this.noMore}
+                    handleYup={this.topHandleYup}
+                    handleNope={this.topHandleNope}
+                  />
+                </View>
+              </Row>
+              <Row>
+                <View style={styles.container}>
+                  <SwipeCards
+                    ref={(card) => { this.botSwiper = card; }}
+                    cards={this.state.bottomCards}
 
-              renderCard={(cardData) => this.Card(cardData)}
-              renderNoMoreCards={this.noMore}
-              handleYup={this.handleYup}
-              handleNope={this.handleNope}
-            />
-          </View>
-        </Content>
-      </Container>
-    );
+                    renderCard={(cardData) => this.CardReversed(cardData)}
+                    renderNoMoreCards={this.noMore}
+                    handleYup={this.botHandleYup}
+                    handleNope={this.botHandleNope}
+                  />
+                </View>
+              </Row>
+            </Grid>
+          </Content>
+        </Container>
+      );
+    } else {
+      return (
+        <Container>
+          <Content>
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <Text>Round over</Text>
+            </View>
+          </Content>
+        </Container>
+      );
+    }
   }
 }
 
+// TODO: don't use hardcoded height
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    flexDirection: 'column',
-    backgroundColor: '#f7f7f7'
+    backgroundColor: '#f7f7f7',
+    alignSelf: 'stretch'
   },
-  card: {
-    flex: 1,
+  cardImageContainer: {
+    width: width / 2,
+    height: 250,
+  },
+  cardTextContainer: {
+    width: width / 2,
+    height: 250,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  cardImage: {
+    width: (width) /2,
+    height: 250,
     borderWidth: 5,
     borderColor: '#d6d7da',
-  }
+  },
 })
 
 export default Tournament;
