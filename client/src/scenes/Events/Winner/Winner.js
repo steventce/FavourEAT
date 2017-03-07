@@ -11,20 +11,23 @@ class Winner extends Component {
   };
 
   static propTypes = {
-    restaurantName: PropTypes.string.isRequired,
-    restaurantImg: PropTypes.node
+    restaurant: PropTypes.object.isRequired
   };
 
   // TODO: remove this after logic to select winner is done
   static defaultProps = {
-    restaurantName: 'Miku',
-    restaurantImg: require('../../../images/miku.jpg'),
+    restaurant: { 
+      yelp_id: 1,
+      name: 'Miku', 
+      image: require('../../../images/miku.jpg'),
+      rating: 5,
+    },
   };
 
   handleContinue = () => {
     // TODO: move onto restaurant details screen of winning restaurant?
-    this.props.navigation.goBack();
-  }
+    this.props.navigation.navigate('UserEvents');
+  };
 
   render() {
     const screen = Dimensions.get('window');
@@ -32,17 +35,18 @@ class Winner extends Component {
       width: screen.width,
       height: screen.height
     };
+    const restaurant = this.props.restaurant;
 
     return (
       <Container>
         <Content contentContainerStyle={styles.content}>
           <View style={styles.container}>
             <Image
-                source={this.props.restaurantImg}
+                source={restaurant.image}
                 resizeMode='cover'
                 style={styles.image} />
             <Text style={styles.text}>
-              {this.props.restaurantName}
+              {restaurant.name}
             </Text>
           </View>
           <TouchableWithoutFeedback
