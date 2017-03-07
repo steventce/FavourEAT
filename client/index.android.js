@@ -9,6 +9,7 @@ import Login from './src/scenes/Login';
 import Drawer from './src/scenes/Drawer';
 import { UserEvents } from './src/scenes/Events';
 import Preferences from './src/scenes/Events/Preferences';
+import Winner from './src/scenes/Events/Winner';
 import Swipe from './src/scenes/Swipe';
 import RestaurantDetails from './src/scenes/RestaurantDetails';
 
@@ -17,6 +18,7 @@ const store = configureStore();
 const HomeStack = StackNavigator({
   UserEvents: { screen: UserEvents },
   Preferences: { screen: Preferences },
+  Winner: { screen: Winner },
 }, {
   initialRouteName: 'UserEvents'
 });
