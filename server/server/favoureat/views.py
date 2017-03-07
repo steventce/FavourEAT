@@ -124,8 +124,16 @@ class IndividualEventView(APIView):
         radius = request.data.get('radius') # Meters
         latitude = request.data.get('latitude')
         longitude = request.data.get('longitude')
+        max_price = request.data.get('max_price')
+        min_price = request.data.get('min_price')
 
-        preference = Preference(radius=radius, latitude=latitude, longitude=longitude)
+        preference = Preference(
+            radius=radius,
+            latitude=latitude,
+            longitude=longitude,
+            min_price=min_price,
+            max_price=max_price
+        )
         preference.save()
 
         event_detail = EventDetail(
@@ -148,7 +156,6 @@ class IndividualEventView(APIView):
             'limit': self.YELP_LIMIT
         }
 
-        max_price = request.data.get('max_price')
         if max_price is not None:
             for threshold in self.PRICE_THRESHOLDS:
                 if max_price <= threshold['price']:
