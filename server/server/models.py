@@ -3,9 +3,11 @@ from django.contrib.auth.models import User
 
 
 class Preference(models.Model):
-    min_price = models.DecimalField(null=True, decimal_places=2, max_digits=5)
-    max_price = models.DecimalField(null=True, decimal_places=2, max_digits=5)
+    min_price = models.DecimalField(null=True, blank=True, decimal_places=2, max_digits=5)
+    max_price = models.DecimalField(null=True, blank=True, decimal_places=2, max_digits=5)
     radius = models.IntegerField(null=False)
+    latitude = models.DecimalField(null=False, decimal_places=6, max_digits=8)
+    longitude = models.DecimalField(null=False, decimal_places=6, max_digits=9)
 
 
 class Cuisine(models.Model):
@@ -13,19 +15,24 @@ class Cuisine(models.Model):
 
 
 class EventDetail(models.Model):
-    yelp_id = models.IntegerField(null=True)
+    yelp_id = models.CharField(max_length=200, null=True, blank=True)
     preference = models.ForeignKey(Preference)
     datetime = models.DateTimeField(null=False)
     name = models.CharField(max_length=200, null=False)
-    description = models.TextField(null=True)
-    invite_code = models.CharField(max_length=200, null=True)
-    voting_deadline = models.DateField(null=True)
+    description = models.TextField(null=True, blank=True)
+    invite_code = models.CharField(max_length=200, null=True, blank=True)
+    voting_deadline = models.DateTimeField(null=True, blank=True)
 
 
 class Event(models.Model):
-    user = models.ForeignKey(User)
+    creator = models.ForeignKey(User)
     event_detail = models.ForeignKey(EventDetail)
     round_num = models.IntegerField(default=0)
+
+
+class EventUserAttach(models.Model):
+    user = models.ForeignKey(User)
+    event = models.ForeignKey(Event)
 
 
 class PreferenceCuisine(models.Model):
@@ -35,14 +42,14 @@ class PreferenceCuisine(models.Model):
 
 class Swipe(models.Model):
     user = models.ForeignKey(User)
-    yelp_id = models.IntegerField(null=False)
+    yelp_id = models.CharField(max_length=200, null=False)
     right_swipe_count = models.IntegerField(default=0)
     left_swipe_count = models.IntegerField(default=0)
 
 
 class Restaurant(models.Model):
-    yelp_id = models.IntegerField(null=False)
-    json = models.TextField(null=True)
+    yelp_id = models.CharField(max_length=200, null=False)
+    json = models.TextField(null=True, blank=True)
 
 
 class Tournament(models.Model):
