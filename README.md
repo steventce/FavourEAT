@@ -43,6 +43,9 @@ DATABASES = {
 } 
 ```
 
+After modifying the `__init__.py` file, run `git update-index --skip-worktree server/server/settings/__init__.py` from the root directory.
+A `__init__.py` is required to be committed in order for Python to recognize that folder as a module, which is needed for loading the production settings properly, but your own personal changes should not be tracked.
+
 Navigate to the folder where `manage.py` file is in and run: 
 ```
 python manage.py migrate

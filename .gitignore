@@ -3,4 +3,3 @@ env/*
 *.pyc
 
 client/src/config/env.js
-server/server/settings/__init__.py
