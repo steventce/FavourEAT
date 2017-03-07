@@ -22,3 +22,16 @@ export function saveSwipe(userId, accessToken, restaurantId, leftCount, rightCou
         .catch((error) => console.error(error))
     }
 };
+
+export function getSwipe(userId, accessToken) {
+    return function (dispatch) {
+        fetch(), {
+
+        }
+        .then((response) => {
+            console.log(response.status);
+            if (!response.ok) throw Error();            
+        })
+        .catch((error) => console.error(error))
+    }
+}
