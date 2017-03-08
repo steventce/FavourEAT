@@ -115,7 +115,7 @@ class Preferences extends Component {
 
     return (
       <Container>
-        <Content>
+        <Content contentContainerStyle={{backgroundColor: 'white'}}>
           <List>
             <SettingsBtn 
                 onPress={this.openModal({

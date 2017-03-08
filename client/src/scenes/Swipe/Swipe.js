@@ -129,7 +129,6 @@ class Swipe extends Component {
 
     Card(restaurant) {
         const screen = Dimensions.get('window');
-        console.error(screen);
         const imageSize = {
           width: Math.round(screen.width * 0.9),
           height: Math.round(screen.height * 0.55),
