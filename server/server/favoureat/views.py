@@ -103,7 +103,7 @@ class TokenView(ConvertTokenView):
         return response
 
 
-class IndividualEventView(APIView):
+class EventView(APIView):
     """
     A view to handle event operations.
     """
@@ -173,11 +173,6 @@ class IndividualEventView(APIView):
         response['Location'] = '/v1/events/{id}'.format(id=event.id)
         return response
 
-
-class EventView(APIView):
-    """
-    A view for retrieving all of a user's events
-    """
     def get(self, request, user_id, format=None):
         if int(user_id) != int(request.user.id):
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
