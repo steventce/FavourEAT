@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
-import { Button, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Button, Image, StyleSheet, Text, TouchableOpacity, View, Dimensions } from 'react-native';
 import { Container, Icon } from 'native-base';
 import SwipeContainer from './SwipeContainer';
 import SwipeCards from 'react-native-swipe-cards';
+
+import commonStyles from '../../styles/common';
+const iconCol = StyleSheet.flatten(commonStyles.iconCol);
 
 // TODO: remove and use url
 var miku = require('../../images/miku.jpg')
@@ -125,16 +128,23 @@ class Swipe extends Component {
     };
 
     Card(restaurant) {
+        const screen = Dimensions.get('window');
+        console.error(screen);
+        const imageSize = {
+          width: Math.round(screen.width * 0.9),
+          height: Math.round(screen.height * 0.55),
+        };
+        const cardSize = {
+          height: Math.round(screen.height * 0.8)
+        };
+      
         return (
-            <View
-                style={[styles.card]}
-                onStartShouldSetResponder={() => true}
-                onResponderRelease={() => this.props.navigate('RestaurantDetails', {restaurant: restaurant, caller: this})} >
+            <View style={[styles.card, cardSize]}>
                 <View
                     style={{ flexDirection: 'row'}} >
                     <Text style={{ fontSize: 40,  color: '#444' }}>{restaurant.name}</Text>
                 </View>
-                <Image source={restaurant.image} resizeMode="cover" style={{ width: 350, height: 350 }} />
+                <Image source={restaurant.image} resizeMode="cover" style={imageSize} />
                 {this.getRating(restaurant)}
             </View>
         )
@@ -143,7 +153,7 @@ class Swipe extends Component {
     getRating(restaurant) {
         var icons = []
         for (var i = 0; i < restaurant.rating; i++) {
-            icons.push(<Icon key={restaurant.name + i} name='md-star'></Icon>);
+            icons.push(<Icon key={restaurant.name + i} name='md-star' style={iconCol}></Icon>);
         }
         return (
             <View style={{ flexDirection: 'row' }}>
@@ -200,10 +210,10 @@ class Swipe extends Component {
                 />
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 5 }}>
                     <TouchableOpacity style={styles.button} onPress={() => this.onClickNope(this.swiper.state.card)}>
-                        <Icon name='close' size={45} color="#888" />
+                        <Icon name='close' size={45} style={iconCol} />
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.button} onPress={() => this.onClickYup(this.swiper.state.card)}>
-                        <Icon name='heart' size={36} color="#888" />
+                        <Icon name='heart' size={36} style={iconCol} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -226,7 +236,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#f7f7f7'
     },
     card: {
-        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 5,
