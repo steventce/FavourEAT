@@ -1,8 +1,8 @@
 import { API_BASE_URL } from '../../config/env';
 
-export function getRound(userId, accessToken) {
+export function getRound(accessToken, eventId) {
     return function (dispatch) {
-        fetch(`${API_BASE_URL}v1/`, {
+        fetch(`${API_BASE_URL}v1/events/${eventId}/tournament/`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -10,21 +10,21 @@ export function getRound(userId, accessToken) {
                 'Authorization': `Bearer ${accessToken}`
             },
             body: JSON.stringify({
-                
+                event_id: eventId
             })
         })
         .then((response) => {
-            console.log(response.status);
+            console.log(response);
             if (!response.ok) throw Error();            
         })
         .catch((error) => console.error(error))
     }
 };
 
-export function postRound(userId, accessToken) {
+export function putRound(accessToken, eventId, tournamentId) {
     return function (dispatch) {
-        fetch(`${API_BASE_URL}v1/`, {
-            method: 'POST',
+        fetch(`${API_BASE_URL}v1/events/${eventId}/tournament/${tournamentId}/`, {
+            method: 'PUT',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
