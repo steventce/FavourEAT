@@ -20,7 +20,8 @@ from server.models import (
     EventUserAttach,
     Preference,
     PreferenceCuisine,
-    Tournament
+    Tournament,
+    Cuisine
 )
 from server.favoureat.recommendation_service import RecommendationService
 from rest_framework.views import APIView
@@ -118,6 +119,9 @@ class EventView(APIView):
     ]
 
     def get(self, request, user_id, format=None):
+        """
+        Gets all of the events associated with the user
+        """
         if int(user_id) != int(request.user.id):
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
         user_event_ids = EventUserAttach.objects.filter(
@@ -130,12 +134,13 @@ class EventView(APIView):
         """
         Creates the specified event for a particular user.
         """
-        categories = request.data.get('cuisine_type')
+        categories = request.data.get('cuisine_types')
         radius = request.data.get('radius') # Meters
         latitude = request.data.get('latitude')
         longitude = request.data.get('longitude')
         max_price = request.data.get('max_price')
         min_price = request.data.get('min_price')
+        name = request.data.get('name')
 
         preference = Preference(
             radius=radius,
@@ -146,9 +151,14 @@ class EventView(APIView):
         )
         preference.save()
 
+        for category in categories:
+            preference_cuisine = PreferenceCuisine(
+                preference=preference, cuisine=Cuisine.objects.get(category=category))
+            preference_cuisine.save()
+
         event_detail = EventDetail(
             datetime=datetime.now(),
-            name=request.data.get('name'),
+            name=name,
             preference=preference
         )
         event_detail.save()
@@ -161,7 +171,7 @@ class EventView(APIView):
 
         params = {
             'term': self.TERM,
-            'categories': categories,
+            'categories': ','.join(categories),
             'radius': radius,
             'latitude': latitude,
             'longitude': longitude,

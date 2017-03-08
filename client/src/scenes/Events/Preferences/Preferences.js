@@ -8,7 +8,7 @@ import SelectList from '../../../components/SelectList';
 import RemovableItemsList from '../../../components/RemovableItemsList';
 
 const priceOptions = [5, 15, 25, 40, 60, 100];
-const distanceOptions = [1, 2, 3, 5, 10, 20];
+const distanceOptions = [0.25, 0.5, 1, 2, 3, 5, 10, 20];
 
 class Preferences extends Component {
   static propTypes = {

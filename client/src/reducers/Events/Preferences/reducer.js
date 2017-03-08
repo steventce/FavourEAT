@@ -9,11 +9,11 @@ const initialState = {
   },
   // TODO: need to fetch the list from server
   allCuisineTypes: [
-    {value: 1, label: 'Chinese'},
-    {value: 2, label: 'Japanese'},
-    {value: 3, label: 'Indian'},
-    {value: 4, label: 'Pizza'},
-    {value: 5, label: 'Barbeque'}
+    {value: 1, label: 'Chinese', category: 'chinese'},
+    {value: 2, label: 'Japanese', category: 'japanese'},
+    {value: 3, label: 'Indian', category: 'indpak'},
+    {value: 4, label: 'Pizza', category: 'pizza'},
+    {value: 5, label: 'Barbeque', category: 'bbq'}
   ],
   status: '',
   eventId: -1

@@ -17,7 +17,8 @@ export function fetchEvents(accessToken, userId) {
     })
     .then((json) => {
       dispatch(fetchEventsSuccess(json));
-    });
+    })
+    .catch((error) => console.log(error));
   }
 }
 

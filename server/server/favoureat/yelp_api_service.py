@@ -36,6 +36,7 @@ class YelpAPIService(object):
         headers = {
             'Authorization': 'Bearer {0}'.format(access_token)
         }
+
         search_response = requests.get('{0}{1}'.format(self.BASE_URL, self.SEARCH_PATH) \
             , params=params, headers=headers)
         return search_response.json()

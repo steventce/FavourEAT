@@ -1,14 +1,22 @@
 import * as actionTypes from './actionTypes';
 import { API_BASE_URL } from '../../../config/env';
 
+const METERS_IN_KILOMETER = 1000;
+
 export function savePreferences(accessToken, userId, preferences) {
   return function (dispatch) {
     const { radius, minPrice, maxPrice, cuisineTypes } = preferences;
+
+    const cuisineTypeData = [];
+    for (var i = 0; i < preferences.cuisineTypes.length; i++) {
+      cuisineTypeData.push(preferences.cuisineTypes[i].category);
+    }
+
     const data = {
-      radius: 100,
+      radius: radius * METERS_IN_KILOMETER,
       min_price: minPrice,
       max_price: maxPrice,
-      cuisine_types: 'chinese',
+      cuisine_types: cuisineTypeData,
       latitude: 49.2827,
       longitude: -123.1207,
       name: 'Test'
