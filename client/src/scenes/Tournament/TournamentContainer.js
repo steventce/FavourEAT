@@ -4,7 +4,10 @@ import { connect } from 'react-redux';
 import Tournament from './Tournament';
 import { getRound, putRound } from '../../reducers/Tournament/actions';
 
-const accessToken = await AsyncStorage.getItem('app_access_token');
+var miku = require('../../images/miku.jpg')
+var kishimoto = require('../../images/kishimoto.jpg')
+var minami = require('../../images/minami.jpg')
+var suika = require('../../images/suika.jpg')
 
 // TODO fetch data
 const topCards = [
@@ -17,7 +20,7 @@ const bottomCards = [
 ];
 
 // TODO fetch data
-var eventId;
+var eventId = 11;
 var tournamentId;
 
 class TournamentContainer extends Component {
@@ -25,11 +28,13 @@ class TournamentContainer extends Component {
     super(props);
     this.state = {
       top: topCards,
-      botom: bottomCards
+      bottom: bottomCards
     }
   }
 
   async getTournamentRound() {
+    const accessToken = await AsyncStorage.getItem('app_access_token');
+    
     try {
       this.props.getRound(accessToken, eventId);
     } catch (error) {
@@ -38,6 +43,8 @@ class TournamentContainer extends Component {
   }
 
   async putTournamentRound() {
+    const accessToken = await AsyncStorage.getItem('app_access_token');
+    
     try {
       this.props.putRound(accessToken, eventId, tournamentId);
     } catch (error) {
@@ -47,14 +54,13 @@ class TournamentContainer extends Component {
 
   render() {
     const { navigate } = this.props.navigation;
-
     return (
       <Tournament postTournamentRound={this.putTournamentRound.bind(this)}
         getTournamentRound={this.getTournamentRound.bind(this)}
         top={this.state.top}
-        bot={this.state.bot} />
+        bot={this.state.bottom} />
     );
   }
 }
 
-export default connect(TournamentContainer);
+export default connect()(TournamentContainer);

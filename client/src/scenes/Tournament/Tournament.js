@@ -1,13 +1,8 @@
 import React, { Component } from 'react';
 import { Dimensions, Image, StyleSheet, View } from 'react-native';
-import { Container, Content, Icon, Text } from 'native-base';
+import { Container, Content, Icon, Spinner, Text } from 'native-base';
 import { Col, Grid, Row } from 'react-native-easy-grid';
 import SwipeCards from 'react-native-swipe-cards';
-
-var miku = require('../../images/miku.jpg')
-var kishimoto = require('../../images/kishimoto.jpg')
-var minami = require('../../images/minami.jpg')
-var suika = require('../../images/suika.jpg')
 
 var height = Dimensions.get('window').height;
 var width = Dimensions.get('window').width;
@@ -20,7 +15,6 @@ class Tournament extends Component {
     this.state = {
       topCards: this.props.top,
       bottomCards: this.props.bot,
-      roundOver: false
     };
 
     this.topHandleYup = this.topHandleYup.bind(this);
@@ -38,7 +32,7 @@ class Tournament extends Component {
     return (
       <View style={{ flexDirection: 'row' }} >
         <View style={styles.cardImageContainer}>
-          <Image source={restaurant.image} resizeMode="cover" style={styles.cardImage}/>
+          <Image source={restaurant.image} resizeMode="cover" style={styles.cardImage} />
         </View>
         <View style={styles.cardTextContainer}>
           <Text style={{ fontSize: 20, color: '#444' }}>{restaurant.name}</Text>
@@ -54,7 +48,7 @@ class Tournament extends Component {
           <Text style={{ fontSize: 20, color: '#444' }}>{restaurant.name}</Text>
         </View>
         <View style={styles.cardImageContainer}>
-          <Image source={restaurant.image} resizeMode="cover" style={styles.cardImage}/>
+          <Image source={restaurant.image} resizeMode="cover" style={styles.cardImage} />
         </View>
       </View>
     )
@@ -82,60 +76,46 @@ class Tournament extends Component {
 
   noMore() {
     console.log("Round over");
-    //this.setState({ roundOver: true });
     return (
-      <Spinner color='red'/>
+      <Spinner color='red' />
     );
   }
 
   render() {
-    const { navigate } = this.props.navigation;
-    //if (!this.state.roundOver) {
-      return (
-        <Container>
-          <Content>
-            <Grid>
-              <Row>
-                <View style={styles.container}>
-                  <SwipeCards
-                    ref={(card) => { this.topSwiper = card; }}
-                    cards={this.state.topCards}
+    return (
+      <Container>
+        <Content>
+          <Grid>
+            <Row>
+              <View style={styles.container}>
+                <SwipeCards
+                  ref={(card) => { this.topSwiper = card; }}
+                  cards={this.state.topCards}
 
-                    renderCard={(cardData) => this.Card(cardData)}
-                    renderNoMoreCards={this.noMore}
-                    handleYup={this.topHandleYup}
-                    handleNope={this.topHandleNope}
-                  />
-                </View>
-              </Row>
-              <Row>
-                <View style={styles.container}>
-                  <SwipeCards
-                    ref={(card) => { this.botSwiper = card; }}
-                    cards={this.state.bottomCards}
+                  renderCard={(cardData) => this.Card(cardData)}
+                  renderNoMoreCards={this.noMore}
+                  handleYup={this.topHandleYup}
+                  handleNope={this.topHandleNope}
+                />
+              </View>
+            </Row>
+            <Row>
+              <View style={styles.container}>
+                <SwipeCards
+                  ref={(card) => { this.botSwiper = card; }}
+                  cards={this.state.bottomCards}
 
-                    renderCard={(cardData) => this.CardReversed(cardData)}
-                    renderNoMoreCards={this.noMore}
-                    handleYup={this.botHandleYup}
-                    handleNope={this.botHandleNope}
-                  />
-                </View>
-              </Row>
-            </Grid>
-          </Content>
-        </Container>
-      );
-    /*} else {
-      return (
-        <Container>
-          <Content>
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <Text>Round over</Text>
-            </View>
-          </Content>
-        </Container>
-      );
-    }*/
+                  renderCard={(cardData) => this.CardReversed(cardData)}
+                  renderNoMoreCards={this.noMore}
+                  handleYup={this.botHandleYup}
+                  handleNope={this.botHandleNope}
+                />
+              </View>
+            </Row>
+          </Grid>
+        </Content>
+      </Container>
+    );
   }
 }
 
@@ -156,7 +136,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cardImage: {
-    width: (width) /2,
+    width: (width) / 2,
     height: 250,
     borderWidth: 5,
     borderColor: '#d6d7da',

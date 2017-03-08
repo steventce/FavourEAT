@@ -1,3 +1,3 @@
-import Tournament from './Tournament';
+import TournamentContainer from './TournamentContainer';
 
-export default Tournament;
+export default TournamentContainer;

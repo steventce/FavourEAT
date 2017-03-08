@@ -13,7 +13,7 @@ var suika = require('../../images/suika.jpg')
 var shizenya = require('../../images/shizenya.jpg')
 
 // TODO: fetch this data;
-var eventId = 7;
+var eventId = 11;
 var tournamentId = 5;
 
 // TODO: fetch this data;
@@ -144,16 +144,16 @@ class SwipeContainer extends Component {
     async nextRound() {
       try{
         const accessToken = await AsyncStorage.getItem('app_access_token');
-        this.props.dispatch(putRound(accessToken, eventId, tournamentId));
-        this.props.navigation.navigate('Tournament');        
+        //this.props.dispatch(putRound(accessToken, eventId, tournamentId));
       } catch (error) {
         Alert.alert('Error', error.message);        
       }
+      this.props.navigation.navigate('Tournament');        
     }
 
     render() {
         const { navigate } = this.props.navigation;
-
+        this.getInitialSwipe();
         return (
             <Swipe postSwipe={this.postSwipe.bind(this)}
             nextRound={this.nextRound.bind(this)}

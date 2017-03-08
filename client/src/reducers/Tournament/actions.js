@@ -8,10 +8,7 @@ export function getRound(accessToken, eventId) {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`
-            },
-            body: JSON.stringify({
-                event_id: eventId
-            })
+            }
         })
         .then((response) => {
             console.log(response);
