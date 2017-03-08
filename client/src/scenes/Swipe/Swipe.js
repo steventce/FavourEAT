@@ -202,6 +202,11 @@ class Swipe extends Component {
                     ref={(card) => { this.swiper = card; }}
                     cards={this.state.card}
 
+                    onClickHandler={() => this.props.navigate('RestaurantDetails', {
+                      restaurant: this.swiper.state.card, 
+                      caller: this,
+                      swipeable: true,
+                    })}
                     renderCard={(cardData) => this.Card(cardData)}
                     renderNoMoreCards={this.noMore}
                     handleYup={(restaurant) => this.handleYup(restaurant)}

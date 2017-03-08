@@ -24,6 +24,9 @@ class UserEvents extends Component {
         <Button 
             onPress={() => navigate('Preferences')}
             title='Preferences' />
+        <Button 
+            onPress={() => navigate('Winner')}
+            title='Winner' />
       </View>
     );
   }
