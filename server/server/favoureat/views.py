@@ -106,9 +106,8 @@ class TokenView(ConvertTokenView):
 
 class EventView(APIView):
     """
-    A view for handling events
+    A view to handle event operations.
     """
-
     TERM = 'restaurants'
     YELP_LIMIT = 50
     PRICE_THRESHOLDS = [

@@ -9,6 +9,7 @@ import Login from './src/scenes/Login';
 import Drawer from './src/scenes/Drawer';
 import { UserEvents } from './src/scenes/Events';
 import Preferences from './src/scenes/Events/Preferences';
+import Winner from './src/scenes/Events/Winner';
 import Swipe from './src/scenes/Swipe';
 import RestaurantDetails from './src/scenes/RestaurantDetails';
 
@@ -33,7 +34,8 @@ const HomeDrawer = DrawerNavigator({
 const MainStack = StackNavigator({
   Login: { screen: Login },
   HomeDrawer: { screen: HomeDrawer },
-  RestaurantDetails: { screen: RestaurantDetails }
+  RestaurantDetails: { screen: RestaurantDetails },
+  Winner: { screen: Winner },
 }, {
   initialRouteName: 'Login',
   backBehavior: 'none',
