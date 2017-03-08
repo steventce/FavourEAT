@@ -20,7 +20,7 @@ const bottomCards = [
 ];
 
 // TODO fetch data
-var eventId = 11;
+var eventId = 8;
 var tournamentId;
 
 class TournamentContainer extends Component {
@@ -63,4 +63,8 @@ class TournamentContainer extends Component {
   }
 }
 
-export default connect()(TournamentContainer);
+const mapStateToPProps = function(state) {
+  return state.rounds;
+}
+
+export default connect(mapStateToPProps)(TournamentContainer);
