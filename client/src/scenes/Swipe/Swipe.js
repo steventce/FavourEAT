@@ -29,9 +29,7 @@ class Swipe extends Component {
     Card(restaurant) {
         return (
             <View
-                style={[styles.card]}
-                onStartShouldSetResponder={() => true}
-                onResponderRelease={() => this.props.navigate('RestaurantDetails', {restaurant: restaurant, caller: this})} >
+                style={[styles.card]}>
                 <View
                     style={{ flexDirection: 'row'}} >
                     <Text style={{ fontSize: 40,  color: '#444' }}>{restaurant.name}</Text>
@@ -97,6 +95,11 @@ class Swipe extends Component {
                     ref={(card) => { this.swiper = card; }}
                     cards={this.state.card}
 
+                    onClickHandler={() => this.props.navigate('RestaurantDetails', {
+                      restaurant: this.swiper.state.card, 
+                      caller: this,
+                      swipeable: true,
+                    })}
                     renderCard={(cardData) => this.Card(cardData)}
                     renderNoMoreCards={this.noMore}
                     handleYup={(restaurant) => this.handleYup(restaurant)}
