@@ -2,7 +2,7 @@ import * as actionTypes from './actionTypes';
 
 const initialState = {
   preferences: {
-    distance: 5,
+    radius: 5,
     minPrice: 5,
     maxPrice: 25,
     cuisineTypes: []
@@ -14,11 +14,19 @@ const initialState = {
     {value: 3, label: 'Indian'},
     {value: 4, label: 'Pizza'},
     {value: 5, label: 'Barbeque'}
-  ]
+  ],
+  status: '',
+  eventId: -1
 };
 
 const reducer = (state = initialState, action) => {
   switch(action.type) {
+    case actionTypes.SAVE_PREFERENCES_SUCCESS:
+      return {
+        ...state,
+        status: action.status,
+        eventId: action.eventId
+      };
     case actionTypes.SAVE_PREFERENCES:
       return {
         ...state,
@@ -32,7 +40,7 @@ const reducer = (state = initialState, action) => {
           distance: action.radius
         }
       };
-    default: 
+    default:
       return state;
   }
 };
