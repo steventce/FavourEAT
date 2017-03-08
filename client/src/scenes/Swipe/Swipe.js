@@ -139,12 +139,20 @@ class Swipe extends Component {
       
         return (
             <View style={[styles.card, cardSize]}>
-                <View
-                    style={{ flexDirection: 'row'}} >
-                    <Text style={{ fontSize: 40,  color: '#444' }}>{restaurant.name}</Text>
+                <View>
+                  <Image source={restaurant.image} resizeMode="cover" style={[imageSize, styles.image]} />
                 </View>
-                <Image source={restaurant.image} resizeMode="cover" style={imageSize} />
-                {this.getRating(restaurant)}
+                <View style={[styles.cardMeta]}>
+                  <View
+                      style={{ flexDirection: 'row'}} >
+                      <Text 
+                          numberOfLines={3}
+                          style={styles.restaurantName}>
+                        {restaurant.name}
+                      </Text>
+                  </View>
+                  {this.getRating(restaurant)}
+                </View>
             </View>
         )
     }
@@ -212,12 +220,12 @@ class Swipe extends Component {
                     handleYup={(restaurant) => this.handleYup(restaurant)}
                     handleNope={(restaurant) => this.handleNope(restaurant)}
                 />
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 5 }}>
-                    <TouchableOpacity style={styles.button} onPress={() => this.onClickNope(this.swiper.state.card)}>
-                        <Icon name='close' size={45} style={iconCol} />
+                <View style={styles.actionBtns}>
+                    <TouchableOpacity style={[styles.button, styles.noBtn]} onPress={() => this.onClickNope(this.swiper.state.card)}>
+                        <Icon name='close' size={45} style={StyleSheet.flatten(styles.btnIcon)} />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.button} onPress={() => this.onClickYup(this.swiper.state.card)}>
-                        <Icon name='heart' size={36} style={iconCol} />
+                    <TouchableOpacity style={[styles.button, styles.yesBtn]} onPress={() => this.onClickYup(this.swiper.state.card)}>
+                        <Icon name='heart' size={36} style={StyleSheet.flatten(styles.btnIcon)} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -229,21 +237,47 @@ const styles = StyleSheet.create({
     button: {
         width: 80,
         height: 80,
-        borderWidth: 10,
-        borderColor: '#e7e7e7',
+        margin: 5,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 40
     },
+    noBtn: {
+      backgroundColor: '#6C8CE6'
+    },
+    yesBtn: {
+      backgroundColor: '#F36D6D'
+    },
+    btnIcon: {
+      color: 'white'
+    },
     container: {
         flex: 1,
-        backgroundColor: '#f7f7f7'
+        backgroundColor: '#B8B8B8'
     },
     card: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 5,
-        borderColor: '#d6d7da',
+        backgroundColor: '#f7f7f7',
+        borderRadius: 10,
+    },
+    image: {
+      borderTopLeftRadius: 10,
+      borderTopRightRadius: 10,
+      overflow: 'hidden',
+    },
+    actionBtns: {
+      flexDirection: 'row', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      marginTop: 5, 
+    },
+    cardMeta: {
+      flex: 1,
+      justifyContent: 'center',
+      marginLeft: 20
+    },
+    restaurantName: {
+      fontSize: 35,  
+      color: '#444', 
     }
 })
 
