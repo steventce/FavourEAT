@@ -4,19 +4,25 @@ import {
   StyleSheet,
   Text,
   View,
-  Button,
   Alert,
-  AsyncStorage
+  AsyncStorage,
+  TouchableNativeFeedback
 } from 'react-native';
 import {
   Container,
   Content,
   ListItem,
-  Thumbnail
+  Thumbnail,
+  Button,
+  Left,
+  Right,
+  Body
 } from 'native-base';
 import moment from 'moment';
 import { fetchEvents } from '../../../reducers/Events/UserEvents/actions';
+import { colors } from '../../../styles/common';
 import styles from './styles';
+import { logo, thumbnail } from '../../../config/images';
 
 import Preferences from '../Preferences/index';
 
@@ -44,23 +50,31 @@ class UserEvents extends Component {
     return (
       <Container>
         <Content>
-          <View style={styles.container}>
+          <View style={{ backgroundColor: colors.APP_PRIMARY_LIGHT }}>
+            <Thumbnail size={100} source={thumbnail} style={{ alignSelf: 'center', marginTop: 40 }} />
             <Text style={styles.event}>
-              Events Screen
+              Your Events
             </Text>
-            <Button
-                onPress={() => navigate('Preferences')}
-                title='Start Session' />
-            <Button
-                onPress={() => navigate('Preferences')}
-                title='Create Event' />
+            <View style={styles.btnContainer}>
+              <Button success onPress={() => navigate('Preferences')}>
+                <Text>Start Session</Text>
+              </Button>
+            </View>
           </View>
           {events.map((event) => {
             const { id, name, datetime } = event.event_detail;
             return (
-              <ListItem key={id}>
-                <Text>{name}</Text>
-                <Text>{moment(datetime).format('DD-MM-YYYY')}</Text>
+              <ListItem key={id} style={{ margin: 0, padding: 0 }}>
+                <TouchableNativeFeedback onPress={() => {}}>
+                  <View style={styles.container}>
+                    <Left>
+                      <Text>{name}</Text>
+                    </Left>
+                    <Right>
+                      <Text>{moment(datetime).format('MMM Do YY, h:mm a')}</Text>
+                    </Right>
+                  </View>
+                </TouchableNativeFeedback>
               </ListItem>
             );
           })}

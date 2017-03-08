@@ -122,7 +122,7 @@ class EventView(APIView):
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
         user_event_ids = EventUserAttach.objects.filter(
             user_id=request.user.id).values_list('event_id', flat=True)
-        events = Event.objects.filter(pk__in=user_event_ids)
+        events = Event.objects.filter(pk__in=user_event_ids).order_by('-event_detail__datetime')
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data)
 
