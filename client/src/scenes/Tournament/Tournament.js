@@ -13,22 +13,13 @@ var height = Dimensions.get('window').height;
 var width = Dimensions.get('window').width;
 var borderWidth = 5;
 
-const top = [
-  { yelp_id: 1, name: 'Miku', image: miku, rating: 5 },
-  { yelp_id: 3, name: 'Minami', image: minami, rating: 4 },
-];
-const bottom = [
-  { yelp_id: 2, name: 'Kishimoto', image: kishimoto, rating: 5 },
-  { yelp_id: 4, name: 'Suika', image: suika, rating: 4 },
-];
-
 class Tournament extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      topCards: top,
-      bottomCards: bottom,
+      topCards: this.props.top,
+      bottomCards: this.props.bot,
       roundOver: false
     };
 
@@ -91,12 +82,15 @@ class Tournament extends Component {
 
   noMore() {
     console.log("Round over");
-    this.setState({ roundOver: true });
+    //this.setState({ roundOver: true });
+    return (
+      <Spinner color='red'/>
+    );
   }
 
   render() {
     const { navigate } = this.props.navigation;
-    if (!this.state.roundOver) {
+    //if (!this.state.roundOver) {
       return (
         <Container>
           <Content>
@@ -131,7 +125,7 @@ class Tournament extends Component {
           </Content>
         </Container>
       );
-    } else {
+    /*} else {
       return (
         <Container>
           <Content>
@@ -141,7 +135,7 @@ class Tournament extends Component {
           </Content>
         </Container>
       );
-    }
+    }*/
   }
 }
 

@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { Alert, AsyncStorage } from 'react-native';
 import { connect } from 'react-redux';
 import Swipe from './Swipe';
-import { getSwipe, saveSwipe } from '../../reducers/Swipe/actions';
+import { saveSwipe } from '../../reducers/Swipe/actions';
+import { getRound, putRound } from '../../reducers/Tournament/actions';
 
 // TODO: remove and use url
 var miku = require('../../images/miku.jpg')
@@ -11,7 +12,11 @@ var minami = require('../../images/minami.jpg')
 var suika = require('../../images/suika.jpg')
 var shizenya = require('../../images/shizenya.jpg')
 
-// TODO: get list from server
+// TODO: fetch this data;
+var eventId = 7;
+var tournamentId = 5;
+
+// TODO: fetch this data;
 const Cards = [
     { yelp_id: 1,name: 'Miku', image: miku, rating: 5, address: '200 Granville St #70, Vancouver, BC V6C 1S4', phone: "+14152520800",
 hours: [
@@ -110,6 +115,7 @@ class SwipeContainer extends Component {
         }
     }
 
+    // NOT USED FOR DEMO
     async postSwipe(leftSwipes, rightSwipes) {
         try {
             const userId = await AsyncStorage.getItem('user_id');
@@ -120,17 +126,29 @@ class SwipeContainer extends Component {
             for (var i = 0; i < rightSwipes.length; i++) {
                 this.props.dispatch(saveSwipe(userId, accessToken, rightSwipes[i], 0, 1));
             }
+
         } catch (error) {
             Alert.alert('Error', error.message);
         }
     }
 
-    async getSwipe() {
+    async getInitialSwipe() {
         try {
-
+          const accessToken = await AsyncStorage.getItem('app_access_token');          
+          this.props.dispatch(getRound(accessToken, eventId));
         } catch (error) {
             Alert.alert('Error', error.message);
         }
+    }
+
+    async nextRound() {
+      try{
+        const accessToken = await AsyncStorage.getItem('app_access_token');
+        this.props.dispatch(putRound(accessToken, eventId, tournamentId));
+        this.props.navigation.navigate('Tournament');        
+      } catch (error) {
+        Alert.alert('Error', error.message);        
+      }
     }
 
     render() {
@@ -138,6 +156,7 @@ class SwipeContainer extends Component {
 
         return (
             <Swipe postSwipe={this.postSwipe.bind(this)}
+            nextRound={this.nextRound.bind(this)}
             navigate={navigate}
             Cards={this.state.cards} />
         );

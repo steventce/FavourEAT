@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Button, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Container, Icon } from 'native-base';
+import { Container, Icon, Spinner } from 'native-base';
 import SwipeContainer from './SwipeContainer';
 import SwipeCards from 'react-native-swipe-cards';
 
@@ -79,12 +79,11 @@ class Swipe extends Component {
     noMore() {
         console.log(this.state.leftSwipes);
         console.log(this.state.rightSwipes);
-        console.log("sending post");
-        this.props.postSwipe(this.state.leftSwipes, this.state.rightSwipes);
-        // TODO: causes warning
-        this.props.navigate('Tournament');        
+        // NOT USED FOR DEMO
+        //this.props.postSwipe(this.state.leftSwipes, this.state.rightSwipes);
+        this.props.nextRound();
         return (
-            <Text>No more</Text>
+            <Spinner color='red'/>
         );
     }
 
