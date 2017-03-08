@@ -156,6 +156,8 @@ class EventView(APIView):
         user = User.objects.get(pk=user_id)
         event = Event(creator=user, event_detail=event_detail, round_num=0)
         event.save()
+        event_user_attach = EventUserAttach(user=user, event=event)
+        event_user_attach.save()
 
         params = {
             'term': self.TERM,
