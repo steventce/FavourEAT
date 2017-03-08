@@ -129,7 +129,11 @@ class Swipe extends Component {
             <View
                 style={[styles.card]}
                 onStartShouldSetResponder={() => true}
-                onResponderRelease={() => this.props.navigate('RestaurantDetails', {restaurant: restaurant, caller: this})} >
+                onResponderRelease={() => this.props.navigate('RestaurantDetails', {
+                  restaurant: restaurant, 
+                  caller: this,
+                  swipeable: true,
+                })} >
                 <View
                     style={{ flexDirection: 'row'}} >
                     <Text style={{ fontSize: 40,  color: '#444' }}>{restaurant.name}</Text>

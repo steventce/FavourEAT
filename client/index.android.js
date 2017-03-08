@@ -18,7 +18,6 @@ const store = configureStore();
 const HomeStack = StackNavigator({
   UserEvents: { screen: UserEvents },
   Preferences: { screen: Preferences },
-  Winner: { screen: Winner },
 }, {
   initialRouteName: 'UserEvents'
 });
@@ -35,7 +34,8 @@ const HomeDrawer = DrawerNavigator({
 const MainStack = StackNavigator({
   Login: { screen: Login },
   HomeDrawer: { screen: HomeDrawer },
-  RestaurantDetails: { screen: RestaurantDetails }
+  RestaurantDetails: { screen: RestaurantDetails },
+  Winner: { screen: Winner },
 }, {
   initialRouteName: 'Login',
   backBehavior: 'none',

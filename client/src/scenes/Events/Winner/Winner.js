@@ -1,7 +1,17 @@
 import React, { Component, PropTypes } from 'react';
 import { Text, Image, View, TouchableWithoutFeedback, Dimensions } from 'react-native';
+import { NavigationActions } from 'react-navigation';
 import { Container, Content } from 'native-base'
 import styles from './styles';
+
+//TODO: Remove later when tournament is done and connected
+const testRestaurant = { 
+  yelp_id: 1,
+  name: 'Miku', 
+  image: require('../../../images/miku.jpg'),
+  rating: 5,
+};
+
 
 class Winner extends Component {
   static navigationOptions = {
@@ -10,23 +20,15 @@ class Winner extends Component {
     }
   };
 
-  static propTypes = {
-    restaurant: PropTypes.object.isRequired
-  };
-
-  // TODO: remove this after logic to select winner is done
-  static defaultProps = {
-    restaurant: { 
-      yelp_id: 1,
-      name: 'Miku', 
-      image: require('../../../images/miku.jpg'),
-      rating: 5,
-    },
-  };
-
-  handleContinue = () => {
-    // TODO: move onto restaurant details screen of winning restaurant?
-    this.props.navigation.navigate('UserEvents');
+  handleContinue = (restaurant) => {
+    const resetAction = NavigationActions.reset({
+      index: 1,
+      actions: [
+        NavigationActions.navigate({ routeName: 'HomeDrawer'}),
+        NavigationActions.navigate({ routeName: 'RestaurantDetails', params: { restaurant: restaurant }})
+      ]
+    })
+    this.props.navigation.dispatch(resetAction);
   };
 
   render() {
@@ -35,7 +37,9 @@ class Winner extends Component {
       width: screen.width,
       height: screen.height
     };
-    const restaurant = this.props.restaurant;
+
+    // const restaurant = this.props.navigation.state.params.restaurant;
+    const restaurant = testRestaurant;
 
     return (
       <Container>
@@ -50,7 +54,7 @@ class Winner extends Component {
             </Text>
           </View>
           <TouchableWithoutFeedback
-              onPress={this.handleContinue}>
+              onPress={() => this.handleContinue(restaurant)}>
             <View style={[styles.overlay, screenSize]} />
           </TouchableWithoutFeedback>
         </Content>

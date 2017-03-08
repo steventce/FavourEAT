@@ -116,6 +116,8 @@ class RestaurantDetails extends Component {
     render() {
         const { navigate } = this.props.navigation;
         const restaurant = this.props.navigation.state.params.restaurant;
+        const swipeable = this.props.navigation.state.params.swipeable;
+
         return (
             <ScrollView style={styles.container}>
                 <View style={styles.imgContainer}>
@@ -133,14 +135,16 @@ class RestaurantDetails extends Component {
                 <View style={[styles.card]}>
                     <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#444' }}>{restaurant.name}</Text>{this.getRating(restaurant.rating, restaurant)}
                     <Text style={{ fontSize: 16,  color: '#444' }}>{restaurant.address}</Text>
-                   <View style={styles.swipeBtns}>
-                        <TouchableOpacity style={common.swipeBtn} onPress={() => this.onClickNope(restaurant)}>
-                            <Icon name='close' size={30} style={iconCol} />
-                        </TouchableOpacity>
-                        <TouchableOpacity style={common.swipeBtn} onPress={() => this.onClickYup(restaurant)}>
-                            <Icon name='heart' size={28} style={iconCol} />
-                        </TouchableOpacity>
-                    </View>
+                   {swipeable &&
+                       <View style={styles.swipeBtns}>
+                            <TouchableOpacity style={common.swipeBtn} onPress={() => this.onClickNope(restaurant)}>
+                                <Icon name='close' size={30} style={iconCol} />
+                            </TouchableOpacity>
+                            <TouchableOpacity style={common.swipeBtn} onPress={() => this.onClickYup(restaurant)}>
+                                <Icon name='heart' size={28} style={iconCol} />
+                            </TouchableOpacity>
+                        </View>
+                   }
                 </View>
                 <View style={styles.infoView}>
                     <Hr lineColor='#b3b3b3' />
