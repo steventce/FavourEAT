@@ -15,7 +15,7 @@ var shizenya = require('../../images/shizenya.jpg')
 
 // TODO: get list from props
 const Cards = [
-    { yelp_id: 1,name: 'Hokkaido Ramen Santouka', image: miku, rating: 5, address: '200 Granville St #70, Vancouver, BC V6C 1S4', phone: "+14152520800",
+    { yelp_id: 1,name: 'Miku', image: miku, rating: 5, address: '200 Granville St #70, Vancouver, BC V6C 1S4', phone: "+14152520800",
 hours: [
     {
       "hours_type": "REGULAR",
@@ -129,11 +129,12 @@ class Swipe extends Component {
     Card(restaurant) {
         const screen = Dimensions.get('window');
         const imageSize = {
-          width: Math.round(screen.width * 0.9),
+          width: Math.round(screen.width * 0.95),
           height: Math.round(screen.height * 0.55),
         };
         const cardSize = {
-          height: Math.round(screen.height * 0.8)
+          height: Math.round(screen.height * 0.8),
+          width: Math.round(screen.width * 0.95)
         };
       
         return (
@@ -142,14 +143,12 @@ class Swipe extends Component {
                   <Image source={restaurant.image} resizeMode="cover" style={[imageSize, styles.image]} />
                 </View>
                 <View style={[styles.cardMeta]}>
-                  <View
-                      style={{ flexDirection: 'row'}} >
-                      <Text 
-                          numberOfLines={3}
-                          style={styles.restaurantName}>
-                        {restaurant.name}
-                      </Text>
-                  </View>
+                  <Text 
+                      numberOfLines={3}
+                      style={styles.restaurantName}>
+                    {restaurant.name}
+                  </Text>
+      
                   {this.getRating(restaurant)}
                 </View>
             </View>
@@ -272,10 +271,10 @@ const styles = StyleSheet.create({
     cardMeta: {
       flex: 1,
       justifyContent: 'center',
-      marginLeft: 20
+      paddingHorizontal: 20
     },
     restaurantName: {
-      fontSize: 35,  
+      fontSize: 30,  
       color: '#444', 
     }
 })
