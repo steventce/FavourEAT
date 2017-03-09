@@ -41,9 +41,7 @@ class TournamentContainer extends Component {
           if (restaurants.length == 1) {
             this.props.navigation.navigate('Winner', { restaurant: restaurants[0].restaurant });
           } else {
-            this.setState({ topCards: [] });
-            this.setState({ botCards: [] });
-            this.getTournamentRound();
+            this.setState({ topCards: [], botCards: [] }, () => this.getTournamentRound());
           }
         }));
     } catch (error) {
