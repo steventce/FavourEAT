@@ -61,10 +61,6 @@ class UserEvents extends Component {
                 onPress={() => navigate('Preferences')}>
                 <Text>Start Session</Text>
               </Button>
-              <Button success style={{ margin: 10 }}
-                onPress={() => navigate('Winner')}>
-                <Text>Winner</Text>
-              </Button>
             </View>
           </View>
           {events.map((event) => {
