@@ -15,6 +15,7 @@ class Tournament extends Component {
     this.state = {
       topCards: this.props.top,
       bottomCards: this.props.bot,
+      swiped: []
     };
 
     this.topHandleYup = this.topHandleYup.bind(this);
@@ -32,7 +33,7 @@ class Tournament extends Component {
     return (
       <View style={{ flexDirection: 'row' }} >
         <View style={styles.cardImageContainer}>
-          <Image source={restaurant.image} resizeMode="cover" style={styles.cardImage} />
+          <Image source={{uri:restaurant.image_url}} resizeMode="cover" style={styles.cardImage} />
         </View>
         <View style={styles.cardTextContainer}>
           <Text style={{ fontSize: 20, color: '#444' }}>{restaurant.name}</Text>
@@ -48,34 +49,37 @@ class Tournament extends Component {
           <Text style={{ fontSize: 20, color: '#444' }}>{restaurant.name}</Text>
         </View>
         <View style={styles.cardImageContainer}>
-          <Image source={restaurant.image} resizeMode="cover" style={styles.cardImage} />
+          <Image source={{uri:restaurant.image_url}} resizeMode="cover" style={styles.cardImage} />
         </View>
       </View>
     )
   }
 
   topHandleYup(restaurant) {
-    console.log('Yup for ' + restaurant.name);
+    var arr = this.state.swiped.slice();
+    arr.push(restaurant);
+    this.setState({ swiped: arr });
     this.botSwiper._goToNextCard();
   }
 
   topHandleNope(restaurant) {
-    console.log('Nope for ' + restaurant.name);
     this.botSwiper._goToNextCard();
   }
 
   botHandleYup(restaurant) {
-    console.log('Yup for ' + restaurant.name);
+    var arr = this.state.swiped.slice();
+    arr.push(restaurant);
+    this.setState({ swiped: arr });
     this.topSwiper._goToNextCard();
   }
 
   botHandleNope(restaurant) {
-    console.log('Nope for ' + restaurant.name);
     this.topSwiper._goToNextCard();
   }
 
   noMore() {
     console.log("Round over");
+    this.props.putTournamentRound(this.state.swiped);
     return (
       <Spinner color='red' />
     );
@@ -92,7 +96,7 @@ class Tournament extends Component {
                   ref={(card) => { this.topSwiper = card; }}
                   cards={this.state.topCards}
 
-                  renderCard={(cardData) => this.Card(cardData)}
+                  renderCard={(cardData) => this.Card(cardData.restaurant)}
                   renderNoMoreCards={this.noMore}
                   handleYup={this.topHandleYup}
                   handleNope={this.topHandleNope}
@@ -105,8 +109,8 @@ class Tournament extends Component {
                   ref={(card) => { this.botSwiper = card; }}
                   cards={this.state.bottomCards}
 
-                  renderCard={(cardData) => this.CardReversed(cardData)}
-                  renderNoMoreCards={this.noMore}
+                  renderCard={(cardData) => this.CardReversed(cardData.restaurant)}
+                  //renderNoMoreCards={this.noMore}
                   handleYup={this.botHandleYup}
                   handleNope={this.botHandleNope}
                 />

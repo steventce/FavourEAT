@@ -40,11 +40,12 @@ class SwipeContainer extends Component {
       }
       // TODO fix hack
       // last restaurant needs to include specific data
-      this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId, restaurants[restaurants.length - 1].id, true, this.state.cards));
+      this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId,
+        restaurants[restaurants.length - 1].id, true, this.state.cards,
+        () => this.props.navigation.navigate('Tournament', { eventId: this.state.eventId, hack: this.state.cards.length})));
     } catch (error) {
       Alert.alert('Error', error.message);
     }
-    this.props.navigation.navigate('Tournament');
   }
 
   async componentDidMount() {
