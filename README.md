@@ -17,13 +17,9 @@ react-native run-android
 ```  
 
 ## Server instructions:
-Using Python 2.7.10:
+Using Python 2.7.10, install dependencies from the root folder by running :
 ```
-pip install django
-pip install djangorestframework
-pip install markdown       # Markdown support for the browsable API.
-pip install django-filter  # Filtering support
-pip install django-rest-framework-social-oauth2 # For Facebook -> access token generation 
+pip install -r requirements.txt
 ```
 
 This app uses the [Django Rest Framework Social Oauth2](https://github.com/PhilipGarnero/django-rest-framework-social-oauth2) library for generating tokens. You have to register the social oauth app through the admin panel. The endpoint is under `/admin`. Follow the instructions from the link, specifically the section under: **Now go to django admin and add a new Application.**
@@ -36,10 +32,19 @@ SOCIAL_AUTH_FACEBOOK_KEY = 'XYZ...'
 SOCIAL_AUTH_FACEBOOK_SECRET = 'XYZ...'
 SOCIAL_AUTH_CLIENT_ID = 'XYZ...'
 SOCIAL_AUTH_CLIENT_SECRET = 'XYZ...'
+YELP_APP_ID = 'XYZ...'
+YELP_APP_SECRET = 'XYZ...'
 # ...other private keys
 
 DATABASES = {
-  # ...
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'db_name',
+        'USER': 'user',
+        'PASSWORD': 'password',
+        'HOST': 'localhost',
+        'PORT': 'port'
+    }
 } 
 ```
 

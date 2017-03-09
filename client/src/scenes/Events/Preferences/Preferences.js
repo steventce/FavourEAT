@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import { Text } from 'react-native';
+import { Text, Alert, AsyncStorage } from 'react-native';
 import { Container, Content, List, Body, Right, ListItem, Icon, Button } from 'native-base';
 
 import PopupModal from '../../../components/PopupModal';
@@ -8,7 +8,7 @@ import SelectList from '../../../components/SelectList';
 import RemovableItemsList from '../../../components/RemovableItemsList';
 
 const priceOptions = [5, 15, 25, 40, 60, 100];
-const distanceOptions = [1, 2, 3, 5, 10, 20];
+const distanceOptions = [0.25, 0.5, 1, 2, 3, 5, 10, 20];
 
 class Preferences extends Component {
   static propTypes = {
@@ -32,8 +32,28 @@ class Preferences extends Component {
         onSelect: () => {},
         renderLabel: () => {}
       },
-      preferences: this.props.preferences
+      preferences: this.props.preferences,
+      appAccessToken: ''
     };
+  }
+
+  async componentDidMount() {
+    try {
+      const appAccessToken = await AsyncStorage.getItem('app_access_token');
+      if (appAccessToken) {
+        this.setState({
+          appAccessToken
+        });
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Loading Error. Please try again.');
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.eventId !== nextProps.eventId) {
+      this.props.startTournament();
+    }
   }
 
   openModal = (options) => {
@@ -61,7 +81,7 @@ class Preferences extends Component {
       modalVisible: false,
       preferences: {
         ...this.state.preferences,
-        distance: value
+        radius: value
       }
     });
   };
@@ -117,19 +137,19 @@ class Preferences extends Component {
       <Container>
         <Content>
           <List>
-            <SettingsBtn 
+            <SettingsBtn
                 onPress={this.openModal({
-                  options: distanceOptions, 
-                  selectedOptions: [this.state.preferences.distance],
+                  options: distanceOptions,
+                  selectedOptions: [this.state.preferences.radius],
                   onSelect: this.handleChangeDistance,
                   renderLabel: (option) => <Text>{`${option} km`}</Text>
                 })}
                 label="Maximum Travel Distance"
                 disabled={readOnly}
-                value={`${this.state.preferences.distance} km`} />
-            <SettingsBtn 
+                value={`${this.state.preferences.radius} km`} />
+            <SettingsBtn
                 onPress={this.openModal({
-                  options: priceOptions.filter((value) => value < this.state.preferences.maxPrice), 
+                  options: priceOptions.filter((value) => value < this.state.preferences.maxPrice),
                   selectedOptions: [this.state.preferences.minPrice],
                   onSelect: this.handleChangeMinPrice,
                   renderLabel: (option) => <Text>{`$${option}`}</Text>
@@ -137,9 +157,9 @@ class Preferences extends Component {
                 label="Minimum Price"
                 disabled={readOnly}
                 value={`$${this.state.preferences.minPrice}`} />
-            <SettingsBtn 
+            <SettingsBtn
                 onPress={this.openModal({
-                  options: priceOptions.filter((value) => value > this.state.preferences.minPrice), 
+                  options: priceOptions.filter((value) => value > this.state.preferences.minPrice),
                   selectedOptions: [this.state.preferences.maxPrice],
                   onSelect: this.handleChangeMaxPrice,
                   renderLabel: (option) => <Text>{`$${option}`}</Text>
@@ -147,9 +167,9 @@ class Preferences extends Component {
                 label="Maximum Price"
                 disabled={readOnly}
                 value={`$${this.state.preferences.maxPrice}`} />
-            <SettingsBtn 
+            <SettingsBtn
                 onPress={this.openModal({
-                  options: this.props.allCuisineTypes, 
+                  options: this.props.allCuisineTypes,
                   selectedOptions: this.state.preferences.cuisineTypes,
                   onSelect: this.handleAddCuisineType,
                   renderLabel: (option) => <Text>{option.label}</Text>
@@ -160,12 +180,12 @@ class Preferences extends Component {
               list={this.state.preferences.cuisineTypes}
               onRemove={this.handleRemoveCuisineType}
               readOnly={readOnly}
-              renderRow={(rowData) => 
+              renderRow={(rowData) =>
                 <Text>
                   {rowData.label}
                 </Text>
             } />
-            <PopupModal 
+            <PopupModal
                 visible={this.state.modalVisible}
                 onClose={this.handleCloseModal}>
               <SelectList
@@ -175,10 +195,10 @@ class Preferences extends Component {
                   renderLabel={this.state.modalOptions.renderLabel} />
             </PopupModal>
 
-            {!readOnly && 
+            {!readOnly &&
               <Button
                   full success
-                  onPress={() => this.props.savePreferences(1, this.state.preferences)}>
+                  onPress={() => this.props.savePreferences(this.state.appAccessToken, 8, this.state.preferences)}>
                 <Text>
                   DONE
                 </Text>
