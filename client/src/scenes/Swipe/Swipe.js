@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Button, Image, StyleSheet, Text, TouchableOpacity, View, Dimensions } from 'react-native';
-import { Container, Icon } from 'native-base';
+import { Container, Icon, Card } from 'native-base';
 import SwipeContainer from './SwipeContainer';
 import SwipeCards from 'react-native-swipe-cards';
 
@@ -132,26 +132,29 @@ class Swipe extends Component {
           width: Math.round(screen.width * 0.95),
           height: Math.round(screen.height * 0.55),
         };
-        const cardSize = {
+        const cardStyle = {
           height: Math.round(screen.height * 0.8),
-          width: Math.round(screen.width * 0.95)
+          width: Math.round(screen.width * 0.95),
+          borderRadius: 10,
+          overflow: 'hidden',
+          backgroundColor: 'white',
         };
       
         return (
-            <View style={[styles.card, cardSize]}>
-                <View>
-                  <Image source={restaurant.image} resizeMode="cover" style={[imageSize, styles.image]} />
-                </View>
-                <View style={[styles.cardMeta]}>
-                  <Text 
-                      numberOfLines={3}
-                      style={styles.restaurantName}>
-                    {restaurant.name}
-                  </Text>
-      
-                  {this.getRating(restaurant)}
-                </View>
-            </View>
+            <Card style={cardStyle}>
+              <View>
+                <Image source={restaurant.image} resizeMode="cover" style={[imageSize, styles.image]} />
+              </View>
+              <View style={[styles.cardMeta]}>
+                <Text 
+                    numberOfLines={3}
+                    style={styles.restaurantName}>
+                  {restaurant.name}
+                </Text>
+    
+                {this.getRating(restaurant)}
+              </View>
+            </Card>
         )
     }
 
@@ -272,9 +275,7 @@ const styles = StyleSheet.create({
     card: {
         borderRadius: 10,
         overflow: 'hidden',
-        borderColor: 'grey',
         backgroundColor: 'white',
-        borderWidth: 1,
     },
     image: {
       borderTopLeftRadius: 10,
