@@ -27,10 +27,10 @@ class TournamentContainer extends Component {
   }
 
   putTournamentRound(restaurants) {
+    console.log('putTournamentRound');
     console.log(restaurants);
     try {
       for (var i = 0; i < restaurants.length - 1; i++) {
-        this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId, restaurants[i].id));
         this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId, restaurants[i].id));
       }
       // TODO fix hack
@@ -38,11 +38,7 @@ class TournamentContainer extends Component {
       this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId,
         restaurants[restaurants.length - 1].id, true, this.state.cards,
         () => {
-          if (restaurants.length == 1) {
-            this.props.navigation.navigate('Winner', { restaurant: restaurants[0].restaurant });
-          } else {
-            this.setState({ topCards: [], botCards: [] }, () => this.getTournamentRound());
-          }
+          this.setState({ topCards: [], botCards: [] }, () => this.getTournamentRound());
         }));
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -66,7 +62,7 @@ class TournamentContainer extends Component {
     const { tournamentArr } = nextProps;
     // TODO: fix hack by setting tournamentArr to [] in store
     if (tournamentArr.length != this.props.navigation.state.params.hack) {
-      if (tournamentArr.length == 1) {
+      if (tournamentArr.length == 1 && !Array.isArray(tournamentArr[0])) {
         this.props.navigation.navigate('Winner', { restaurant: tournamentArr[0].restaurant });
       } else {
         this.setState({ cards: tournamentArr });
