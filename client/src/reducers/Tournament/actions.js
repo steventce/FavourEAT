@@ -15,6 +15,10 @@ export function getRound(accessToken, eventId) {
             if (!response.ok) throw Error();            
             return response.json()
         })
+        // TODO hack since server side is returning it weird
+        .then((json) => {
+            return json.map((value) => value.restaurant);
+        })
         .then((json) => {
             console.log(json);
             dispatch(getRoundSuccess(json));
@@ -23,7 +27,14 @@ export function getRound(accessToken, eventId) {
     }
 };
 
-export function putRound(accessToken, eventId, tournamentId) {
+export function putRound(accessToken, eventId, tournamentId, isFinished=false, tournamentData=null) {
+    var requestBody = null;
+    if (isFinished) {
+        requestBody = JSON.stringify({
+            is_finished: 1,
+            tournament_data: tournamentData
+        })
+    }
     return function (dispatch) {
         fetch(`${API_BASE_URL}v1/events/${eventId}/tournament/${tournamentId}/`, {
             method: 'PUT',
@@ -32,12 +43,10 @@ export function putRound(accessToken, eventId, tournamentId) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`
             },
-            body: JSON.stringify({
-                
-            })
+            body: requestBody
         })
         .then((response) => {
-            console.log(response.status);
+            console.log(response);
             if (!response.ok) throw Error();            
         })
         .catch((error) => console.error(error))

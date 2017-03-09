@@ -34,7 +34,7 @@ class Swipe extends Component {
                     style={{ flexDirection: 'row'}} >
                     <Text style={{ fontSize: 40,  color: '#444' }}>{restaurant.name}</Text>
                 </View>
-                <Image source={restaurant.image} resizeMode="cover" style={{ width: 350, height: 350 }} />
+                <Image source={{uri: restaurant.image_url}} resizeMode="cover" style={{ width: 350, height: 350 }} />
                 {this.getRating(restaurant)}
             </View>
         )
@@ -55,7 +55,7 @@ class Swipe extends Component {
     handleYup(restaurant) {
         console.log(restaurant);
         var arr = this.state.rightSwipes.slice();
-        arr.push(restaurant.yelp_id);
+        arr.push(restaurant);
         this.setState({ rightSwipes: arr });
     }
 
@@ -67,7 +67,7 @@ class Swipe extends Component {
     handleNope(restaurant) {
         console.log(restaurant);
         var arr = this.state.leftSwipes.slice();
-        arr.push(restaurant.yelp_id);
+        arr.push(restaurant);
         this.setState({ leftSwipes: arr });
     }
 
@@ -81,7 +81,7 @@ class Swipe extends Component {
         console.log(this.state.rightSwipes);
         // NOT USED FOR DEMO
         //this.props.postSwipe(this.state.leftSwipes, this.state.rightSwipes);
-        this.props.nextRound();
+        this.props.nextRound(this.state.rightSwipes);
         return (
             <Spinner color='red'/>
         );
