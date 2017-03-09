@@ -1,5 +1,6 @@
 import * as actionTypes from './actionTypes';
 import { API_BASE_URL } from '../../../config/env';
+import { getRound } from '../../Tournament/actions';
 
 const METERS_IN_KILOMETER = 1000;
 
@@ -36,6 +37,11 @@ export function savePreferences(accessToken, userId, preferences) {
     })
     .then((responseJson) => {
       const preferences = responseJson;
+
+      // immediately fetch list of retaurant for the first round
+      dispatch(getRound(accessToken, responseJson.event_id));
+
+      // not really needed but keeping for now
       dispatch(savePreferencesSuccess(responseJson));
     })
     .catch((error) => console.error(error));

@@ -121,7 +121,7 @@ class RestaurantDetails extends Component {
         return (
             <ScrollView style={styles.container}>
                 <View style={styles.imgContainer}>
-                    <Image source={restaurant.image} resizeMode="cover" style={{ height: 250, width: width }} />
+                    <Image source={{uri: restaurant.image_url}} resizeMode="cover" style={{ height: 250, width: width }} />
                     <TouchableOpacity style={styles.overlapBtn} onPress={() => Communications.phonecall(restaurant.phone, true)}>
                         <Icon name='call' size={25} style={iconCol} />
                     </TouchableOpacity>
