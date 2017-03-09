@@ -11,7 +11,8 @@ class Preference(models.Model):
 
 
 class Cuisine(models.Model):
-    type = models.CharField(max_length=200, null=False)
+    name = models.CharField(max_length=200, null=False)
+    category = models.CharField(max_length=200, null=False)
 
 
 class EventDetail(models.Model):
