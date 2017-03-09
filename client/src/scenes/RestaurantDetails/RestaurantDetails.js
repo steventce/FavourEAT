@@ -189,7 +189,7 @@ class RestaurantDetails extends Component {
                 direction='up'
                 style={{ backgroundColor: '#EDA743' }}
                 position='bottomRight'>
-              <Icon name='nutrition' />
+              <Icon name='menu' />
               <NBButton 
                   style={{ backgroundColor: '#EFBE79' }}
                    onPress={() => Communications.phonecall(restaurant.phone, true)}>
