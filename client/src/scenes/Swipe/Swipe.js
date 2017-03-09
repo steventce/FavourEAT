@@ -102,6 +102,14 @@ class Swipe extends Component {
         );
     }
 
+    handleGoToDetails = () => {
+      this.props.navigate('RestaurantDetails', {
+        restaurant: this.swiper.state.card.restaurant, 
+        caller: this,
+        swipeable: true,
+      });
+    };
+
     render() {
         return (
             <View style={styles.container}>
@@ -109,11 +117,7 @@ class Swipe extends Component {
                     ref={(card) => { this.swiper = card; }}
                     cards={this.state.card}
 
-                    onClickHandler={() => this.props.navigate('RestaurantDetails', {
-                      restaurant: this.swiper.state.card, 
-                      caller: this,
-                      swipeable: true,
-                    })}
+                    onClickHandler={this.handleGoToDetails}
                     renderCard={(cardData) => this.Card(cardData.restaurant)}
                     renderNoMoreCards={this.noMore}
                     handleYup={(restaurant) => this.handleYup(restaurant)}
@@ -127,11 +131,7 @@ class Swipe extends Component {
                     </TouchableOpacity>
                     <TouchableOpacity 
                         style={[styles.button, styles.detailsBtn]} 
-                        onPress={() => this.props.navigate('RestaurantDetails', {
-                          restaurant: this.swiper.state.card, 
-                          caller: this,
-                          swipeable: true,
-                        })}>
+                        onPress={this.handleGoToDetails}>
                         <Icon name='information' style={{color: 'white', fontSize: 40}} />
                     </TouchableOpacity>
                     <TouchableOpacity 
