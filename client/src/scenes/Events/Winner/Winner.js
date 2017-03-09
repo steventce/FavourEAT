@@ -4,15 +4,6 @@ import { NavigationActions } from 'react-navigation';
 import { Container, Content } from 'native-base'
 import styles from './styles';
 
-//TODO: Remove later when tournament is done and connected
-const testRestaurant = { 
-  yelp_id: 1,
-  name: 'Miku', 
-  image: require('../../../images/miku.jpg'),
-  rating: 5,
-};
-
-
 class Winner extends Component {
   static navigationOptions = {
     header: {
@@ -38,15 +29,14 @@ class Winner extends Component {
       height: screen.height
     };
 
-    // const restaurant = this.props.navigation.state.params.restaurant;
-    const restaurant = testRestaurant;
+    const restaurant = this.props.navigation.state.params.restaurant;
 
     return (
       <Container>
         <Content contentContainerStyle={styles.content}>
           <View style={styles.container}>
             <Image
-                source={restaurant.image}
+                source={{uri:restaurant.image_url}}
                 resizeMode='cover'
                 style={styles.image} />
             <Text style={styles.text}>

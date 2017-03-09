@@ -136,8 +136,7 @@ class RestaurantDetails extends Component {
           <Container>
             <Content style={StyleSheet.flatten(styles.container)}>
               <View style={styles.imgContainer}>
-                  <Image source={restaurant.image} resizeMode="cover" style={{ height: 250, width: width }} />
-                  
+                  <Image source={{uri: restaurant.image_url}} resizeMode="cover" style={{ height: 250, width: width }} />                  
               </View>
 
               <Card style={StyleSheet.flatten([styles.card])}>

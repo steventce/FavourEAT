@@ -11,6 +11,7 @@ import { UserEvents } from './src/scenes/Events';
 import Preferences from './src/scenes/Events/Preferences';
 import Winner from './src/scenes/Events/Winner';
 import Swipe from './src/scenes/Swipe';
+import Tournament from './src/scenes/Tournament';
 import RestaurantDetails from './src/scenes/RestaurantDetails';
 
 const store = configureStore();
@@ -18,6 +19,7 @@ const store = configureStore();
 const HomeStack = StackNavigator({
   UserEvents: { screen: UserEvents },
   Preferences: { screen: Preferences },
+  Tournament: { screen: Tournament }
 }, {
   initialRouteName: 'UserEvents'
 });
