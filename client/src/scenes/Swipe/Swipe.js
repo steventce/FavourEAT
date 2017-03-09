@@ -219,11 +219,24 @@ class Swipe extends Component {
                     handleNope={(restaurant) => this.handleNope(restaurant)}
                 />
                 <View style={styles.actionBtns}>
-                    <TouchableOpacity style={[styles.button, styles.noBtn]} onPress={() => this.onClickNope(this.swiper.state.card)}>
-                        <Icon name='close' size={45} style={StyleSheet.flatten(styles.btnIcon)} />
+                    <TouchableOpacity 
+                        style={[styles.button, styles.noBtn]} 
+                        onPress={() => this.onClickNope(this.swiper.state.card)}>
+                      <Icon name='close' size={45} style={StyleSheet.flatten(styles.btnIcon)} />
                     </TouchableOpacity>
-                    <TouchableOpacity style={[styles.button, styles.yesBtn]} onPress={() => this.onClickYup(this.swiper.state.card)}>
-                        <Icon name='heart' size={36} style={StyleSheet.flatten(styles.btnIcon)} />
+                    <TouchableOpacity 
+                        style={[styles.button, styles.detailsBtn]} 
+                        onPress={() => this.props.navigate('RestaurantDetails', {
+                          restaurant: this.swiper.state.card, 
+                          caller: this,
+                          swipeable: true,
+                        })}>
+                        <Icon name='information' style={{color: 'white', fontSize: 40}} />
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                        style={[styles.button, styles.yesBtn]} 
+                        onPress={() => this.onClickYup(this.swiper.state.card)}>
+                      <Icon name='heart' size={36} style={StyleSheet.flatten(styles.btnIcon)} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -246,16 +259,22 @@ const styles = StyleSheet.create({
     yesBtn: {
       backgroundColor: commonColors.YUP_COLOR
     },
+    detailsBtn: {
+      backgroundColor: '#76B376'
+    },
     btnIcon: {
       color: 'white'
     },
     container: {
         flex: 1,
-        backgroundColor: '#B8B8B8'
+        backgroundColor: '#f7f7f7',
     },
     card: {
-        backgroundColor: '#f7f7f7',
         borderRadius: 10,
+        overflow: 'hidden',
+        borderColor: 'grey',
+        backgroundColor: 'white',
+        borderWidth: 1,
     },
     image: {
       borderTopLeftRadius: 10,
