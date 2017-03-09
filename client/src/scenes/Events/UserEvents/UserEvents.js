@@ -36,8 +36,9 @@ class UserEvents extends Component {
   async componentDidMount() {
     try {
       const appAccessToken = await AsyncStorage.getItem('app_access_token');
+      const userId = await AsyncStorage.getItem('user_id');
       if (appAccessToken) {
-        this.props.dispatch(fetchEvents(appAccessToken, 8));
+        this.props.dispatch(fetchEvents(appAccessToken, userId));
       }
     } catch (error) {
       Alert.alert('Error', 'Loading Error. Please try again.');
