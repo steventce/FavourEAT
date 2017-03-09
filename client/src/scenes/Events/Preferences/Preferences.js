@@ -45,6 +45,12 @@ class Preferences extends Component {
           appAccessToken
         });
       }
+      const userId = await AsyncStorage.getItem('user_id');
+      if (userId) {
+        this.setState({
+          userId
+        });
+      }
     } catch (error) {
       Alert.alert('Error', 'Loading Error. Please try again.');
     }
@@ -198,7 +204,7 @@ class Preferences extends Component {
             {!readOnly &&
               <Button
                   full success
-                  onPress={() => this.props.savePreferences(this.state.appAccessToken, 8, this.state.preferences)}>
+                  onPress={() => this.props.savePreferences(this.state.appAccessToken, this.state.userId, this.state.preferences)}>
                 <Text>
                   DONE
                 </Text>
