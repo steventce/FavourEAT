@@ -1,7 +1,10 @@
 import { StyleSheet } from 'react-native';
 
 export const colors = {
-  APP_PRIMARY_LIGHT: '#ffb318'
+  APP_PRIMARY_LIGHT: '#ffb318',
+  NOPE_COLOR: '#6C8CE6',
+  YUP_COLOR: '#F36D6D',
+  RATING_COLOR: '#bd081c'
 };
 
 const common = StyleSheet.create({
@@ -11,8 +14,6 @@ const common = StyleSheet.create({
   swipeBtn: {
     width: 50,
     height: 50,
-    borderWidth: 7,
-    borderColor: '#e7e7e7',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 25,

@@ -4,8 +4,7 @@ import { Container, Icon } from 'native-base';
 import SwipeContainer from './SwipeContainer';
 import SwipeCards from 'react-native-swipe-cards';
 
-import commonStyles from '../../styles/common';
-const iconCol = StyleSheet.flatten(commonStyles.iconCol);
+import { colors as commonColors } from '../../styles/common';
 
 // TODO: remove and use url
 var miku = require('../../images/miku.jpg')
@@ -16,7 +15,7 @@ var shizenya = require('../../images/shizenya.jpg')
 
 // TODO: get list from props
 const Cards = [
-    { yelp_id: 1,name: 'Miku', image: miku, rating: 5, address: '200 Granville St #70, Vancouver, BC V6C 1S4', phone: "+14152520800",
+    { yelp_id: 1,name: 'Hokkaido Ramen Santouka', image: miku, rating: 5, address: '200 Granville St #70, Vancouver, BC V6C 1S4', phone: "+14152520800",
 hours: [
     {
       "hours_type": "REGULAR",
@@ -160,7 +159,7 @@ class Swipe extends Component {
     getRating(restaurant) {
         var icons = []
         for (var i = 0; i < restaurant.rating; i++) {
-            icons.push(<Icon key={restaurant.name + i} name='md-star' style={iconCol}></Icon>);
+            icons.push(<Icon key={restaurant.name + i} name='md-star' style={{color: commonColors.RATING_COLOR}}></Icon>);
         }
         return (
             <View style={{ flexDirection: 'row' }}>
@@ -243,10 +242,10 @@ const styles = StyleSheet.create({
         borderRadius: 40
     },
     noBtn: {
-      backgroundColor: '#6C8CE6'
+      backgroundColor: commonColors.NOPE_COLOR
     },
     yesBtn: {
-      backgroundColor: '#F36D6D'
+      backgroundColor: commonColors.YUP_COLOR
     },
     btnIcon: {
       color: 'white'
