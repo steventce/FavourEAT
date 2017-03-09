@@ -20,7 +20,8 @@ from server.models import (
     EventUserAttach,
     Preference,
     PreferenceCuisine,
-    Tournament
+    Tournament,
+    Cuisine
 )
 from server.favoureat.recommendation_service import RecommendationService
 from rest_framework.views import APIView
@@ -116,16 +117,29 @@ class EventView(APIView):
         {'price': float('inf'), 'yelp_cd': '4'}
     ]
 
+    def get(self, request, user_id, format=None):
+        """
+        Gets all of the events associated with the user
+        """
+        if int(user_id) != int(request.user.id):
+            return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+        user_event_ids = EventUserAttach.objects.filter(
+            user_id=request.user.id).values_list('event_id', flat=True)
+        events = Event.objects.filter(pk__in=user_event_ids).order_by('-event_detail__datetime')
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
+
     def post(self, request, user_id, format=None):
         """
         Creates the specified event for a particular user.
         """
-        categories = request.data.get('cuisine_type')
+        categories = request.data.get('cuisine_types')
         radius = request.data.get('radius') # Meters
         latitude = request.data.get('latitude')
         longitude = request.data.get('longitude')
         max_price = request.data.get('max_price')
         min_price = request.data.get('min_price')
+        name = request.data.get('name')
 
         preference = Preference(
             radius=radius,
@@ -136,20 +150,27 @@ class EventView(APIView):
         )
         preference.save()
 
+        for category in categories:
+            preference_cuisine = PreferenceCuisine(
+                preference=preference, cuisine=Cuisine.objects.get(category=category))
+            preference_cuisine.save()
+
         event_detail = EventDetail(
             datetime=datetime.now(),
-            name=request.data.get('name'),
+            name=name,
             preference=preference
         )
         event_detail.save()
 
         user = User.objects.get(pk=user_id)
-        event = Event(user=user, event_detail=event_detail, round_num=0)
+        event = Event(creator=user, event_detail=event_detail, round_num=0)
         event.save()
+        event_user_attach = EventUserAttach(user=user, event=event)
+        event_user_attach.save()
 
         params = {
             'term': self.TERM,
-            'categories': categories,
+            'categories': ','.join(categories),
             'radius': radius,
             'latitude': latitude,
             'longitude': longitude,
@@ -169,18 +190,9 @@ class EventView(APIView):
             tournament = Tournament(event=event, restaurant=restaurant, vote_count=0)
             tournament.save()
 
-        response = Response(status=status.HTTP_201_CREATED)
+        response = Response({'event_id': event.id}, status=status.HTTP_201_CREATED)
         response['Location'] = '/v1/events/{id}'.format(id=event.id)
         return response
-
-    def get(self, request, user_id, format=None):
-        if int(user_id) != int(request.user.id):
-            return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
-        user_event_ids = EventUserAttach.objects.filter(
-            user_id=request.user.id).values_list('event_id', flat=True)
-        events = Event.objects.filter(pk__in=user_event_ids)
-        serializer = EventSerializer(events, many=True)
-        return Response(serializer.data)
 
 
 class EventDetailsView(APIView):

@@ -3,14 +3,19 @@ import { StyleSheet } from 'react-native';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    flexDirection: 'row',
+    padding: 15
+  },
+  btnContainer: {
+    flex: 1,
+    flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF'
+    marginBottom: 15
   },
   event: {
-    fontSize: 20,
+    fontSize: 30,
+    margin: 10,
     textAlign: 'center',
-    margin: 10
   }
 });
 

@@ -36,6 +36,7 @@ class YelpAPIService(object):
         headers = {
             'Authorization': 'Bearer {0}'.format(access_token)
         }
+
         search_response = requests.get('{0}{1}'.format(self.BASE_URL, self.SEARCH_PATH) \
             , params=params, headers=headers)
         return search_response.json()
@@ -49,7 +50,8 @@ class YelpAPIService(object):
         headers = {
             'Authorization': 'Bearer {0}'.format(access_token)
         }
-        url = '{0}{1}'.format(self.BASE_URL, self.BUSINESS_PATH.format(id=business_id))
+        url = '{0}{1}'.format(self.BASE_URL, self.BUSINESS_PATH.format(
+            id=business_id.encode('utf-8')))
         business_response = requests.get(url, headers=headers)
         return business_response.json()
 
@@ -62,7 +64,8 @@ class YelpAPIService(object):
         headers = {
             'Authorization': 'Bearer {0}'.format(access_token)
         }
-        url = '{0}{1}'.format(self.BASE_URL, self.REVIEWS_PATH.format(id=business_id))
+        url = '{0}{1}'.format(self.BASE_URL, self.REVIEWS_PATH.format(
+            id=business_id.encode('utf-8')))
         reviews_response = requests.get(url, headers=headers)
         return reviews_response.json().get('reviews')
 

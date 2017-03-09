@@ -1,5 +1,9 @@
 import { StyleSheet } from 'react-native';
 
+export const colors = {
+  APP_PRIMARY_LIGHT: '#ffb318'
+};
+
 const common = StyleSheet.create({
   iconCol: {
     color:'#bd081c'
