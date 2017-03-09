@@ -1,13 +1,14 @@
 import * as actionTypes from './actionTypes';
 
-const initialState = { restaurants: [] }
+const initialState = { eventId: '', tournamentArr: [] }
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
     case actionTypes.GET_SUCCESS:
       return {
         ...state,
-        restaurants: action.restaurants
+        eventId: action.eventId,
+        tournamentArr: action.tournamentArr
       }
     default:
       return state;

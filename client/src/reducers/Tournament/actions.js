@@ -15,13 +15,9 @@ export function getRound(accessToken, eventId) {
             if (!response.ok) throw Error();            
             return response.json()
         })
-        // TODO hack since server side is returning it weird
-        .then((json) => {
-            return json.map((value) => value.restaurant);
-        })
         .then((json) => {
             console.log(json);
-            dispatch(getRoundSuccess(json));
+            dispatch(getRoundSuccess(eventId, json));
         })
         .catch((error) => console.error(error))
     }
@@ -53,9 +49,10 @@ export function putRound(accessToken, eventId, tournamentId, isFinished=false, t
     }
 };
 
-function getRoundSuccess(json) {
+function getRoundSuccess(id, json) {
     return {
         type: actionTypes.GET_SUCCESS,
-        restaurants: json
+        eventId: id,
+        tournamentArr: json
     }
 }

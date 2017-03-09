@@ -6,69 +6,65 @@ import Swipe from './Swipe';
 import { saveSwipe } from '../../reducers/Swipe/actions';
 import { getRound, putRound } from '../../reducers/Tournament/actions';
 
-// TODO: fetch this data;
-var eventId = 12;
-var tournamentId = 5;
-
 class SwipeContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      cards: []
+      eventId: -1,
+      cards: [],
+      user_id: '',
+      appAccessToken: '',
     }
   }
 
   // NOT USED FOR DEMO
   // needs to be updated to use data properly
   // i.e. leftSwipes.id
-  async postSwipe(leftSwipes, rightSwipes) {
+  postSwipe(leftSwipes, rightSwipes) {
     try {
-      const userId = await AsyncStorage.getItem('user_id');
-      const accessToken = await AsyncStorage.getItem('app_access_token');
       for (var i = 0; i < leftSwipes.length; i++) {
-        this.props.dispatch(saveSwipe(userId, accessToken, leftSwipes[i], 1, 0));
+        this.props.dispatch(saveSwipe(this.state.user_id, this.state.appAccessToken, leftSwipes[i], 1, 0));
       }
       for (var i = 0; i < rightSwipes.length; i++) {
-        this.props.dispatch(saveSwipe(userId, accessToken, rightSwipes[i], 0, 1));
+        this.props.dispatch(saveSwipe(this.state.userId, this.state.appAccessToken, rightSwipes[i], 0, 1));
       }
-
     } catch (error) {
       Alert.alert('Error', error.message);
     }
   }
 
-  async getInitialSwipe() {
+  nextRound(restaurants) {
     try {
-      const accessToken = await AsyncStorage.getItem('app_access_token');
-      this.props.dispatch(getRound(accessToken, eventId));
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
-  }
-
-  async nextRound(restaurants) {
-    console.log(restaurants);
-    try {
-      const accessToken = await AsyncStorage.getItem('app_access_token');
-      for (var i=0; i < restaurants.length - 1; i++) {
-        this.props.dispatch(putRound(accessToken, eventId, restaurants[i].id));
+      for (var i = 0; i < restaurants.length - 1; i++) {
+        this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId, restaurants[i].id));
       }
       // TODO fix hack
       // last restaurant needs to include specific data
-      this.props.dispatch(putRound(accessToken, eventId, restaurants[restaurants.length - 1].id, true, this.state.cards));
+      this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId, restaurants[restaurants.length - 1].id, true, this.state.cards));
     } catch (error) {
       Alert.alert('Error', error.message);
     }
-    //this.props.navigation.navigate('Tournament');        
+    this.props.navigation.navigate('Tournament');
   }
 
-  componentDidMount() {
-    this.getInitialSwipe();
+  async componentDidMount() {
+    try {
+      const appAccessToken = await AsyncStorage.getItem('app_access_token');
+      if (appAccessToken) {
+        this.setState({ appAccessToken });
+      }
+      const userId = await AsyncStorage.getItem('user_id');
+      if (userId) {
+        this.setState({ userId });
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Loading Error. Please try again.');
+    }
   }
 
   componentWillReceiveProps(nextProps) {
-    const { restaurants } = nextProps;
-    this.setState({ cards: restaurants });
+    const { eventId, tournamentArr } = nextProps;
+    this.setState({ eventId, cards: tournamentArr });
   }
 
   render() {

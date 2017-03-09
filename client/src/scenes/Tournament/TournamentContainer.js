@@ -28,13 +28,13 @@ class TournamentContainer extends Component {
     super(props);
     this.state = {
       top: topCards,
-      bottom: bottomCards
+      bottom: bottomCards,
+      user_id: '',
+      appAccessToken: '',
     }
   }
 
   async getTournamentRound() {
-    const accessToken = await AsyncStorage.getItem('app_access_token');
-    
     try {
       this.props.getRound(accessToken, eventId);
     } catch (error) {
@@ -43,13 +43,31 @@ class TournamentContainer extends Component {
   }
 
   async putTournamentRound() {
-    const accessToken = await AsyncStorage.getItem('app_access_token');
-    
     try {
       this.props.putRound(accessToken, eventId, tournamentId);
     } catch (error) {
       Alert.alert('Error', error.message);
     }
+  }
+
+  async componentDidMount() {
+    try {
+      const appAccessToken = await AsyncStorage.getItem('app_access_token');
+      if (appAccessToken) {
+        this.setState({ appAccessToken });
+      }
+      const userId = await AsyncStorage.getItem('user_id');
+      if (userId) {
+        this.setState({ userId });
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Loading Error. Please try again.');
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { eventId, tournamentArr } = nextProps;
+    this.setState({ eventId, cards: tournamentArr });
   }
 
   render() {

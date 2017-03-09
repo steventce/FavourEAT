@@ -53,7 +53,6 @@ class Swipe extends Component {
     }
 
     handleYup(restaurant) {
-        console.log(restaurant);
         var arr = this.state.rightSwipes.slice();
         arr.push(restaurant);
         this.setState({ rightSwipes: arr });
@@ -65,7 +64,6 @@ class Swipe extends Component {
     }
 
     handleNope(restaurant) {
-        console.log(restaurant);
         var arr = this.state.leftSwipes.slice();
         arr.push(restaurant);
         this.setState({ leftSwipes: arr });
@@ -77,8 +75,6 @@ class Swipe extends Component {
     }
 
     noMore() {
-        console.log(this.state.leftSwipes);
-        console.log(this.state.rightSwipes);
         // NOT USED FOR DEMO
         //this.props.postSwipe(this.state.leftSwipes, this.state.rightSwipes);
         this.props.nextRound(this.state.rightSwipes);
@@ -99,7 +95,7 @@ class Swipe extends Component {
                       caller: this,
                       swipeable: true,
                     })}
-                    renderCard={(cardData) => this.Card(cardData)}
+                    renderCard={(cardData) => this.Card(cardData.restaurant)}
                     renderNoMoreCards={this.noMore}
                     handleYup={(restaurant) => this.handleYup(restaurant)}
                     handleNope={(restaurant) => this.handleNope(restaurant)}
