@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Dimensions, Image, StyleSheet, View } from 'react-native';
-import { Container, Content, Icon, Spinner, Text } from 'native-base';
+import { Container, Content, Icon, Spinner, Text, Card } from 'native-base';
 import { Col, Grid, Row } from 'react-native-easy-grid';
 import SwipeCards from 'react-native-swipe-cards';
 
@@ -30,15 +30,19 @@ class Tournament extends Component {
   };
 
   Card(restaurant) {
+    const cardStyles = {
+      width: width * 0.95,
+      height: height * 0.42
+    };
     return (
-      <View style={{ flexDirection: 'row' }} >
+      <Card style={cardStyles} >
         <View style={styles.cardImageContainer}>
           <Image source={{uri:restaurant.image_url}} resizeMode="cover" style={styles.cardImage} />
         </View>
         <View style={styles.cardTextContainer}>
           <Text style={{ fontSize: 20, color: '#444' }}>{restaurant.name}</Text>
         </View>
-      </View>
+      </Card>
     )
   }
 
@@ -88,35 +92,30 @@ class Tournament extends Component {
   render() {
     return (
       <Container>
-        <Content>
-          <Grid>
-            <Row>
-              <View style={styles.container}>
-                <SwipeCards
-                  ref={(card) => { this.topSwiper = card; }}
-                  cards={this.state.topCards}
+        <Content style={{backgroundColor: '#f7f7f7'}}>
+          <View style={styles.container}>
+            <SwipeCards
+              ref={(card) => { this.topSwiper = card; }}
+              cards={this.state.topCards}
 
-                  renderCard={(cardData) => this.Card(cardData.restaurant)}
-                  renderNoMoreCards={this.noMore}
-                  handleYup={this.topHandleYup}
-                  handleNope={this.topHandleNope}
-                />
-              </View>
-            </Row>
-            <Row>
-              <View style={styles.container}>
-                <SwipeCards
-                  ref={(card) => { this.botSwiper = card; }}
-                  cards={this.state.bottomCards}
+              renderCard={(cardData) => this.Card(cardData.restaurant)}
+              renderNoMoreCards={this.noMore}
+              handleYup={this.topHandleYup}
+              handleNope={this.topHandleNope}
+            />
+          </View>
+      
+          <View style={styles.container}>
+            <SwipeCards
+              ref={(card) => { this.botSwiper = card; }}
+              cards={this.state.bottomCards}
 
-                  renderCard={(cardData) => this.CardReversed(cardData.restaurant)}
-                  //renderNoMoreCards={this.noMore}
-                  handleYup={this.botHandleYup}
-                  handleNope={this.botHandleNope}
-                />
-              </View>
-            </Row>
-          </Grid>
+              renderCard={(cardData) => this.Card(cardData.restaurant)}
+              //renderNoMoreCards={this.noMore}
+              handleYup={this.botHandleYup}
+              handleNope={this.botHandleNope}
+            />
+          </View>
         </Content>
       </Container>
     );
@@ -127,23 +126,21 @@ class Tournament extends Component {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#f7f7f7',
-    alignSelf: 'stretch'
+    flex: 1,
   },
   cardImageContainer: {
-    width: width / 2,
+    width: width * 0.95,
     height: 250,
   },
   cardTextContainer: {
-    width: width / 2,
-    height: 250,
+    width: width * 0.95,
+    flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
+    marginLeft: 20
   },
   cardImage: {
-    width: (width) / 2,
-    height: 250,
-    borderWidth: 5,
-    borderColor: '#d6d7da',
+    width: width * 0.95,
+    height: height * 0.34,
   },
 })
 

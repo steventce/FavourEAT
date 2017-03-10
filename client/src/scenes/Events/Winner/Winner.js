@@ -29,7 +29,8 @@ class Winner extends Component {
       height: screen.height
     };
 
-    const restaurant = this.props.navigation.state.params.restaurant;
+    const tournamentObj = this.props.navigation.state.params.restaurant;
+    const restaurant = tournamentObj.restaurant;
 
     return (
       <Container>
@@ -44,7 +45,7 @@ class Winner extends Component {
             </Text>
           </View>
           <TouchableWithoutFeedback
-              onPress={() => this.handleContinue(restaurant)}>
+              onPress={() => this.handleContinue(tournamentObj)}>
             <View style={[styles.overlay, screenSize]} />
           </TouchableWithoutFeedback>
         </Content>

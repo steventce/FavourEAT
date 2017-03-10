@@ -23,10 +23,10 @@ class SelectList extends Component {
     const value = rowData;
     const onSelect = () => this.props.onSelect(value);
     return (
-      <ListItem>
+      <ListItem style={{padding: 0, margin: 0}}>
         <TouchableNativeFeedback
             onPress={onSelect}>
-          <View style={{flex: 1, flexDirection: 'row'}}>
+          <View style={{flex: 1, flexDirection: 'row', padding: 20}}>
             <CheckBox 
                 checked={this.isChecked(value)}
                 onPress={onSelect}
