@@ -129,7 +129,8 @@ class RestaurantDetails extends Component {
 
     render() {
         const { navigate } = this.props.navigation;
-        const restaurant = this.props.navigation.state.params.restaurant;
+        const tournamentObj = this.props.navigation.state.params.restaurant;
+        const restaurant = tournamentObj.restaurant;
         const swipeable = this.props.navigation.state.params.swipeable;
 
         return (
@@ -152,12 +153,12 @@ class RestaurantDetails extends Component {
                 <View style={styles.swipeBtns}>
                   <TouchableOpacity 
                       style={[common.swipeBtn, {backgroundColor: commonColors.NOPE_COLOR}]} 
-                      onPress={() => this.onClickNope(restaurant)}>
+                      onPress={() => this.onClickNope(tournamentObj)}>
                       <Icon name='close' size={30} style={{color: 'white'}} />
                   </TouchableOpacity>
                   <TouchableOpacity 
                       style={[common.swipeBtn, {backgroundColor: commonColors.YUP_COLOR}]} 
-                      onPress={() => this.onClickYup(restaurant)}>
+                      onPress={() => this.onClickYup(tournamentObj)}>
                       <Icon name='heart' size={25} style={{color: 'white'}} />
                   </TouchableOpacity>
                 </View>

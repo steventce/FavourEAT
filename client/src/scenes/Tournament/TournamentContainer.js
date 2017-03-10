@@ -63,7 +63,7 @@ class TournamentContainer extends Component {
     // TODO: fix hack by setting tournamentArr to [] in store
     if (tournamentArr.length != this.props.navigation.state.params.hack) {
       if (tournamentArr.length == 1 && !Array.isArray(tournamentArr[0])) {
-        this.props.navigation.navigate('Winner', { restaurant: tournamentArr[0].restaurant });
+        this.props.navigation.navigate('Winner', { restaurant: tournamentArr[0] });
       } else {
         this.setState({ cards: tournamentArr });
         var top = [];

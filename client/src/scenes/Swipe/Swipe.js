@@ -104,7 +104,7 @@ class Swipe extends Component {
 
     handleGoToDetails = () => {
       this.props.navigate('RestaurantDetails', {
-        restaurant: this.swiper.state.card.restaurant, 
+        restaurant: this.swiper.state.card, 
         caller: this,
         swipeable: true,
       });
