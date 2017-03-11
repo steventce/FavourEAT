@@ -8,15 +8,7 @@ import Hr from 'react-native-hr';
 import common, { colors as commonColors } from '../../styles/common';
 import styles from './styles';
 
-
 var moment = require('moment');
-// TODO: remove and use url
-var miku = require('../../images/miku.jpg')
-var kishimoto = require('../../images/kishimoto.jpg')
-var minami = require('../../images/minami.jpg')
-var suika = require('../../images/suika.jpg')
-var shizenya = require('../../images/shizenya.jpg')
-
 var width = Dimensions.get('window').width;
 
 var hoursMap = {0: "Monday",
