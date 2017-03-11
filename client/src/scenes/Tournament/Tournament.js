@@ -37,7 +37,7 @@ class Tournament extends Component {
     return (
       <Card style={cardStyles} >
         <View style={styles.cardImageContainer}>
-          <Image source={{uri:restaurant.image_url}} resizeMode="cover" style={styles.cardImage} />
+          <Image source={{ uri: restaurant.image_url }} resizeMode="cover" style={styles.cardImage} />
         </View>
         <View style={styles.cardTextContainer}>
           <Text style={{ fontSize: 20, color: '#444' }}>{restaurant.name}</Text>
@@ -53,31 +53,35 @@ class Tournament extends Component {
           <Text style={{ fontSize: 20, color: '#444' }}>{restaurant.name}</Text>
         </View>
         <View style={styles.cardImageContainer}>
-          <Image source={{uri:restaurant.image_url}} resizeMode="cover" style={styles.cardImage} />
+          <Image source={{ uri: restaurant.image_url }} resizeMode="cover" style={styles.cardImage} />
         </View>
       </View>
     )
   }
 
-  topHandleYup(restaurant) {
+  swipeCard(restaurant) {
     var arr = this.state.swiped.slice();
     arr.push(restaurant);
     this.setState({ swiped: arr });
+  }
+
+  topHandleYup(restaurant) {
+    this.swipeCard(restaurant)
     this.botSwiper._goToNextCard();
   }
 
   topHandleNope(restaurant) {
+    this.swipeCard(this.botSwiper.state.card);
     this.botSwiper._goToNextCard();
   }
 
   botHandleYup(restaurant) {
-    var arr = this.state.swiped.slice();
-    arr.push(restaurant);
-    this.setState({ swiped: arr });
+    this.swipeCard(restaurant)
     this.topSwiper._goToNextCard();
   }
 
   botHandleNope(restaurant) {
+    this.swipeCard(this.topSwiper.state.card);
     this.topSwiper._goToNextCard();
   }
 
@@ -92,7 +96,7 @@ class Tournament extends Component {
   render() {
     return (
       <Container>
-        <Content style={{backgroundColor: '#f7f7f7'}}>
+        <Content style={{ backgroundColor: '#f7f7f7' }}>
           <View style={styles.container}>
             <SwipeCards
               ref={(card) => { this.topSwiper = card; }}
@@ -104,7 +108,7 @@ class Tournament extends Component {
               handleNope={this.topHandleNope}
             />
           </View>
-      
+
           <View style={styles.container}>
             <SwipeCards
               ref={(card) => { this.botSwiper = card; }}
