@@ -172,6 +172,12 @@ class EventView(APIView):
             serializer = PreferenceSerializer(data=prefs_data)
             if not serializer.is_valid():
                 return Response('Bad request', status=status.HTTP_400_BAD_REQUEST)
+
+            # Get restaurants
+            restaurants = RecommendationService().get_restaurants(
+                user_id=user_id, preference=params)
+
+            # Start saving
             preference = serializer.save()
 
             cuisines = Cuisine.objects.filter(category__in=request.data.get('cuisine_types', []))
@@ -192,9 +198,6 @@ class EventView(APIView):
             event.save()
             event_user_attach = EventUserAttach(user=user, event=event)
             event_user_attach.save()
-
-            restaurants = RecommendationService().get_restaurants(
-                user_id=user_id, preference=params)
 
             # Create the tournament rounds for the event
             for restaurant in restaurants:
