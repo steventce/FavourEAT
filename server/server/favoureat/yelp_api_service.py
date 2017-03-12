@@ -90,10 +90,8 @@ class YelpAPIService(object):
 
             # Fetch from the Business API
             details = self.get_details(access_token, yelp_id)
-            if 'photos' in restaurant:
-                restaurant['photos'] = details.get('photos', [])
-            if 'hours' in restaurant:
-                restaurant['hours'] = details.get('hours', [])
+            restaurant['photos'] = details.get('photos', [])
+            restaurant['hours'] = details.get('hours', [])
 
             saved_restaurant, created = Restaurant.objects.update_or_create(
                 yelp_id=yelp_id,
