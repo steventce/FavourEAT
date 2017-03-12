@@ -1,113 +1,17 @@
 import React, { Component } from 'react';
-import { Button, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Container, Icon } from 'native-base';
+import { Button, Image, StyleSheet, Text, TouchableOpacity, View, Dimensions } from 'react-native';
+import { Container, Icon, Card, Spinner } from 'native-base';
 import SwipeContainer from './SwipeContainer';
 import SwipeCards from 'react-native-swipe-cards';
 
-// TODO: remove and use url
-var miku = require('../../images/miku.jpg')
-var kishimoto = require('../../images/kishimoto.jpg')
-var minami = require('../../images/minami.jpg')
-var suika = require('../../images/suika.jpg')
-var shizenya = require('../../images/shizenya.jpg')
-
-// TODO: get list from props
-const Cards = [
-    { yelp_id: 1,name: 'Miku', image: miku, rating: 5, address: '200 Granville St #70, Vancouver, BC V6C 1S4', phone: "+14152520800",
-hours: [
-    {
-      "hours_type": "REGULAR",
-      "open": [
-        {
-          "is_overnight": false,
-          "end": "2200",
-          "day": 0,
-          "start": "1730"
-        },
-        {
-          "is_overnight": false,
-          "end": "2200",
-          "day": 1,
-          "start": "1730"
-        },
-        {
-          "is_overnight": false,
-          "end": "2200",
-          "day": 2,
-          "start": "1730"
-        },
-        {
-          "is_overnight": false,
-          "end": "2200",
-          "day": 3,
-          "start": "1730"
-        },
-        {
-          "is_overnight": false,
-          "end": "2200",
-          "day": 4,
-          "start": "1730"
-        },
-        {
-          "is_overnight": false,
-          "end": "2200",
-          "day": 5,
-          "start": "1730"
-        },
-        {
-          "is_overnight": false,
-          "end": "2200",
-          "day": 6,
-          "start": "1730"
-        }
-      ],
-      "is_open_now": false
-    }],
-"reviews": [
-{
-  "rating": 5,
-  "user": {
-    "image_url": "https://s3-media3.fl.yelpcdn.com/photo/iwoAD12zkONZxJ94ChAaMg/o.jpg",
-    "name": "Ella A."
-  },
-  "text": "Went back again to this place since the last time i visited the bay area 5 months ago, and nothing has changed. Still the sketchy Mission, Still the cashier...",
-  "time_created": "2016-08-29 00:41:13",
-  "url": "https://www.yelp.com/biz/la-palma-mexicatessen-san-francisco?hrid=hp8hAJ-AnlpqxCCu7kyCWA&adjust_creative=0sidDfoTIHle5vvHEBvF0w&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_reviews&utm_source=0sidDfoTIHle5vvHEBvF0w"
-},
-{
-  "rating": 4,
-  "user": {
-    "image_url": null,
-    "name": "Yanni L."
-  },
-  "text": "The \"restaurant\" is inside a small deli so there is no sit down area. Just grab and go.\n\nInside, they sell individually packaged ingredients so that you can...",
-  "time_created": "2016-09-28 08:55:29",
-  "url": "https://www.yelp.com/biz/la-palma-mexicatessen-san-francisco?hrid=fj87uymFDJbq0Cy5hXTHIA&adjust_creative=0sidDfoTIHle5vvHEBvF0w&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_reviews&utm_source=0sidDfoTIHle5vvHEBvF0w"
-},
-{
-  "rating": 4,
-  "user": {
-    "image_url": null,
-    "name": "Suavecito M."
-  },
-  "text": "Dear Mission District,\n\nI miss you and your many delicious late night food establishments and vibrant atmosphere.  I miss the way you sound and smell on a...",
-  "time_created": "2016-08-10 07:56:44",
-  "url": "https://www.yelp.com/biz/la-palma-mexicatessen-san-francisco?hrid=m_tnQox9jqWeIrU87sN-IQ&adjust_creative=0sidDfoTIHle5vvHEBvF0w&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_reviews&utm_source=0sidDfoTIHle5vvHEBvF0w"
-}
-],
-"total": 3},
-    { yelp_id: 2, name: 'Kishimoto', image: kishimoto, rating: 5 },
-    { yelp_id: 3, name: 'Minami', image: minami, rating: 4 },
-    { yelp_id: 4, name: 'Suika', image: suika, rating: 4 },
-    { yelp_id: 5, name: 'Shizen Ya', image: shizenya, rating: 4 },
-]
+import { colors as commonColors } from '../../styles/common';
 
 class Swipe extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            card: Cards,
+            card: this.props.Cards,
             rightSwipes: [],
             leftSwipes: []
         };
@@ -125,23 +29,40 @@ class Swipe extends Component {
     };
 
     Card(restaurant) {
+        const screen = Dimensions.get('window');
+        const imageSize = {
+          width: Math.round(screen.width * 0.95),
+          height: Math.round(screen.height * 0.55),
+        };
+        const cardStyle = {
+          height: Math.round(screen.height * 0.8),
+          width: Math.round(screen.width * 0.95),
+          borderRadius: 10,
+          overflow: 'hidden',
+          backgroundColor: 'white',
+        };
+      
         return (
-            <View
-                style={[styles.card]}>
-                <View
-                    style={{ flexDirection: 'row'}} >
-                    <Text style={{ fontSize: 40,  color: '#444' }}>{restaurant.name}</Text>
-                </View>
-                <Image source={restaurant.image} resizeMode="cover" style={{ width: 350, height: 350 }} />
+            <Card style={cardStyle}>
+              <View>
+                <Image source={{uri: restaurant.image_url}} resizeMode="cover" style={[imageSize, styles.image]} />
+              </View>
+              <View style={[styles.cardMeta]}>
+                <Text 
+                    numberOfLines={3}
+                    style={styles.restaurantName}>
+                  {restaurant.name}
+                </Text>
                 {this.getRating(restaurant)}
-            </View>
+              </View>
+            </Card>
         )
     }
 
     getRating(restaurant) {
         var icons = []
         for (var i = 0; i < restaurant.rating; i++) {
-            icons.push(<Icon key={restaurant.name + i} name='md-star'></Icon>);
+            icons.push(<Icon key={restaurant.name + i} name='md-star' style={{color: commonColors.RATING_COLOR}}></Icon>);
         }
         return (
             <View style={{ flexDirection: 'row' }}>
@@ -151,9 +72,8 @@ class Swipe extends Component {
     }
 
     handleYup(restaurant) {
-        console.log(restaurant);
         var arr = this.state.rightSwipes.slice();
-        arr.push(restaurant.yelp_id);
+        arr.push(restaurant);
         this.setState({ rightSwipes: arr });
     }
 
@@ -163,9 +83,8 @@ class Swipe extends Component {
     }
 
     handleNope(restaurant) {
-        console.log(restaurant);
         var arr = this.state.leftSwipes.slice();
-        arr.push(restaurant.yelp_id);
+        arr.push(restaurant);
         this.setState({ leftSwipes: arr });
     }
 
@@ -175,14 +94,21 @@ class Swipe extends Component {
     }
 
     noMore() {
-        console.log(this.state.leftSwipes);
-        console.log(this.state.rightSwipes);
-        console.log("sending post");
-        this.props.postSwipe(this.state.leftSwipes, this.state.rightSwipes);
+        // NOT USED FOR DEMO
+        //this.props.postSwipe(this.state.leftSwipes, this.state.rightSwipes);
+        this.props.nextRound(this.state.rightSwipes);
         return (
-            <Text>No more</Text>
-        )
+            <Spinner color='red'/>
+        );
     }
+
+    handleGoToDetails = () => {
+      this.props.navigate('RestaurantDetails', {
+        restaurant: this.swiper.state.card, 
+        caller: this,
+        swipeable: true,
+      });
+    };
 
     render() {
         return (
@@ -191,22 +117,27 @@ class Swipe extends Component {
                     ref={(card) => { this.swiper = card; }}
                     cards={this.state.card}
 
-                    onClickHandler={() => this.props.navigate('RestaurantDetails', {
-                      restaurant: this.swiper.state.card, 
-                      caller: this,
-                      swipeable: true,
-                    })}
-                    renderCard={(cardData) => this.Card(cardData)}
+                    onClickHandler={this.handleGoToDetails}
+                    renderCard={(cardData) => this.Card(cardData.restaurant)}
                     renderNoMoreCards={this.noMore}
                     handleYup={(restaurant) => this.handleYup(restaurant)}
                     handleNope={(restaurant) => this.handleNope(restaurant)}
                 />
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 5 }}>
-                    <TouchableOpacity style={styles.button} onPress={() => this.onClickNope(this.swiper.state.card)}>
-                        <Icon name='close' size={45} color="#888" />
+                <View style={styles.actionBtns}>
+                    <TouchableOpacity 
+                        style={[styles.button, styles.noBtn]} 
+                        onPress={() => this.onClickNope(this.swiper.state.card)}>
+                      <Icon name='close' size={45} style={StyleSheet.flatten(styles.btnIcon)} />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.button} onPress={() => this.onClickYup(this.swiper.state.card)}>
-                        <Icon name='heart' size={36} color="#888" />
+                    <TouchableOpacity 
+                        style={[styles.button, styles.detailsBtn]} 
+                        onPress={this.handleGoToDetails}>
+                        <Icon name='information' style={{color: 'white', fontSize: 40}} />
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                        style={[styles.button, styles.yesBtn]} 
+                        onPress={() => this.onClickYup(this.swiper.state.card)}>
+                      <Icon name='heart' size={36} style={StyleSheet.flatten(styles.btnIcon)} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -218,22 +149,51 @@ const styles = StyleSheet.create({
     button: {
         width: 80,
         height: 80,
-        borderWidth: 10,
-        borderColor: '#e7e7e7',
+        margin: 5,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 40
     },
+    noBtn: {
+      backgroundColor: commonColors.NOPE_COLOR
+    },
+    yesBtn: {
+      backgroundColor: commonColors.YUP_COLOR
+    },
+    detailsBtn: {
+      backgroundColor: '#76B376'
+    },
+    btnIcon: {
+      color: 'white'
+    },
     container: {
         flex: 1,
-        backgroundColor: '#f7f7f7'
+        backgroundColor: '#f7f7f7',
     },
     card: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 5,
-        borderColor: '#d6d7da',
+        borderRadius: 10,
+        overflow: 'hidden',
+        backgroundColor: 'white',
+    },
+    image: {
+      borderTopLeftRadius: 10,
+      borderTopRightRadius: 10,
+      overflow: 'hidden',
+    },
+    actionBtns: {
+      flexDirection: 'row', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      marginTop: 5, 
+    },
+    cardMeta: {
+      flex: 1,
+      justifyContent: 'center',
+      paddingHorizontal: 20
+    },
+    restaurantName: {
+      fontSize: 30,  
+      color: '#444', 
     }
 })
 

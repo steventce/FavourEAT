@@ -14,7 +14,7 @@ class RemovableItemsList extends Component {
       <List
           dataArray={this.props.list}
           renderRow={(rowData) => 
-        <ListItem>
+        <ListItem style={{paddingTop: 10, paddingBottom: 10}}>
           <Body>
             {this.props.renderRow(rowData)}
           </Body>
@@ -23,7 +23,7 @@ class RemovableItemsList extends Component {
               <Button 
                   transparent
                   onPress={() => this.props.onRemove(rowData)}>
-                <Icon name='md-close' />
+                <Icon name='md-trash' />
               </Button>
             </Right>
           }

@@ -5,7 +5,7 @@ class RecommendationService(object):
     """
     Provides restaurant recommendations to users.
     """
-    QUERY_LIMIT = 20
+    QUERY_LIMIT = 3 # counts from 0
 
     def get_restaurants(self, user_id, preference):
         """

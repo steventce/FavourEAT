@@ -1,22 +1,14 @@
 import React, { Component } from 'react';
 import { Button, Image, Navigator, StyleSheet, Text, TouchableOpacity, View, ScrollView, Dimensions } from 'react-native';
-import { Container, Icon } from 'native-base';
-import SwipeCards from 'react-native-swipe-cards';
+import { Content, Container, Icon, Fab, Button as NBButton, Card, CardItem, Body, Left, Right } from 'native-base';
+import { Col, Row, Grid } from 'react-native-easy-grid';
 import Communications from 'react-native-communications';
 import Hr from 'react-native-hr';
 
-import common from '../../styles/common'
+import common, { colors as commonColors } from '../../styles/common';
 import styles from './styles';
 
-
 var moment = require('moment');
-// TODO: remove and use url
-var miku = require('../../images/miku.jpg')
-var kishimoto = require('../../images/kishimoto.jpg')
-var minami = require('../../images/minami.jpg')
-var suika = require('../../images/suika.jpg')
-var shizenya = require('../../images/shizenya.jpg')
-
 var width = Dimensions.get('window').width;
 
 var hoursMap = {0: "Monday",
@@ -27,8 +19,6 @@ var hoursMap = {0: "Monday",
                 5: "Saturday",
                 6: "Sunday"};
 
-const iconCol = StyleSheet.flatten(common.iconCol);
-
 class RestaurantDetails extends Component {
     constructor(props) {
         super(props);
@@ -38,6 +28,9 @@ class RestaurantDetails extends Component {
         this.getRating = this.getRating.bind(this);
         this.getHours = this.getHours.bind(this);
         this.getReviews = this.getReviews.bind(this);
+        this.state = {
+            fabActive: false
+        }
     }
 
     static navigationOptions = {
@@ -47,7 +40,7 @@ class RestaurantDetails extends Component {
     getRating(rating, restaurant) {
         var icons = [];
         for (var i = 0; i < rating; i++) {
-            icons.push(<Icon key={restaurant.name + i} name='md-star' style={iconCol} />);
+            icons.push(<Icon key={restaurant.name + i} name='md-star' style={{color: commonColors.RATING_COLOR}} />);
         }
         return (
             <View style={{ flexDirection: 'row' }}>
@@ -59,7 +52,7 @@ class RestaurantDetails extends Component {
     getReviewRating(review) {
         var icons = [];
         for (var i = 0; i < review['rating']; i++) {
-          icons.push(<Icon key={review['user']['name'] + i} name='md-star' style={{ fontSize: 17, color:'#bd081c', marginTop: 3 }} />);
+          icons.push(<Icon key={review['user']['name'] + i} name='md-star' style={{ fontSize: 17, color: commonColors.RATING_COLOR, marginTop: 3 }} />);
         }
         return icons;
     }
@@ -78,17 +71,26 @@ class RestaurantDetails extends Component {
         if (!("hours" in restaurant)) {
             return (<Text style={[styles.hours, styles.txtColor]}>No hours available</Text>);
         }
-        var result = '';
-        for (i = 0; i < restaurant.hours[0]["open"].length; i++) {
-            var start = restaurant.hours[0]["open"][i].start;
-            var end = restaurant.hours[0]["open"][i].end;
-            var day = restaurant.hours[0]["open"][i].day;
-            var currResult = hoursMap[day] + ': ' + moment(start, "HHmm").format("h:mm A") + ' - ' + moment(end, "HHmm").format("h:mm A");
-            result = result + currResult + '\n';
-        }
-        return (
-            <Text style={[styles.hours, styles.txtColor]}>{result}</Text>
-        )
+
+        return restaurant.hours[0]["open"].map((datetime, index) => {
+          var start = datetime.start;
+          var end = datetime.end;
+          var day = datetime.day;
+          var displayedDay = hoursMap[day] + ': '; 
+          var displayedTime = moment(start, "HHmm").format("h:mm A") + ' - ' + moment(end, "HHmm").format("h:mm A");
+
+          return (
+            <View key={index} style={[styles.hours]}>
+              <Left>
+                <Text style={[styles.txtColor, {fontSize: 16}]}>{displayedDay}</Text>
+              </Left>
+              <Right>
+                <Text style={[styles.txtColor, {fontSize: 16}]}>{displayedTime}</Text>
+              </Right>
+            </View>
+          );
+
+        });
     }
 
     getReviews(restaurant) {
@@ -101,7 +103,7 @@ class RestaurantDetails extends Component {
         for (i = 0; i < reviews.length; i++) {
           var rev = reviews[i];
           result.push(
-            <View key={'review' + i} style={styles.infoView}>
+            <View key={'review' + i} style={{marginBottom: 25}}>
               <View style={{ flexDirection: 'row' }}>
                 <Text style={[styles.reviewRating, styles.txtColor]}>{rev['user']['name']} </Text>
                   {this.getReviewRating(rev)}
@@ -113,51 +115,88 @@ class RestaurantDetails extends Component {
         return result;
     }
 
+    toggleFab = () => {
+      this.setState({ fabActive: !this.state.fabActive });
+    }
+
     render() {
         const { navigate } = this.props.navigation;
-        const restaurant = this.props.navigation.state.params.restaurant;
+        const tournamentObj = this.props.navigation.state.params.restaurant;
+        const restaurant = tournamentObj.restaurant;
         const swipeable = this.props.navigation.state.params.swipeable;
 
         return (
-            <ScrollView style={styles.container}>
-                <View style={styles.imgContainer}>
-                    <Image source={restaurant.image} resizeMode="cover" style={{ height: 250, width: width }} />
-                    <TouchableOpacity style={styles.overlapBtn} onPress={() => Communications.phonecall(restaurant.phone, true)}>
-                        <Icon name='call' size={25} style={iconCol} />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.overlapBtn}>
-                        <Icon name='restaurant' size={25} style={iconCol} />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.overlapBtn}>
-                        <Icon name='locate' size={25} style={iconCol} />
-                    </TouchableOpacity>
-                </View>
-                <View style={[styles.card]}>
-                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#444' }}>{restaurant.name}</Text>{this.getRating(restaurant.rating, restaurant)}
-                    <Text style={{ fontSize: 16,  color: '#444' }}>{restaurant.address}</Text>
-                   {swipeable &&
-                       <View style={styles.swipeBtns}>
-                            <TouchableOpacity style={common.swipeBtn} onPress={() => this.onClickNope(restaurant)}>
-                                <Icon name='close' size={30} style={iconCol} />
-                            </TouchableOpacity>
-                            <TouchableOpacity style={common.swipeBtn} onPress={() => this.onClickYup(restaurant)}>
-                                <Icon name='heart' size={28} style={iconCol} />
-                            </TouchableOpacity>
-                        </View>
-                   }
-                </View>
-                <View style={styles.infoView}>
-                    <Hr lineColor='#b3b3b3' />
-                    <Text style={styles.restaurantInfo}>Hours</Text>
-                    {this.getHours(restaurant)}
-                </View>
-                <View style={[styles.infoView, styles.reviewMargin]}>
-                    <Hr lineColor='#b3b3b3' />
-                    <Text style={styles.restaurantInfo}>Reviews</Text>
-                    {this.getReviews(restaurant)}
-                </View>
+          <Container>
+            <Content style={StyleSheet.flatten(styles.container)}>
+              <View style={styles.imgContainer}>
+                  <Image source={{uri: restaurant.image_url}} resizeMode="cover" style={{ height: 250, width: width }} />                  
+              </View>
 
-            </ScrollView>
+              <Card style={StyleSheet.flatten([styles.card])}>
+                <View style={{ padding: 17 }}>
+                  <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#444' }}>
+                    {restaurant.name}
+                  </Text>
+                  {this.getRating(restaurant.rating, restaurant)}
+                  <Text style={{ fontSize: 16,  color: '#444' }}>{restaurant.address}</Text>
+                </View>
+              </Card>
+              {swipeable &&
+                <View style={styles.swipeBtns}>
+                  <TouchableOpacity 
+                      style={[common.swipeBtn, {backgroundColor: commonColors.NOPE_COLOR}]} 
+                      onPress={() => this.onClickNope(tournamentObj)}>
+                      <Icon name='close' size={30} style={{color: 'white'}} />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                      style={[common.swipeBtn, {backgroundColor: commonColors.YUP_COLOR}]} 
+                      onPress={() => this.onClickYup(tournamentObj)}>
+                      <Icon name='heart' size={25} style={{color: 'white'}} />
+                  </TouchableOpacity>
+                </View>
+              }
+              <Card style={StyleSheet.flatten(styles.infoView)}>
+                  <CardItem header style={{paddingBottom: 0}}>
+                    <Text style={styles.restaurantInfo}>Hours</Text>
+                  </CardItem>
+                  <CardItem style={{flex: 1, flexDirection: 'column', paddingBottom: 17}}>
+                      {this.getHours(restaurant)}
+                  </CardItem>
+              </Card>
+              <Card style={StyleSheet.flatten([styles.infoView, styles.reviewMargin])}>
+                <CardItem header style={{paddingBottom: 0}}>
+                  <Text style={styles.restaurantInfo}>Reviews</Text>
+                </CardItem>
+                <CardItem>
+                  <Body>
+                    {this.getReviews(restaurant)}
+                  </Body>
+                </CardItem>
+              </Card>
+
+            </Content>
+            <Fab
+                active={this.state.fabActive}
+                onPress={this.toggleFab}
+                direction='up'
+                style={{ backgroundColor: '#EDA743' }}
+                position='bottomRight'>
+              <Icon name='menu' />
+              <NBButton 
+                  style={{ backgroundColor: '#EFBE79' }}
+                   onPress={() => Communications.phonecall(restaurant.phone, true)}>
+                <Icon name='call' />
+              </NBButton>
+              {/*
+                <NBButton style={{ backgroundColor: '#EFBE79' }}>
+                  <Icon name='restaurant' />
+                </NBButton>
+                <NBButton style={{ backgroundColor: '#EFBE79' }}>
+                  <Icon name='locate' />
+                </NBButton>
+              */}
+            </Fab>
+          </Container>
         );
     }
 }

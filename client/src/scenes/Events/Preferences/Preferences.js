@@ -45,11 +45,18 @@ class Preferences extends Component {
           appAccessToken
         });
       }
+      const userId = await AsyncStorage.getItem('user_id');
+      if (userId) {
+        this.setState({
+          userId
+        });
+      }
     } catch (error) {
       Alert.alert('Error', 'Loading Error. Please try again.');
     }
   }
 
+  // not really needed but keeping for now
   componentWillReceiveProps(nextProps) {
     if (this.props.eventId !== nextProps.eventId) {
       this.props.startTournament();
@@ -129,13 +136,18 @@ class Preferences extends Component {
     });
   };
 
+  handleDoneClick()  {
+    this.props.savePreferences(this.state.appAccessToken, this.state.userId, this.state.preferences);
+    this.props.startTournament();
+  }
+
   render() {
     const { params } = this.props.navigation.state;
     const readOnly = (params && params.readOnly) || false;
 
     return (
       <Container>
-        <Content>
+        <Content contentContainerStyle={{backgroundColor: 'white'}}>
           <List>
             <SettingsBtn
                 onPress={this.openModal({
@@ -198,7 +210,7 @@ class Preferences extends Component {
             {!readOnly &&
               <Button
                   full success
-                  onPress={() => this.props.savePreferences(this.state.appAccessToken, 8, this.state.preferences)}>
+                  onPress={() => this.handleDoneClick()}>
                 <Text>
                   DONE
                 </Text>

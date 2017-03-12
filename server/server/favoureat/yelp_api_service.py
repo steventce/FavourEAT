@@ -46,7 +46,6 @@ class YelpAPIService(object):
         """
         Gets restaurant details from the Yelp API.
         """
-        print 'Get details'
         headers = {
             'Authorization': 'Bearer {0}'.format(access_token)
         }
@@ -60,7 +59,6 @@ class YelpAPIService(object):
         """
         Gets restaurant reviews from the Yelp API.
         """
-        print 'Get reviews'
         headers = {
             'Authorization': 'Bearer {0}'.format(access_token)
         }
@@ -83,6 +81,7 @@ class YelpAPIService(object):
         restaurants = []
 
         for i, restaurant in enumerate(search_results.get('businesses', [])):
+            print restaurant['name']
             yelp_id = restaurant['id']
 
             # Fetch from the Reviews API
