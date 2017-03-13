@@ -7,7 +7,8 @@ from server.models import (
     Restaurant,
     Tournament,
     EventDetail,
-    Event
+    Event,
+    Preference
 )
 
 import json
@@ -61,3 +62,9 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ('id', 'creator', 'event_detail', 'round_num')
+
+
+class PreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Preference
+        fields = ('id', 'min_price', 'max_price', 'radius', 'latitude', 'longitude', 'latitude')

@@ -1,6 +1,4 @@
 import json
-from datetime import datetime
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -10,7 +8,8 @@ from server.favoureat.serializers import (
     RestaurantSerializer,
     TournamentSerializer,
     EventDetailSerializer,
-    EventSerializer
+    EventSerializer,
+    PreferenceSerializer
 )
 from server.models import (
     Swipe,
@@ -110,6 +109,7 @@ class EventView(APIView):
     """
     TERM = 'restaurants'
     YELP_LIMIT = 50
+    DEFAULT_RADIUS = 100
     PRICE_THRESHOLDS = [
         {'price': 20, 'yelp_cd': '1'},
         {'price': 40, 'yelp_cd': '2'},
@@ -129,70 +129,87 @@ class EventView(APIView):
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data)
 
+    def get_prefs_params_data(self, **request_data):
+        """
+        Get the required fields for the Preference model
+        Get the required fields for the query parameters
+        """
+        prefs = {
+            'radius': request_data.get('radius', self.DEFAULT_RADIUS),
+            'latitude': request_data.get('latitude', None),
+            'longitude': request_data.get('longitude', None),
+            'min_price': request_data.get('min_price', 0),
+            'max_price': request_data.get('max_price', None),
+        }
+
+        params = {
+            'term': self.TERM,
+            'limit': self.YELP_LIMIT,
+            'radius': prefs['radius'],
+            'latitude': prefs['latitude'],
+            'longitude': prefs['longitude'],
+            'categories': ','.join(request_data.get('cuisine_types', ''))
+        }
+
+        for threshold in self.PRICE_THRESHOLDS:
+            if prefs['max_price'] <= threshold['price']:
+                params['price'] = threshold['yelp_cd']
+                break
+
+        return prefs, params
+
     def post(self, request, user_id, format=None):
         """
         Creates the specified event for a particular user.
         """
-        categories = request.data.get('cuisine_types')
-        radius = request.data.get('radius') # Meters
-        latitude = request.data.get('latitude')
-        longitude = request.data.get('longitude')
-        max_price = request.data.get('max_price')
-        min_price = request.data.get('min_price')
-        name = request.data.get('name')
+        try:
+            user = User.objects.get(pk=user_id)
+            if user.id != request.user.id:
+                return Response('Invalid user id', status=status.HTTP_401_UNAUTHORIZED)
 
-        preference = Preference(
-            radius=radius,
-            latitude=latitude,
-            longitude=longitude,
-            min_price=min_price,
-            max_price=max_price
-        )
-        preference.save()
+            prefs_data, params = self.get_prefs_params_data(**request.data)
 
-        for category in categories:
-            preference_cuisine = PreferenceCuisine(
-                preference=preference, cuisine=Cuisine.objects.get(category=category))
-            preference_cuisine.save()
+            serializer = PreferenceSerializer(data=prefs_data)
+            if not serializer.is_valid():
+                return Response('Bad request', status=status.HTTP_400_BAD_REQUEST)
 
-        event_detail = EventDetail(
-            datetime=datetime.now(),
-            name=name,
-            preference=preference
-        )
-        event_detail.save()
+            # Get restaurants
+            restaurants = RecommendationService().get_restaurants(
+                user_id=user_id, preference=params)
 
-        user = User.objects.get(pk=user_id)
-        event = Event(creator=user, event_detail=event_detail, round_num=0)
-        event.save()
-        event_user_attach = EventUserAttach(user=user, event=event)
-        event_user_attach.save()
+            # Start saving
+            preference = serializer.save()
 
-        params = {
-            'term': self.TERM,
-            'categories': ','.join(categories),
-            'radius': radius,
-            'latitude': latitude,
-            'longitude': longitude,
-            'limit': self.YELP_LIMIT
-        }
+            cuisines = Cuisine.objects.filter(category__in=request.data.get('cuisine_types', []))
+            for cuisine in cuisines:
+                preference_cuisine = PreferenceCuisine(
+                    preference=preference, cuisine=cuisine)
+                preference_cuisine.save()
 
-        if max_price is not None:
-            for threshold in self.PRICE_THRESHOLDS:
-                if max_price <= threshold['price']:
-                    params['price'] = threshold['yelp_cd']
-                    break
+            event_detail = EventDetail(
+                datetime=timezone.now(),
+                name=request.data.get('name', timezone.now()),
+                preference=preference
+            )
+            event_detail.save()
 
-        # Create the tournament rounds for the event
-        restaurants = RecommendationService().get_restaurants(user_id=user_id, preference=params)
+            user = User.objects.get(pk=user_id)
+            event = Event(creator=user, event_detail=event_detail, round_num=0)
+            event.save()
+            event_user_attach = EventUserAttach(user=user, event=event)
+            event_user_attach.save()
 
-        for restaurant in restaurants:
-            tournament = Tournament(event=event, restaurant=restaurant, vote_count=0)
-            tournament.save()
+            # Create the tournament rounds for the event
+            for restaurant in restaurants:
+                tournament = Tournament(event=event, restaurant=restaurant, vote_count=0)
+                tournament.save()
 
-        response = Response({'event_id': event.id}, status=status.HTTP_201_CREATED)
-        response['Location'] = '/v1/events/{id}'.format(id=event.id)
-        return response
+            response = Response({'event_id': event.id}, status=status.HTTP_201_CREATED)
+            response['Location'] = '/v1/events/{id}'.format(id=event.id)
+            return response
+
+        except User.DoesNotExist:
+            return Response('User not found', status=status.HTTP_404_NOT_FOUND)
 
 
 class EventDetailsView(APIView):

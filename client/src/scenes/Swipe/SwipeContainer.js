@@ -65,6 +65,12 @@ class SwipeContainer extends Component {
 
   componentWillReceiveProps(nextProps) {
     const { eventId, tournamentArr } = nextProps;
+    if (tournamentArr.length === 0) {
+      Alert.alert('Error', 'Loading Error. Please try again.',
+      [
+        { text: 'OK', onPress: () => this.props.navigation.goBack() }
+      ]);
+    }
     this.setState({ eventId, cards: tournamentArr });
   }
 
