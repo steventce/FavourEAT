@@ -61,6 +61,10 @@ class UserEvents extends Component {
                 onPress={() => navigate('Preferences')}>
                 <Text>Start Session</Text>
               </Button>
+              <Button 
+                onPress={() => navigate('Map')}>
+                <Text>Map</Text>
+              </Button>
             </View>
           </View>
           {events.map((event) => {
