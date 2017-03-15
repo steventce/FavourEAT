@@ -9,6 +9,7 @@ from server.favoureat.serializers import (
     TournamentSerializer,
     EventDetailSerializer,
     EventSerializer,
+    EventUserAttachSerializer,
     PreferenceSerializer
 )
 from server.models import (
@@ -269,7 +270,14 @@ class EventDetailsView(APIView):
             return Response("User not found", status=status.HTTP_404_NOT_FOUND)
         event, event_detail = self.get_object(event_id)
         serializer = EventDetailSerializer(event_detail)
-        return Response(serializer.data)
+        event_data = serializer.data
+
+        # Retrieve users invited to event
+        participants = EventUserAttach.objects.filter(event=event_id)
+        event_data['num_participants'] = participants.count()
+        event_data['participants'] = EventUserAttachSerializer(participants, many=True).data
+
+        return Response(event_data)
 
     def put(self, request, user_id, event_id, format=None):
         """Updates event detail. Note that only the user who created the event can update the details."""
