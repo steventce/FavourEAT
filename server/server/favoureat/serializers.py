@@ -8,6 +8,7 @@ from server.models import (
     Tournament,
     EventDetail,
     Event,
+    EventUserAttach,
     Preference
 )
 
@@ -62,6 +63,14 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ('id', 'creator', 'event_detail', 'round_num')
+
+
+class EventUserAttachSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
+    class Meta:
+        model = EventUserAttach
+        fields = ('id', 'user')
 
 
 class PreferenceSerializer(serializers.ModelSerializer):
