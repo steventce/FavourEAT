@@ -5,18 +5,23 @@ import MapView from 'react-native-maps';
 
 import styles from './styles';
 
+const DEFAULT_LATITUDE_DELTA = 0.0922;
+const DEFAULT_LONGITUDE_DELTA = 0.0421;
+
 class Map extends Component {
   constructor(props) {
     super(props);
     
+    const { restaurant } = this.props.navigation.state.params;
+
     this.state = {
       region: {
-        latitude: 0,
-        longitude: 0,
-        latitudeDelta: 0,
-        longitudeDelta: 0,
+        latitude: restaurant.coordinates.latitude,
+        longitude: restaurant.coordinates.longitude,
+        latitudeDelta: DEFAULT_LATITUDE_DELTA,
+        longitudeDelta: DEFAULT_LONGITUDE_DELTA,
       },
-      position: {}
+      position: null
     }
   }
 
@@ -34,13 +39,12 @@ class Map extends Component {
         const { restaurant } = this.props.navigation.state.params;
         const rLatitude = restaurant.coordinates.latitude;
         const rLongitude = restaurant.coordinates.longitude;
-        console.log(restaurant)
 
         const region = {
           latitude: (rLatitude + latitude) / 2,
           longitude: (rLongitude + longitude) / 2,
-          latitudeDelta: Math.abs(rLatitude - latitude),
-          longitudeDelta: Math.abs(rLongitude - longitude),
+          latitudeDelta: Math.abs(rLatitude - latitude) * 1.15,
+          longitudeDelta: Math.abs(rLongitude - longitude) * 1.15,
         }
 
         this.setState({
@@ -62,14 +66,21 @@ class Map extends Component {
   }
 
   render() {
-    console.log("region", this.state.region);
-    console.log("position", this.state.position);
+    const { restaurant } = this.props.navigation.state.params;
 
     return (
       <MapView
            style={styles.map}
            region={this.state.region}
            onRegionChange={this.onRegionChange}>
+          <MapView.Marker 
+              coordinate={restaurant.coordinates}
+              title={restaurant.name} />
+          {this.state.position && 
+            <MapView.Marker
+                coordinate={this.state.position}
+                title='Me' />
+          }
       </MapView>
     );
   }
