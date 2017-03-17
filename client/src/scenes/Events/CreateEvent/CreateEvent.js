@@ -1,31 +1,35 @@
 import React, { Component } from 'react';
-import { Text, Image, View } from 'react-native';
-import { Button, Container, Content, Form, H1, Item, Input, Label } from 'native-base';
+import { Alert, Image, Text, View } from 'react-native';
+import { Badge, Button, Container, Content, Form, H1, Item, Input, Label } from 'native-base';
+import CreateEventContainer from './CreateEventContainer';
 import DatePicker from 'react-native-datepicker';
+
+var moment = require('moment');
 
 class CreateEvent extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      date: new Date(),
-      time: new Date()
+      eventName: '',
+      date: moment().format('YYYY-MM-DD'),
+      time: moment().format('HH:mm')
     };
   }
 
   render() {
     return (
-      <Container>
+      <Container style={{ paddingLeft: 10 }}>
         <Content>
           <View>
-            <H1>CreateEvent</H1>
-          </View>
-          <Form>
             <Item fixedLabel>
               <Label>Event Name: </Label>
-              <Input />
+              <Input onChange={(name) => this.setState({ eventName: name })} />
             </Item>
-            <Item fixedLabel>
+          </View>
+          <View>
+            <Text>Date & Time:</Text>
+            <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
               <DatePicker
                 date={this.state.date}
                 mode="date"
@@ -34,36 +38,39 @@ class CreateEvent extends Component {
                 cancelBtnText="Cancel"
                 minDate={new Date()}
                 showIcon={false}
-                onDateChange={(date) => {this.setState({ date: date })}} />
-                <DatePicker
+                onDateChange={(date) => { this.setState({ date: date }) }} />
+              <DatePicker
                 date={this.state.time}
                 mode="time"
                 format="HH:mm"
                 confirmBtnText="Confirm"
                 cancelBtnText="Cancel"
                 showIcon={false}
-                onDateChange={(time) => {this.setState({ time: time })}} />
-            </Item>
-            <Item fixedLabel>
-              <Label>Cuisine: </Label>
-              <Input disabled />
-            </Item>
-            <Item fixedLabel>
-              <Label>Price Range: </Label>
-              <Input disabled />
-            </Item>
-            <Item fixedLabel last>
-              <Label>Max Distance: </Label>
-              <Input disabled />
-            </Item>
-          </Form>
+                onDateChange={(time) => { this.setState({ time: time }) }} />
+            </View>
+          </View>
           <View>
-          <Button primary>
-            <Text>Set Preferences</Text>
-          </Button>
-          <Button primary>
-            <Text>Create Event</Text>
-          </Button>
+            <Label>Cuisine:</Label>
+            <View style={{ flex: 1, flexDirection: 'row' }}>
+              {this.props.preferences.cuisineTypes.map((cuisine) =>
+                <Badge info key={cuisine.label}><Text>{cuisine.label}</Text></Badge>)}
+            </View>
+          </View>
+          <View style={{ flex: 1, flexDirection: 'row' }}>
+            <Text>Price Range: </Text>
+            <Text>${this.props.preferences.minPrice} - ${this.props.preferences.maxPrice}</Text>
+          </View>
+          <View style={{ flex: 1, flexDirection: 'row' }}>
+            <Text>Max Distance: </Text>
+            <Text>{this.props.preferences.distance} km</Text>
+          </View>
+          <View>
+            <Button primary onPress={() => this.props.setPreferences()}>
+              <Text>Set Preferences</Text>
+            </Button>
+            <Button primary onPress={() => this.props.validate(this.state.eventName, this.state.date, this.state.time)}>
+              <Text>Create Event</Text>
+            </Button>
           </View>
         </Content>
       </Container>

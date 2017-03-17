@@ -19,7 +19,8 @@ class Preferences extends Component {
   };
 
   static navigationOptions = {
-    title: 'Restaurant Preferences'
+    title: 'Restaurant Preferences',
+    prev: ({ state }) => $(state.params.prev)
   }
 
   constructor(props) {

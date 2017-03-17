@@ -18,6 +18,7 @@ import RestaurantDetails from './src/scenes/RestaurantDetails';
 const store = configureStore();
 
 const HomeStack = StackNavigator({
+  CreateEvent: { screen: CreateEvent },
   UserEvents: { screen: UserEvents },
   Preferences: { screen: Preferences },
   Tournament: { screen: Tournament }
