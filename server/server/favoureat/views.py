@@ -273,15 +273,15 @@ class IndividualTournamentView(APIView):
         num_participants = EventUserAttach.objects.filter(event=event_id).count()
         round_completed = True
         event = Event.objects.get(pk=event_id)
-        # if timezone.now() < event.event_detail.voting_deadline:
-        #     if event.round_num == 0:
-        #         return False
-        #     for t in tournament_data:
-        #         if t[0].vote_count + t[1].vote_count != num_participants:
-        #             round_completed = False
+        if num_participants > 1 and timezone.now() < event.event_detail.voting_deadline:
+            if event.round_num == 0:
+                return False
+            for t in tournament_data:
+                if t[0].vote_count + t[1].vote_count != num_participants:
+                    round_completed = False
 
-        # if not round_completed:
-        #     return False
+        if not round_completed:
+            return False
 
         event.round_num += 1
         event.save()
