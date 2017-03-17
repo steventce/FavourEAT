@@ -20,8 +20,16 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = [
     url(r'^v1/token/$', views.TokenView.as_view()),
-    url(r'^v1/users/(?P<pk>[0-9]+)/$', views.UserView.as_view()),
+    url(r'^v1/users/(?P<user_id>[0-9]+)/$', views.UserView.as_view()),
     url(r'^v1/users/(?P<user>[0-9]+)/swipes/$', views.UserSwipeView.as_view()),
+    url(r'^v1/users/(?P<user_id>[0-9]+)/events/$',
+        views.EventView.as_view()),
+    url(r'^v1/users/(?P<user_id>[0-9]+)/events/(?P<event_id>[0-9]+)/$',
+        views.EventDetailsView.as_view()),
+    url(r'^v1/events/(?P<event_id>[0-9]+)/tournament/$',
+        views.IndividualTournamentView.as_view()),
+    url(r'^v1/events/(?P<event_id>[0-9]+)/tournament/(?P<tournament_id>[0-9]+)/$',
+        views.IndividualTournamentView.as_view()),
     url(r'^auth/', include('rest_framework_social_oauth2.urls')),
     url(r'^admin/', admin.site.urls)
 ]

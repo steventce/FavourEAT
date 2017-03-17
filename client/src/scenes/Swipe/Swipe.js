@@ -1,35 +1,27 @@
 import React, { Component } from 'react';
-import { Button, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Container, Icon } from 'native-base';
+import { Button, Image, StyleSheet, Text, TouchableOpacity, View, Dimensions } from 'react-native';
+import { Container, Icon, Card, Spinner } from 'native-base';
+import SwipeContainer from './SwipeContainer';
 import SwipeCards from 'react-native-swipe-cards';
 
-// TODO: remove and use url
-var miku = require('../../images/miku.jpg')
-var kishimoto = require('../../images/kishimoto.jpg')
-var minami = require('../../images/minami.jpg')
-var suika = require('../../images/suika.jpg')
-var shizenya = require('../../images/shizenya.jpg')
-
-// TODO: get list from props
-const Cards = [
-    { name: 'Miku', image: miku, rating: 5 },
-    { name: 'Kishimoto', image: kishimoto, rating: 5 },
-    { name: 'Minami', image: minami, rating: 4 },
-    { name: 'Suika', image: suika, rating: 4 },
-    { name: 'Shizen Ya', image: shizenya, rating: 4 },
-]
+import { colors as commonColors } from '../../styles/common';
 
 class Swipe extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            card: Cards
+            card: this.props.Cards,
+            rightSwipes: [],
+            leftSwipes: []
         };
 
+        this.handleYup = this.handleYup.bind(this);
         this.onClickYup = this.onClickYup.bind(this);
+        this.handleNope = this.handleNope.bind(this);
         this.onClickNope = this.onClickNope.bind(this);
         this.getRating = this.getRating.bind(this);
+        this.noMore = this.noMore.bind(this);
     }
 
     static navigationOptions = {
@@ -37,21 +29,40 @@ class Swipe extends Component {
     };
 
     Card(restaurant) {
+        const screen = Dimensions.get('window');
+        const imageSize = {
+          width: Math.round(screen.width * 0.95),
+          height: Math.round(screen.height * 0.55),
+        };
+        const cardStyle = {
+          height: Math.round(screen.height * 0.8),
+          width: Math.round(screen.width * 0.95),
+          borderRadius: 10,
+          overflow: 'hidden',
+          backgroundColor: 'white',
+        };
+      
         return (
-            <View style={[styles.card]}>
-                <View style={{ flexDirection: 'row'}} >
-                    <Text style={{ fontSize: 40,  color: '#444' }}>{restaurant.name}</Text>
-                </View>
-                <Image source={restaurant.image} resizeMode="cover" style={{ width: 350, height: 350 }} />
+            <Card style={cardStyle}>
+              <View>
+                <Image source={{uri: restaurant.image_url}} resizeMode="cover" style={[imageSize, styles.image]} />
+              </View>
+              <View style={[styles.cardMeta]}>
+                <Text 
+                    numberOfLines={3}
+                    style={styles.restaurantName}>
+                  {restaurant.name}
+                </Text>
                 {this.getRating(restaurant)}
-            </View>
+              </View>
+            </Card>
         )
     }
 
     getRating(restaurant) {
         var icons = []
         for (var i = 0; i < restaurant.rating; i++) {
-            icons.push(<Icon key={restaurant.name + i} name='star'></Icon>);
+            icons.push(<Icon key={restaurant.name + i} name='md-star' style={{color: commonColors.RATING_COLOR}}></Icon>);
         }
         return (
             <View style={{ flexDirection: 'row' }}>
@@ -60,48 +71,73 @@ class Swipe extends Component {
         );
     }
 
-    handleYup(card) {
-        console.log('Yup for ${card.name}');
+    handleYup(restaurant) {
+        var arr = this.state.rightSwipes.slice();
+        arr.push(restaurant);
+        this.setState({ rightSwipes: arr });
     }
 
-    onClickYup() {
+    onClickYup(restaurant) {
         this.swiper._goToNextCard();
+        this.handleYup(restaurant);
     }
 
-    handleNope(card) {
-        console.log('Yup for ${card.restaurantName}');
+    handleNope(restaurant) {
+        var arr = this.state.leftSwipes.slice();
+        arr.push(restaurant);
+        this.setState({ leftSwipes: arr });
     }
 
-    onClickNope() {
-        this.swiper._goToNextCard();        
+    onClickNope(restaurant) {
+        this.swiper._goToNextCard();
+        this.handleNope(restaurant);
     }
 
     noMore() {
+        // NOT USED FOR DEMO
+        //this.props.postSwipe(this.state.leftSwipes, this.state.rightSwipes);
+        this.props.nextRound(this.state.rightSwipes);
         return (
-            <Text>No more</Text>
-        )
+            <Spinner color='red'/>
+        );
     }
 
-    render() {
-        const { navigate } = this.props.navigation;
+    handleGoToDetails = () => {
+      this.props.navigate('RestaurantDetails', {
+        restaurant: this.swiper.state.card, 
+        caller: this,
+        swipeable: true,
+      });
+    };
 
+    render() {
         return (
             <View style={styles.container}>
                 <SwipeCards
                     ref={(card) => { this.swiper = card; }}
                     cards={this.state.card}
 
-                    renderCard={(cardData) => this.Card(cardData)}
+                    onClickHandler={this.handleGoToDetails}
+                    renderCard={(cardData) => this.Card(cardData.restaurant)}
                     renderNoMoreCards={this.noMore}
-                    handleYup={this.handleYup}
-                    handleNope={this.handleNope}
+                    handleYup={(restaurant) => this.handleYup(restaurant)}
+                    handleNope={(restaurant) => this.handleNope(restaurant)}
                 />
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 5 }}>
-                    <TouchableOpacity style={styles.button} onPress={() => this.onClickNope()}>
-                        <Icon name='close' size={45} color="#888" />
+                <View style={styles.actionBtns}>
+                    <TouchableOpacity 
+                        style={[styles.button, styles.noBtn]} 
+                        onPress={() => this.onClickNope(this.swiper.state.card)}>
+                      <Icon name='close' size={45} style={StyleSheet.flatten(styles.btnIcon)} />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.button} onPress={() => this.onClickYup()}>
-                        <Icon name='heart' size={36} color="#888" />
+                    <TouchableOpacity 
+                        style={[styles.button, styles.detailsBtn]} 
+                        onPress={this.handleGoToDetails}>
+                        <Icon name='information' style={{color: 'white', fontSize: 40}} />
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                        style={[styles.button, styles.yesBtn]} 
+                        onPress={() => this.onClickYup(this.swiper.state.card)}>
+                      <Icon name='heart' size={36} style={StyleSheet.flatten(styles.btnIcon)} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -113,22 +149,51 @@ const styles = StyleSheet.create({
     button: {
         width: 80,
         height: 80,
-        borderWidth: 10,
-        borderColor: '#e7e7e7',
+        margin: 5,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 40
     },
+    noBtn: {
+      backgroundColor: commonColors.NOPE_COLOR
+    },
+    yesBtn: {
+      backgroundColor: commonColors.YUP_COLOR
+    },
+    detailsBtn: {
+      backgroundColor: '#76B376'
+    },
+    btnIcon: {
+      color: 'white'
+    },
     container: {
         flex: 1,
-        backgroundColor: '#f7f7f7'
+        backgroundColor: '#f7f7f7',
     },
     card: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 5,
-        borderColor: '#d6d7da',
+        borderRadius: 10,
+        overflow: 'hidden',
+        backgroundColor: 'white',
+    },
+    image: {
+      borderTopLeftRadius: 10,
+      borderTopRightRadius: 10,
+      overflow: 'hidden',
+    },
+    actionBtns: {
+      flexDirection: 'row', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      marginTop: 5, 
+    },
+    cardMeta: {
+      flex: 1,
+      justifyContent: 'center',
+      paddingHorizontal: 20
+    },
+    restaurantName: {
+      fontSize: 30,  
+      color: '#444', 
     }
 })
 

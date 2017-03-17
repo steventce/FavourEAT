@@ -1,0 +1,1 @@
+export const SAVE_SWIPE = 'SWIPE.SAVE_SWIPE';

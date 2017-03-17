@@ -1,0 +1,24 @@
+import { StyleSheet } from 'react-native';
+
+export const colors = {
+  APP_PRIMARY_LIGHT: '#ffb318',
+  NOPE_COLOR: '#6C8CE6',
+  YUP_COLOR: '#F36D6D',
+  RATING_COLOR: '#bd081c'
+};
+
+const common = StyleSheet.create({
+  iconCol: {
+    color:'#bd081c'
+  },
+  swipeBtn: {
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 25,
+    marginRight: 5
+  },
+});
+
+export default common;
