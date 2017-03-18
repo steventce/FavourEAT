@@ -28,7 +28,7 @@ export function fetchEvents(accessToken, userId) {
 
 export function createEvent(accessToken, userId, eventDetail, preferences) {
   return function (dispatch) {
-    //const { name, date, time, rndDuration } = eventDetail;
+    const { name, date, time, rndDuration } = eventDetail;
     const { radius, minPrice, maxPrice, cuisineTypes } = preferences;
 
     const cuisineTypeData = [];
@@ -43,8 +43,7 @@ export function createEvent(accessToken, userId, eventDetail, preferences) {
       cuisine_types: cuisineTypeData,
       latitude: 49.2827,
       longitude: -123.1207,
-      name: 'Test'
-      //name: name
+      name: name
     }
 
     return fetch(`${API_BASE_URL}v1/users/${userId}/events/`, {
@@ -60,7 +59,6 @@ export function createEvent(accessToken, userId, eventDetail, preferences) {
       return response.json();
     })
     .then((responseJson) => {
-
       // immediately fetch list of retaurant for the first round
       dispatch(getRound(accessToken, responseJson.event_id));
     })

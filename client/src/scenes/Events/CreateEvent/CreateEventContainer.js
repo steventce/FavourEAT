@@ -25,9 +25,11 @@ class CreateEventContainer extends Component {
     }
 
     console.log("valid");
+    const eventDetail = { name, date, time, rndDuration };
+
     // Proceed to setting the preferences
     const { navigate } = this.props.navigation;
-    navigate('Preferences', { name, date, time, rndDuration });
+    navigate('Preferences', { eventDetail });
   }
 
   render() {
