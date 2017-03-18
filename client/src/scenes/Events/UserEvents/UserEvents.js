@@ -87,7 +87,7 @@ class UserEvents extends Component {
 }
 
 const mapStateToProps = function(state) {
-  return { events: state.userEvent.events };
+  return { events: state.event.events };
 };
 
 export default connect(mapStateToProps)(UserEvents);
