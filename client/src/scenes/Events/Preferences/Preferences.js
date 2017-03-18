@@ -19,8 +19,7 @@ class Preferences extends Component {
   };
 
   static navigationOptions = {
-    title: 'Restaurant Preferences',
-    prev: ({ state }) => $(state.params.prev)
+    title: 'Restaurant Preferences'
   }
 
   constructor(props) {
@@ -54,13 +53,6 @@ class Preferences extends Component {
       }
     } catch (error) {
       Alert.alert('Error', 'Loading Error. Please try again.');
-    }
-  }
-
-  // not really needed but keeping for now
-  componentWillReceiveProps(nextProps) {
-    if (this.props.eventId !== nextProps.eventId) {
-      this.props.startTournament();
     }
   }
 

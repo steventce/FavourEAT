@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { Alert, AsyncStorage } from 'react-native';
+import { Alert } from 'react-native';
 import CreateEvent from './CreateEvent';
 
 var moment = require('moment');
@@ -10,12 +9,11 @@ class CreateEventContainer extends Component {
     title: 'Create an Event'
   }
 
-  setPreferences() {
-    const { navigate } = this.props.navigation;
-    navigate('Preferences', { prev: 'CreateEvent' });
-  }
-
-  validate(name, date, time) {
+  validate(name, date, time, rndDuration) {
+    console.log(name);
+    console.log(date);
+    console.log(time);
+    console.log(rndDuration);
     if (!name) {
       Alert.alert('Error', 'Please enter an event name.')
       return;      
@@ -27,21 +25,17 @@ class CreateEventContainer extends Component {
     }
 
     console.log("valid");
+    // Proceed to setting the preferences
+    const { navigate } = this.props.navigation;
+    navigate('Preferences', { name, date, time, rndDuration });
   }
 
   render() {
     return (
-      <CreateEvent validate={this.validate.bind(this)}
-        setPreferences={this.setPreferences.bind(this)}
-        {...this.props}/>
+      <CreateEvent validate={ this.validate.bind(this) } />
     );
   }
 }
 
-const mapStateToProps = (state, ownProps) => {
-  return {
-    preferences: state.event.preferences
-  }
-};
 
-export default connect(mapStateToProps)(CreateEventContainer);
+export default CreateEventContainer;

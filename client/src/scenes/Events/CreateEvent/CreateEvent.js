@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { Alert, Image, Text, View } from 'react-native';
-import { Badge, Button, Container, Content, Form, H1, Item, Input, Label } from 'native-base';
+import { Alert, Text, TextInput, View } from 'react-native';
+import { Button, Container, Content, Item, Input, Label } from 'native-base';
 import CreateEventContainer from './CreateEventContainer';
 import DatePicker from 'react-native-datepicker';
 
@@ -13,19 +13,18 @@ class CreateEvent extends Component {
     this.state = {
       eventName: '',
       date: moment().format('YYYY-MM-DD'),
-      time: moment().format('HH:mm')
+      time: moment().format('HH:mm'),
+      duration: moment().startOf('day').format('HH:mm')
     };
   }
 
   render() {
     return (
-      <Container style={{ paddingLeft: 10 }}>
+      <Container style={{ paddingLeft: 10, paddingTop: 10 }}>
         <Content>
           <View>
-            <Item fixedLabel>
-              <Label>Event Name: </Label>
-              <Input onChange={(name) => this.setState({ eventName: name })} />
-            </Item>
+            <Text>Event Name: </Text>
+            <TextInput onChangeText={(name) => this.setState({ eventName: name })} value={this.state.eventName} />
           </View>
           <View>
             <Text>Date & Time:</Text>
@@ -50,25 +49,10 @@ class CreateEvent extends Component {
             </View>
           </View>
           <View>
-            <Label>Cuisine:</Label>
-            <View style={{ flex: 1, flexDirection: 'row' }}>
-              {this.props.preferences.cuisineTypes.map((cuisine) =>
-                <Badge info key={cuisine.label}><Text>{cuisine.label}</Text></Badge>)}
-            </View>
-          </View>
-          <View style={{ flex: 1, flexDirection: 'row' }}>
-            <Text>Price Range: </Text>
-            <Text>${this.props.preferences.minPrice} - ${this.props.preferences.maxPrice}</Text>
-          </View>
-          <View style={{ flex: 1, flexDirection: 'row' }}>
-            <Text>Max Distance: </Text>
-            <Text>{this.props.preferences.distance} km</Text>
+            <Text>Round duration</Text>
           </View>
           <View>
-            <Button primary onPress={() => this.props.setPreferences()}>
-              <Text>Set Preferences</Text>
-            </Button>
-            <Button primary onPress={() => this.props.validate(this.state.eventName, this.state.date, this.state.time)}>
+            <Button primary onPress={() => this.props.validate(this.state.eventName, this.state.date, this.state.time, this.state.duration)}>
               <Text>Create Event</Text>
             </Button>
           </View>
