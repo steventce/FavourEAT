@@ -19,7 +19,7 @@ import {
   Body
 } from 'native-base';
 import moment from 'moment';
-import { fetchEvents } from '../../../reducers/Events/UserEvents/actions';
+import { fetchEvents } from '../../../reducers/Events/actions';
 import { colors } from '../../../styles/common';
 import styles from './styles';
 import { logo, thumbnail } from '../../../config/images';

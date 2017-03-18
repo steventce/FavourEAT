@@ -1,15 +1,9 @@
 import { connect } from 'react-redux';
 import Preferences from './Preferences';
-import {
-  changeRadius,
-  getPreferences,
-  savePreferences
-} from '../../../reducers/Events/Preferences/actions';
+import { createEvent } from '../../../reducers/Events/actions';
 
 const mapStateToProps = (state, ownProps) => {
   return {
-    eventId: state.event.eventId,
-    eventCreateStatus: state.event.status,
     preferences: state.event.preferences,
     allCuisineTypes: state.event.allCuisineTypes
   }
@@ -17,11 +11,8 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = (dispatch, ownProps) => {
   return {
-    changeRadius: (radius) => {
-      dispatch(changeRadius(radius));
-    },
-    savePreferences: (access_token, event_id, preferences) => {
-      dispatch(savePreferences(access_token, event_id, preferences));
+    createEvent: (access_token, event_id, preferences) => {
+      dispatch(createEvent(access_token, event_id, null, preferences));
     },
     startTournament: () => {
       ownProps.navigation.navigate('Swipe');
