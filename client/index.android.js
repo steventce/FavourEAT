@@ -10,6 +10,7 @@ import Drawer from './src/scenes/Drawer';
 import { UserEvents } from './src/scenes/Events';
 import Preferences from './src/scenes/Events/Preferences';
 import Winner from './src/scenes/Events/Winner';
+import JoinEvent from './src/scenes/Events/JoinEvent';
 import Swipe from './src/scenes/Swipe';
 import CreateEvent from './src/scenes/Events/CreateEvent';
 import Tournament from './src/scenes/Tournament';
@@ -21,7 +22,8 @@ const HomeStack = StackNavigator({
   CreateEvent: { screen: CreateEvent },
   UserEvents: { screen: UserEvents },
   Preferences: { screen: Preferences },
-  Tournament: { screen: Tournament }
+  Tournament: { screen: Tournament },
+  JoinEvent: { screen: JoinEvent }
 }, {
   initialRouteName: 'UserEvents'
 });
@@ -29,8 +31,7 @@ const HomeStack = StackNavigator({
 const HomeDrawer = DrawerNavigator({
   Home: { screen: HomeStack },
   CreateEvent: { screen: CreateEvent },
-  Preferences: { screen: Preferences },
-  Swipe: { screen: Swipe },
+  JoinEvent: { screen: JoinEvent }
 }, {
   initialRouteName: 'Home',
   drawerWidth: 300,

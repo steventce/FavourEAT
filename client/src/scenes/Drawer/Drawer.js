@@ -14,17 +14,9 @@ const navItemConfig = {
     color: 'black',
     iconName: 'md-add'
   },
-  Preferences: {
+  JoinEvent: {
     color: 'black',
-    iconName: 'md-heart-outline'
-  },
-  Swipe: {
-    color: 'black',
-    iconName: 'md-swap'
-  },
-  RestaurantDetails: {
-    color: 'black',
-    iconName: 'md-swap'
+    iconName: 'md-people'
   }
 }
 
