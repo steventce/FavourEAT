@@ -42,6 +42,7 @@ const MainStack = StackNavigator({
   Login: { screen: Login },
   HomeDrawer: { screen: HomeDrawer },
   RestaurantDetails: { screen: RestaurantDetails },
+  Swipe: { screen: Swipe },
   Winner: { screen: Winner },
 }, {
   initialRouteName: 'Login',

@@ -22,6 +22,9 @@ const initialState = {
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
+    case actionTypes.FETCH_EVENTS_SUCCESS: {
+      return { ...state, events: action.events };
+    }
     default:
       return state;
   }
