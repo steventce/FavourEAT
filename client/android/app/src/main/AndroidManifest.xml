@@ -51,7 +51,7 @@
         </intent-filter>
       </service>
 
-      <service android:name="com.evollu.react.fcm.InstanceIdService" android:exported="false">
+      <service android:name="com.evollu.react.fcm.InstanceIdService" android:exported="true">
         <intent-filter>
             <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
         </intent-filter>
