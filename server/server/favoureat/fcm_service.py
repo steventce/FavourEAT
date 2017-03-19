@@ -7,6 +7,7 @@ class FcmService(object):
     A service that wraps around the pyfcm Firebase Cloud Messaging library.
     """
     DEFAULT_COLOR = '#ffb318'
+    DEFAULT_ICON = 'ic_stat_name'
     DEFAULT_PRIORITY = 'high'
     DEFAULT_SOUND = 'default'
 
@@ -42,6 +43,7 @@ class FcmService(object):
             'big_text': options.get('big_text', ''),
             'click_action': options.get('click_action', ''),
             'color': options.get('color', self.DEFAULT_COLOR),
+            'icon': options.get('icon', self.DEFAULT_ICON),
             'large_icon': options.get('large_icon', ''),
             'lights': options.get('lights', True),
             'number': options.get('number', 1),
@@ -53,9 +55,6 @@ class FcmService(object):
             'tag': options.get('tag', ''),
             'group': options.get('group', '')
         }
-
-        if options.get('icon') is not None:
-            options['icon'] = options.get('icon')
 
         result = {}
         if len(fcm_tokens) == 1:
