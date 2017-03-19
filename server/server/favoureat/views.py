@@ -20,7 +20,8 @@ from server.models import (
     Preference,
     PreferenceCuisine,
     Tournament,
-    Cuisine
+    Cuisine,
+    UserFcm
 )
 from server.favoureat.recommendation_service import RecommendationService
 from rest_framework.views import APIView
@@ -101,6 +102,45 @@ class TokenView(ConvertTokenView):
         for k, v in headers.items():
             response[k] = v
         return response
+
+
+class FcmTokenView(APIView):
+    """
+    A view to associate the Firebase Cloud Messaging token with the user.
+    """
+    def put(self, request, user_id, format=None):
+        """
+        Saves a FCM token for a user.
+        """
+        try:
+            user = User.objects.get(pk=request.user.id)
+            fcm_token = request.data.get('fcm_token')
+            if fcm_token is None:
+                return Response('Bad request', status=status.HTTP_400_BAD_REQUEST)
+            user_fcm, created = UserFcm.objects.get_or_create(user_id=request.user.id)
+            user_fcm.fcm_token = fcm_token
+            user_fcm.save()
+            user.user_fcm = user_fcm
+            return Response(status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response('User not found', status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, user_id, format=None):
+        """
+        Deletes a FCM token for a user.
+        """
+        try:
+            user = User.objects.get(pk=request.user.id)
+            if user.id != request.user.id:
+                return Response('Invalid user id', status=status.HTTP_401_UNAUTHORIZED)
+
+            user_fcm = UserFcm.objects.get(user=user.id)
+            user_fcm.delete()
+            return Response(status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response('User not found', status=status.HTTP_404_NOT_FOUND)
+        except UserFcm.DoesNotExist:
+            return Response('FCM token not found', status=status.HTTP_404_NOT_FOUND)
 
 
 class EventView(APIView):
