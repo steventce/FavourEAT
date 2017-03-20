@@ -26,29 +26,6 @@ import { logo, thumbnail } from '../../../config/images';
 
 import Preferences from '../Preferences/index';
 
-
-const testRestaurant = `{
-  "id": 4,
-  "yelp_id": "tuc-craft-kitchen-vancouver",
-  "distance": 1055.3361313139999,
-  "rating": 4.5,
-  "name": "Tuc Craft Kitchen",
-  "coordinates": {
-    "latitude": 49.2827049205371,
-    "longitude": -123.106144577322
-  },
-  "location": {
-    "city": "Vancouver",
-    "display_address": ["60 W Cordova Street", "Vancouver, BC V6B 1C9", "Canada"],
-    "country": "CA",
-    "address2": "",
-    "address3": "",
-    "state": "BC",
-    "address1": "60 W Cordova Street",
-    "zip_code": "V6B 1C9"
-  }
-}`
-
 class UserEvents extends Component {
   static navigationOptions = {
     header: {
@@ -83,10 +60,6 @@ class UserEvents extends Component {
               <Button success style={{ margin: 10 }}
                 onPress={() => navigate('Preferences')}>
                 <Text>Start Session</Text>
-              </Button>
-              <Button 
-                onPress={() => navigate('Map', {restaurant: JSON.parse(testRestaurant)} )}>
-                <Text>Map</Text>
               </Button>
             </View>
           </View>
