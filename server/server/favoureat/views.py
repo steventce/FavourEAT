@@ -223,6 +223,36 @@ class EventView(APIView):
             return Response('User not found', status=status.HTTP_404_NOT_FOUND)
 
 
+class JoinEventView(APIView):
+    def get_object(self, invite_code):
+        try:
+            event_detail = EventDetail.objects.get(invite_code=invite_code)
+            event = Event.objects.get(event_detail=event_detail)
+            return event, event_detail
+        except EventDetail.DoesNotExist:
+            return Response("Event detail with this invite code does not exist", status=status.HTTP_404_NOT_FOUND)
+        except Event.DoesNotExist:
+            return Response("Event does not exist", status=status.HTTP_404_NOT_FOUND)
+
+    def get_user(self, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+            return user
+        except User.DoesNotExist:
+            return Response("User not found", status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, user_id, invite_code, format=None):
+        """Join an event given an invite code"""
+        user = self.get_user(user_id)
+        event, event_detail = self.get_object(invite_code)
+        # Check if user has already joined event
+        if EventUserAttach.objects.filter(event=event, user=user).count() == 0:
+            event_user_attach = EventUserAttach(user=user, event=event)
+            event_user_attach.save()
+        serializer = EventSerializer(event)
+        return Response(serializer.data)
+
+
 class EventDetailsView(APIView):
     def get_object(self, event_id):
         try:
