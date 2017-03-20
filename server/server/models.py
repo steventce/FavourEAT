@@ -22,13 +22,15 @@ class EventDetail(models.Model):
     name = models.CharField(max_length=200, null=False)
     description = models.TextField(null=True, blank=True)
     invite_code = models.CharField(max_length=200, null=True, blank=True)
-    voting_deadline = models.DateTimeField(null=True, blank=True)
 
 
 class Event(models.Model):
     creator = models.ForeignKey(User)
     event_detail = models.ForeignKey(EventDetail)
     round_num = models.IntegerField(default=0)
+    round_duration = models.IntegerField(default=0)
+    round_start = models.DateTimeField(null=False, default=None)
+    is_group = models.BooleanField(default=False)
 
 
 class EventUserAttach(models.Model):

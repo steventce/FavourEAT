@@ -314,7 +314,7 @@ class IndividualTournamentView(APIView):
         num_participants = EventUserAttach.objects.filter(event=event_id).count()
         round_completed = True
         event = Event.objects.get(pk=event_id)
-        if num_participants > 1 and timezone.now() < event.event_detail.voting_deadline:
+        if event.is_group and ((timezone.now() - event.round_start).total_seconds() / 3600) >= event.round_duration:
             if event.round_num == 0:
                 return False
             for t in tournament_data:
@@ -325,6 +325,7 @@ class IndividualTournamentView(APIView):
             return False
 
         event.round_num += 1
+        event.round_start = timezone.now()
         event.save()
         # Update restaurants for next tournament round
         if event.round_num == 1:
