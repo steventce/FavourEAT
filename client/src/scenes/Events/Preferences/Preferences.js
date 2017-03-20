@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { Text, Alert, AsyncStorage } from 'react-native';
-import { Container, Content, List, Body, Right, ListItem, Icon, Button } from 'native-base';
+import { Container, Content, List, Body, Right, ListItem, Icon, Button, Spinner } from 'native-base';
 
 import PopupModal from '../../../components/PopupModal';
 import SettingsBtn from '../../../components/SettingsBtn';
@@ -51,6 +51,13 @@ class Preferences extends Component {
           userId
         });
       }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          this.handleChangeLocation({latitude, longitude});
+        }
+      );
     } catch (error) {
       Alert.alert('Error', 'Loading Error. Please try again.');
     }
@@ -136,6 +143,16 @@ class Preferences extends Component {
     });
   };
 
+  handleChangeLocation = (value) => {
+    this.setState({
+      preferences: {
+        ...this.state.preferences,
+        latitude: value.latitude,
+        longitude: value.longitude,
+      }
+    });
+  }
+
   handleDoneClick()  {
     this.props.savePreferences(this.state.appAccessToken, this.state.userId, this.state.preferences);
     this.props.startTournament();
@@ -144,6 +161,12 @@ class Preferences extends Component {
   render() {
     const { params } = this.props.navigation.state;
     const readOnly = (params && params.readOnly) || false;
+
+    if (this.state.preferences.latitude === null) {
+      return (
+        <Spinner />
+      );
+    }
 
     return (
       <Container>
