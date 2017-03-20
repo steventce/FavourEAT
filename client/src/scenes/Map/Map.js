@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { View, Dimensions, PermissionsAndroid } from 'react-native';
-import { Container, Content, Button, Icon } from 'native-base';
+import { Container, Content, Button, Icon, Spinner } from 'native-base';
 import MapView from 'react-native-maps';
 
 import { getRoute } from '../../reducers/Map/actions';
@@ -29,15 +29,17 @@ class Map extends Component {
   }
 
   getRoute = () => {
-    const { restaurant } = this.props.navigation.state.params;
-    const rLatitude = restaurant.coordinates.latitude;
-    const rLongitude = restaurant.coordinates.longitude;
+    if (this.state.position !== null) {
+      const { restaurant } = this.props.navigation.state.params;
+      const rLatitude = restaurant.coordinates.latitude;
+      const rLongitude = restaurant.coordinates.longitude;
 
-    getRoute(this.state.position, {latitude: rLatitude, longitude: rLongitude},
-      (routes) => {
-        this.setState({routePoints: routes});
-      }
-    );
+      getRoute(this.state.position, {latitude: rLatitude, longitude: rLongitude},
+        (routes) => {
+          this.setState({routePoints: routes});
+        }
+      );
+    }
   };
 
   setUpWatchPosition = () => {
@@ -90,7 +92,8 @@ class Map extends Component {
              region={this.state.region}
              onRegionChange={this.onRegionChange}
              showsUserLocation={true}
-             loadingEnabled={true}>
+             loadingEnabled={true}
+             showsMyLocationButton={false}>
           <MapView.Marker 
               coordinate={restaurant.coordinates}
               title={restaurant.name} />
@@ -102,7 +105,10 @@ class Map extends Component {
         <Button 
             style={{ position: 'absolute', bottom: 20, right: 20 }}
             onPress={this.getRoute}>
-          <Icon name='navigate' />
+          {(this.state.position !== null &&
+            <Icon name='navigate' />) ||
+            <Spinner /> 
+          }
         </Button>
       </View>
     );
