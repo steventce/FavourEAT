@@ -52,7 +52,7 @@ class TournamentSerializer(serializers.ModelSerializer):
 class EventDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventDetail
-        fields = ('id', 'yelp_id', 'preference', 'datetime', 'name', 'description', 'invite_code', 'voting_deadline')
+        fields = ('id', 'yelp_id', 'preference', 'datetime', 'name', 'description', 'invite_code')
 
 
 class EventSerializer(serializers.ModelSerializer):
