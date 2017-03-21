@@ -246,11 +246,14 @@ class JoinEventView(APIView):
         user = self.get_user(user_id)
         event, event_detail = self.get_object(invite_code)
         # Check if user has already joined event
-        if EventUserAttach.objects.filter(event=event, user=user).count() == 0:
+        event_user_attach = EventUserAttach.objects.filter(event=event, user=user)
+        if event_user_attach.count() == 0:
             event_user_attach = EventUserAttach(user=user, event=event)
             event_user_attach.save()
+
         serializer = EventSerializer(event)
-        return Response(serializer.data)
+        resp = serializer.data
+        return Response(data=resp, status=status.HTTP_201_CREATED)
 
 
 class EventDetailsView(APIView):
