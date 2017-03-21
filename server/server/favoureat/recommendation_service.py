@@ -15,10 +15,11 @@ class RecommendationService(object):
         """
         # Avoid sending additional API requests for unused restaurants
 
-        user_swipes = Swipe.objects.filter(pk=user_id)
-
-        if not user_swipes.exists():
-            print 'User doesnt exist... call the Yelp API Service'
-            return YelpAPIService().get_and_save_restaurants(preference, self.QUERY_LIMIT)
+        # TODO: save more yelp data as columns to filter by preference before making call to yelp api
+        # user_swipes = Swipe.objects.filter(pk=user_id)
+        # if not user_swipes.exists():
+        print 'User doesnt exist... call the Yelp API Service'
+        restaurants = YelpAPIService().get_and_save_restaurants(preference, self.QUERY_LIMIT)
 
         # Make recommendation
+        return restaurants

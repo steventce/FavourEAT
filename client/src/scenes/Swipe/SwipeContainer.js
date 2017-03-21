@@ -17,16 +17,13 @@ class SwipeContainer extends Component {
     }
   }
 
-  // NOT USED FOR DEMO
-  // needs to be updated to use data properly
-  // i.e. leftSwipes.id
   postSwipe(leftSwipes, rightSwipes) {
     try {
       for (var i = 0; i < leftSwipes.length; i++) {
-        this.props.dispatch(saveSwipe(this.state.user_id, this.state.appAccessToken, leftSwipes[i], 1, 0));
+        this.props.dispatch(saveSwipe(this.state.userId, this.state.appAccessToken, leftSwipes[i].restaurant.yelp_id, 1, 0));
       }
       for (var i = 0; i < rightSwipes.length; i++) {
-        this.props.dispatch(saveSwipe(this.state.userId, this.state.appAccessToken, rightSwipes[i], 0, 1));
+        this.props.dispatch(saveSwipe(this.state.userId, this.state.appAccessToken, rightSwipes[i].restaurant.yelp_id, 0, 1));
       }
     } catch (error) {
       Alert.alert('Error', error.message);
