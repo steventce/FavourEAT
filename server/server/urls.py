@@ -26,6 +26,8 @@ urlpatterns = [
         views.EventView.as_view()),
     url(r'^v1/users/(?P<user_id>[0-9]+)/events/(?P<event_id>[0-9]+)/$',
         views.EventDetailsView.as_view()),
+    url(r'^v1/users/(?P<user_id>[0-9]+)/join/(?P<invite_code>.*)/$',
+        views.JoinEventView.as_view()),
     url(r'^v1/events/(?P<event_id>[0-9]+)/tournament/$',
         views.IndividualTournamentView.as_view()),
     url(r'^v1/events/(?P<event_id>[0-9]+)/tournament/(?P<tournament_id>[0-9]+)/$',

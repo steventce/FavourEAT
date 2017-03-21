@@ -23,6 +23,8 @@ from server.models import (
     Cuisine
 )
 from server.favoureat.recommendation_service import RecommendationService
+import string
+import random
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -186,10 +188,19 @@ class EventView(APIView):
                     preference=preference, cuisine=cuisine)
                 preference_cuisine.save()
 
+            # Generate unique 8-digit invite code
+            code_taken = True
+            invite_code = ''
+            while code_taken:
+                invite_code = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(8))
+                if EventDetail.objects.filter(invite_code=invite_code).count() == 0:
+                    code_taken = False
+
             event_detail = EventDetail(
                 datetime=timezone.now(),
                 name=request.data.get('name', timezone.now()),
-                preference=preference
+                preference=preference,
+                invite_code=invite_code
             )
             event_detail.save()
 
@@ -204,12 +215,45 @@ class EventView(APIView):
                 tournament = Tournament(event=event, restaurant=restaurant, vote_count=0)
                 tournament.save()
 
-            response = Response({'event_id': event.id}, status=status.HTTP_201_CREATED)
+            response = Response({'event_id': event.id, 'invite_code': invite_code}, status=status.HTTP_201_CREATED)
             response['Location'] = '/v1/events/{id}'.format(id=event.id)
             return response
 
         except User.DoesNotExist:
             return Response('User not found', status=status.HTTP_404_NOT_FOUND)
+
+
+class JoinEventView(APIView):
+    def get_object(self, invite_code):
+        try:
+            event_detail = EventDetail.objects.get(invite_code=invite_code)
+            event = Event.objects.get(event_detail=event_detail)
+            return event, event_detail
+        except EventDetail.DoesNotExist:
+            return Response("Event detail with this invite code does not exist", status=status.HTTP_404_NOT_FOUND)
+        except Event.DoesNotExist:
+            return Response("Event does not exist", status=status.HTTP_404_NOT_FOUND)
+
+    def get_user(self, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+            return user
+        except User.DoesNotExist:
+            return Response("User not found", status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, user_id, invite_code, format=None):
+        """Join an event given an invite code"""
+        user = self.get_user(user_id)
+        event, event_detail = self.get_object(invite_code)
+        # Check if user has already joined event
+        event_user_attach = EventUserAttach.objects.filter(event=event, user=user)
+        if event_user_attach.count() == 0:
+            event_user_attach = EventUserAttach(user=user, event=event)
+            event_user_attach.save()
+
+        serializer = EventSerializer(event)
+        resp = serializer.data
+        return Response(data=resp, status=status.HTTP_201_CREATED)
 
 
 class EventDetailsView(APIView):
@@ -273,7 +317,7 @@ class IndividualTournamentView(APIView):
         num_participants = EventUserAttach.objects.filter(event=event_id).count()
         round_completed = True
         event = Event.objects.get(pk=event_id)
-        if num_participants > 1 and timezone.now() < event.event_detail.voting_deadline:
+        if event.is_group and ((timezone.now() - event.round_start).total_seconds() / 3600) >= event.round_duration:
             if event.round_num == 0:
                 return False
             for t in tournament_data:
@@ -284,6 +328,7 @@ class IndividualTournamentView(APIView):
             return False
 
         event.round_num += 1
+        event.round_start = timezone.now()
         event.save()
         # Update restaurants for next tournament round
         if event.round_num == 1:
