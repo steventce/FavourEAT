@@ -26,6 +26,24 @@ export function fetchEvents(accessToken, userId) {
   }
 }
 
+export function joinEvent(accessToken, userId, inviteCode) {
+  return fetch(`${API_BASE_URL}v1/users/${userId}/join/${inviteCode}`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      }
+    })
+    .then((response) => {
+      if (!response.ok) throw Error();    
+      console.log('joinEvent success');
+      // update store 
+      dispatch(fetchEvents(userId));
+    })
+    .catch((error) => console.error(error));
+}
+
 export function createEvent(accessToken, userId, eventDetail, preferences) {
   return function (dispatch) {
     const { name, date, time, rndDuration } = eventDetail;
