@@ -84,29 +84,39 @@ class YelpAPIService(object):
             access_token = self.get_token()
             # Fetch from the Search API
             search_results = self.get_restaurants(access_token, params)
+            restaurant_results = search_results.get('businesses', [])
 
-            for i, restaurant in enumerate(search_results.get('businesses', [])):
+            # TODO: have better way of filtering cached restaurants to avoid the initial call to Yelp
+            # Use json of restaurants that are already cached
+            yelp_ids = [restaurant['id'] for restaurant in restaurant_results]
+            existing_restaurants = Restaurant.objects.filter(yelp_id__in=yelp_ids, json__isnull=False)
+            
+            restaurants += existing_restaurants
+
+            for i, restaurant in enumerate(restaurant_results):
                 print restaurant['name']
                 yelp_id = restaurant['id']
 
                 try:
-                    # Fetch from the Reviews API
-                    reviews = self.get_reviews(access_token, yelp_id)
-                    restaurant['reviews'] = reviews
-
-                    # Fetch from the Business API
-                    details = self.get_details(access_token, yelp_id)
-                    restaurant['photos'] = details.get('photos', [])
-                    restaurant['hours'] = details.get('hours', [])
-
-                    saved_restaurant, created = Restaurant.objects.update_or_create(
-                        yelp_id=yelp_id,
-                        defaults={'json': json.dumps(restaurant)}
-                    )
-
-                    restaurants.append(saved_restaurant)
                     if len(restaurants) >= limit:
                         break
+                    
+                    if not existing_restaurants.filter(yelp_id= yelp_id).exists():
+                        # Fetch from the Reviews API
+                        reviews = self.get_reviews(access_token, yelp_id)
+                        restaurant['reviews'] = reviews
+
+                        # Fetch from the Business API
+                        details = self.get_details(access_token, yelp_id)
+                        restaurant['photos'] = details.get('photos', [])
+                        restaurant['hours'] = details.get('hours', [])
+
+                        saved_restaurant, created = Restaurant.objects.update_or_create(
+                            yelp_id=yelp_id,
+                            defaults={'json': json.dumps(restaurant)}
+                        )
+
+                        restaurants.append(saved_restaurant)
                 except requests.exceptions.HTTPError as err:
                     # Acceptable if cannot retrieve details or reviews
                     print err
