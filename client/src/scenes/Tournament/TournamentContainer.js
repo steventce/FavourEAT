@@ -17,6 +17,8 @@ class TournamentContainer extends Component {
     }
   }
 
+  static navigationOptions = { header: { visible: false } }
+
   getTournamentRound() {
     try {
       console.log('getTournamentRound');

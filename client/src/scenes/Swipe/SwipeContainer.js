@@ -17,6 +17,8 @@ class SwipeContainer extends Component {
     }
   }
 
+  static navigationOptions = { header: { visible: false } }
+
   // NOT USED FOR DEMO
   // needs to be updated to use data properly
   // i.e. leftSwipes.id
