@@ -18,40 +18,26 @@ import RestaurantDetails from './src/scenes/RestaurantDetails';
 
 const store = configureStore();
 
-const HomeStack = StackNavigator({
-  CreateEvent: { screen: CreateEvent },
-  UserEvents: { screen: UserEvents },
-  Preferences: { screen: Preferences },
-  Tournament: { screen: Tournament },
-  JoinEvent: { screen: JoinEvent }
-}, {
-  initialRouteName: 'UserEvents'
-});
-
 const HomeDrawer = DrawerNavigator({
-  Home: { screen: HomeStack },
-  CreateEvent: { screen: CreateEvent },
-  JoinEvent: { screen: JoinEvent }
+  Home: { screen: UserEvents }
 }, {
   initialRouteName: 'Home',
   drawerWidth: 300,
-  contentComponent: Drawer
+  contentComponent: Drawer  
 });
 
 const MainStack = StackNavigator({
   Login: { screen: Login },
-  HomeDrawer: { screen: HomeDrawer },
+  HomeDrawer: { screen: HomeDrawer, navigationOptions: { header: { visible: false } } },
+  CreateEvent: { screen: CreateEvent },
+  JoinEvent: { screen: JoinEvent },
   RestaurantDetails: { screen: RestaurantDetails },
+  Preferences: { screen: Preferences },
   Swipe: { screen: Swipe },
+  Tournament: { screen: Tournament },
   Winner: { screen: Winner },
 }, {
-  initialRouteName: 'Login',
-  backBehavior: 'none',
-  navigationOptions: {
-    header: {
-      visible: false
-    }
-  }
+  initialRouteName: 'Login'
 });
 
 class FavourEAT extends Component {

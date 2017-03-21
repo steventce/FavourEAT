@@ -16,7 +16,6 @@ export function getRound(accessToken, eventId) {
             return response.json()
         })
         .then((json) => {
-            console.log(json);
             dispatch(getRoundSuccess(eventId, json));
         })
         .catch((error) => console.error(error))
@@ -44,9 +43,16 @@ export function putRound(accessToken, eventId, tournamentId, isFinished=false, t
         })
         .then((response) => {
             if (!response.ok) throw Error();            
+            // return response.json();
+            return response;
         })
-        .then(() => {
-            if (isFinished)
+        .then((/*json*/) => {
+            /*console.log('json')
+            ifs (json == 'Next') 
+                console.log('true');
+            else  
+                console.log('false');*/
+            if (isFinished && callback)
                 callback();
         })
         .catch((error) => console.error(error))

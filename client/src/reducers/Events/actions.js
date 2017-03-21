@@ -37,13 +37,16 @@ export function createEvent(accessToken, userId, eventDetail, preferences) {
     }
 
     const data = {
+      name: name,
+      date: date,
+      time: time,
+      //roundDuration: rndDuration,
       radius: radius * METERS_IN_KILOMETER,
       min_price: minPrice,
       max_price: maxPrice,
       cuisine_types: cuisineTypeData,
       latitude: 49.2827,
       longitude: -123.1207,
-      name: name
     }
 
     return fetch(`${API_BASE_URL}v1/users/${userId}/events/`, {
