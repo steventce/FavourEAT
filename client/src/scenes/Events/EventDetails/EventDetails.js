@@ -37,8 +37,9 @@ class EventDetails extends Component {
       userId: null,
       accessToken: null
     }
-    this.handleSaveChanges = this.handleSaveChanges.bind(this);
     this.handleContinueVoting = this.handleContinueVoting.bind(this);
+    this.handleSaveChanges = this.handleSaveChanges.bind(this);
+    this.handleCancelEvent = this.handleCancelEvent.bind(this);
   }
 
   async componentDidMount() {
@@ -61,6 +62,12 @@ class EventDetails extends Component {
     const { id: eventId } = this.props.userEvent;
     // TODO: Navigate
     // this.props.navigation.navigate('Tournament', eventId);
+  }
+
+  handleCancelEvent() {
+    const { accessToken, userId, date, time } = this.state;
+    const { id: eventId } = this.props.userEvent;
+    this.props.cancelEvent(accessToken, userId, eventId);
   }
 
   handleSaveChanges() {
@@ -172,8 +179,8 @@ class EventDetails extends Component {
               <Text>Save Changes</Text>
             </Button>
             <Button success block style={StyleSheet.flatten(styles.btn)}
-              onPress={this.handleSaveChanges}>
-              <Text>Delete Event</Text>
+              onPress={this.handleCancelEvent}>
+              <Text>Cancel Event</Text>
             </Button>
           </View>
         </Card>)}

@@ -39,7 +39,7 @@ export function joinEvent(accessToken, userId, inviteCode) {
       .then((response) => {
         if (!response.ok) throw Error();
         console.log('joinEvent success');
-        // update store 
+        // update store
         dispatch(fetchEvents(accessToken, userId));
 
         return response;
@@ -101,12 +101,34 @@ export function editEventDetails(accessToken, userId, eventId, datetime) {
         'Authorization': `Bearer ${accessToken}`
       },
       body: JSON.stringify({ datetime })
-    }).then((response) => {
+    })
+    .then((response) => {
       return response.json();
     })
     .then((responseJson) => {
       dispatch(editEventDetailsSuccess())
+    })
+    .catch((error) => {
+      console.log(error);
     });
+  }
+}
+
+export function cancelEvent(accessToken, userId, eventId) {
+  return function(dispatch) {
+    console.log(accessToken);
+    return fetch(`${API_BASE_URL}v1/users/${userId}/events/${eventId}/`, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      }
+    }).then((response) => {
+      return response.json();
+    }).then((responseJson) => {
+      dispatch(cancelEventSuccess());
+    })
   }
 }
 
@@ -114,12 +136,21 @@ function fetchEventsSuccess(json) {
   return {
     type: actionTypes.FETCH_EVENTS_SUCCESS,
     events: json
-  }
+  };
 }
 
 function editEventDetailsSuccess() {
   return {
     type: actionTypes.EDIT_EVENT_DETAILS_SUCCESS,
-    status: 'success'
-  }
+    status: 'success',
+    msg: 'Event successfully updated'
+  };
+}
+
+function cancelEventSuccess() {
+  return {
+    type: actionTypes.CANCEL_EVENT_SUCCESS,
+    status: 'success',
+    msg: 'Event cancelled'
+  };
 }

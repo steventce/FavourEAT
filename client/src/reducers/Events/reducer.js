@@ -17,13 +17,20 @@ const initialState = {
     {value: 5, label: 'Barbeque', category: 'bbq'}
   ],
   // list of events user is participating
-  events: []
+  events: [],
+  status: '',
+  msg: ''
 };
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
     case actionTypes.FETCH_EVENTS_SUCCESS: {
       return { ...state, events: action.events };
+    }
+    case actionTypes.EDIT_EVENT_DETAILS_SUCCESS:
+    case actionTypes.CANCEL_EVENT_SUCCESS: {
+      const { status, msg } = action;
+      return { ...state, status, msg };
     }
     default:
       return state;
