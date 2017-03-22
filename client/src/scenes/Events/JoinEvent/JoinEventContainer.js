@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Alert, AsyncStorage } from 'react-native';
+import { connect } from 'react-redux';
 import JoinEvent from './JoinEvent';
 import { joinEvent } from '../../../reducers/Events/actions';
 
@@ -33,11 +34,13 @@ class JoinEventContainer extends Component {
     if (this.props.events && nextProps.events) {
       if (this.props.events.length < nextProps.events.length) {
         console.log('transition to some page');
+        return true;
       }
     }
+    return false;
   }
 
-  async compoentWillMount() {
+  async componentWillMount() {
     try {
       const appAccessToken = await AsyncStorage.getItem('app_access_token');
       if (appAccessToken) {
@@ -60,4 +63,4 @@ class JoinEventContainer extends Component {
 }
 
 
-export default JoinEventContainer;
+export default connect()(JoinEventContainer);

@@ -7,7 +7,7 @@ const METERS_IN_KILOMETER = 1000;
 /** Events */
 
 export function fetchEvents(accessToken, userId) {
-  return function(dispatch) {
+  return function (dispatch) {
     fetch(`${API_BASE_URL}v1/users/${userId}/events/`, {
       method: 'GET',
       headers: {
@@ -16,18 +16,19 @@ export function fetchEvents(accessToken, userId) {
         'Authorization': `Bearer ${accessToken}`
       }
     })
-    .then((response) => {
-      return response.json();
-    })
-    .then((json) => {
-      dispatch(fetchEventsSuccess(json));
-    })
-    .catch((error) => console.log(error));
+      .then((response) => {
+        return response.json();
+      })
+      .then((json) => {
+        dispatch(fetchEventsSuccess(json));
+      })
+      .catch((error) => console.log(error));
   }
 }
 
 export function joinEvent(accessToken, userId, inviteCode) {
-  return fetch(`${API_BASE_URL}v1/users/${userId}/join/${inviteCode}`, {
+  return function (dispatch) {
+    return fetch(`${API_BASE_URL}v1/users/${userId}/join/${inviteCode}/`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -35,13 +36,16 @@ export function joinEvent(accessToken, userId, inviteCode) {
         'Authorization': `Bearer ${accessToken}`
       }
     })
-    .then((response) => {
-      if (!response.ok) throw Error();    
-      console.log('joinEvent success');
-      // update store 
-      dispatch(fetchEvents(userId));
-    })
-    .catch((error) => console.error(error));
+      .then((response) => {
+        if (!response.ok) throw Error();
+        console.log('joinEvent success');
+        // update store 
+        dispatch(fetchEvents(accessToken, userId));
+
+        return response;
+      })
+      .catch((error) => console.error(error));
+  }
 }
 
 export function createEvent(accessToken, userId, eventDetail, preferences) {
@@ -76,14 +80,14 @@ export function createEvent(accessToken, userId, eventDetail, preferences) {
       },
       body: JSON.stringify(data)
     })
-    .then((response) => {
-      return response.json();
-    })
-    .then((responseJson) => {
-      // immediately fetch list of retaurant for the first round
-      dispatch(getRound(accessToken, responseJson.event_id));
-    })
-    .catch((error) => console.error(error));
+      .then((response) => {
+        return response.json();
+      })
+      .then((responseJson) => {
+        // immediately fetch list of retaurant for the first round
+        dispatch(getRound(accessToken, responseJson.event_id));
+      })
+      .catch((error) => console.error(error));
   }
 };
 
