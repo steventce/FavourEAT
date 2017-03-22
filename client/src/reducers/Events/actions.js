@@ -62,7 +62,7 @@ export function createEvent(accessToken, userId, eventDetail, preferences) {
       name: name,
       date: date,
       time: time,
-      //roundDuration: rndDuration,
+      roundDuration: rndDuration,
       radius: radius * METERS_IN_KILOMETER,
       min_price: minPrice,
       max_price: maxPrice,
