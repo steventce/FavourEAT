@@ -21,7 +21,6 @@ class TournamentContainer extends Component {
 
   getTournamentRound() {
     try {
-      console.log('getTournamentRound');
       this.props.dispatch(getRound(this.state.appAccessToken, this.state.eventId));
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -29,13 +28,10 @@ class TournamentContainer extends Component {
   }
 
   putTournamentRound(restaurants) {
-    console.log('putTournamentRound');
-    console.log(restaurants);
     try {
       for (var i = 0; i < restaurants.length - 1; i++) {
         this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId, restaurants[i].id));
       }
-      // TODO fix hack
       // last restaurant needs to include specific data
       this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId,
         restaurants[restaurants.length - 1].id, true, this.state.cards,
@@ -62,11 +58,19 @@ class TournamentContainer extends Component {
 
   componentWillReceiveProps(nextProps) {
     const { tournamentArr } = nextProps;
-    // TODO: fix hack by setting tournamentArr to [] in store
-    if (tournamentArr.length != this.props.navigation.state.params.hack) {
+    if (tournamentArr) {
+      /*  If there is only a single restaurant returned 
+      *   and it isn't nested into an array,
+      *   then it is the winning restaurant.
+      */
       if (tournamentArr.length == 1 && !Array.isArray(tournamentArr[0])) {
         this.props.navigation.navigate('Winner', { restaurant: tournamentArr[0] });
-      } else {
+      } else if (this.state.cards.length == 0 || this.state.cards.length > this.props.tournamentArr.length) {
+        /*  A tournament rounds is returned in an array of pairs
+        *   of restaurants i.e. [ [a,b], [c,d] ... ].
+        *   Since only once restaurant from the pairing can advance,
+        *   the next round's array must be shorter length.
+        */
         this.setState({ cards: tournamentArr });
         var top = [];
         var bot = [];
@@ -79,20 +83,19 @@ class TournamentContainer extends Component {
     }
   }
 
-  render() {
-    const { navigate } = this.props.navigation;
-    console.log(this.state);
+render() {
+  const { navigate } = this.props.navigation;
 
-    if (this.state.topCards.length == 0 || this.state.botCards.length == 0) {
-      return <Spinner color='red' style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} />
-    }
-
-    return (
-      <Tournament putTournamentRound={this.putTournamentRound.bind(this)}
-        top={this.state.topCards}
-        bot={this.state.botCards} />
-    );
+  if (this.state.topCards.length == 0 || this.state.botCards.length == 0) {
+    return <Spinner color='red' style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} />
   }
+
+  return (
+    <Tournament putTournamentRound={this.putTournamentRound.bind(this)}
+      top={this.state.topCards}
+      bot={this.state.botCards} />
+  );
+}
 }
 
 const mapStateToProps = function (state) {

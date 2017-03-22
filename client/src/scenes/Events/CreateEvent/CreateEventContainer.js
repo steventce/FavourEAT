@@ -10,10 +10,6 @@ class CreateEventContainer extends Component {
   }
 
   validate(name, date, time, rndDuration) {
-    console.log(name);
-    console.log(date);
-    console.log(time);
-    console.log(rndDuration);
     if (!name) {
       Alert.alert('Error', 'Please enter an event name.')
       return;      
@@ -24,12 +20,9 @@ class CreateEventContainer extends Component {
       return;
     }
 
-    console.log("valid");
-    const eventDetail = { name, date, time, rndDuration };
-
     // Proceed to setting the preferences
-    const { navigate } = this.props.navigation;
-    navigate('Preferences', { eventDetail });
+    const eventDetail = { name, date, time, rndDuration };
+    this.props.navigation.navigate('Preferences', { eventDetail });
   }
 
   render() {

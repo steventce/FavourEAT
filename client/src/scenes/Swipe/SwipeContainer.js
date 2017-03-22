@@ -56,7 +56,7 @@ class SwipeContainer extends Component {
       index: 1,
       actions: [
         NavigationActions.navigate({ routeName: 'HomeDrawer'}),
-        NavigationActions.navigate({ routeName: 'Tournament', params: { eventId: this.state.eventId, hack: this.state.cards.length }})
+        NavigationActions.navigate({ routeName: 'Tournament', params: { eventId: this.state.eventId }})
       ]
     })
     this.props.navigation.dispatch(resetAction);

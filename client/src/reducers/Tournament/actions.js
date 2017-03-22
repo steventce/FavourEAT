@@ -43,15 +43,9 @@ export function putRound(accessToken, eventId, tournamentId, isFinished=false, t
         })
         .then((response) => {
             if (!response.ok) throw Error();            
-            // return response.json();
             return response;
         })
-        .then((/*json*/) => {
-            /*console.log('json')
-            ifs (json == 'Next') 
-                console.log('true');
-            else  
-                console.log('false');*/
+        .then(() => {
             if (isFinished && callback)
                 callback();
         })

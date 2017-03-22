@@ -399,7 +399,7 @@ class IndividualTournamentView(APIView):
             if 'is_finished' in request.data.keys() and request.data['is_finished']:
                 is_round_over = self.update_next_round(event_id, request.data['tournament_data'])
                 if is_round_over:
-                    return Response("Next", status=status.HTTP_200_OK)
+                    return Response(status=status.HTTP_200_OK)
             return Response(status=status.HTTP_200_OK)
         except Tournament.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
