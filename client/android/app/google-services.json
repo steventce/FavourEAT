@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "355872206419",
+    "firebase_url": "https://favoureat-bc13f.firebaseio.com",
+    "project_id": "favoureat-bc13f",
+    "storage_bucket": "favoureat-bc13f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:355872206419:android:b20ad3c27baf7567",
+        "android_client_info": {
+          "package_name": "com.favoureat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "355872206419-eei266tis0rp8tao6j87d5nqur4gsalb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2bTkS568_T3SOk8Q8-evl7MrUCezcf6Y"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

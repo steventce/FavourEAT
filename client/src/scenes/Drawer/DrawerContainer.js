@@ -5,14 +5,14 @@ import Drawer from './Drawer';
 
 const mapStateToProps = function(state, props) {
   const { navigation } = props;
-  return { navigation };
+  return { navigation, auth: state.auth };
 }
 
 const mapDispatchToProps = function(dispatch, props) {
   return {
-    handleLogout: () => {
+    handleLogout: (accessToken, userId) => {
       const { navigate } = props.navigation;
-      dispatch(logout());
+      dispatch(logout(accessToken, userId));
       navigate('Login');
     }
   }

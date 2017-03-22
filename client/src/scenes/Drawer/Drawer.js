@@ -25,6 +25,16 @@ const navItemConfig = {
 }
 
 class Drawer extends Component {
+  constructor(props) {
+    super(props);
+    this.handleLogout = this.handleLogout.bind(this);
+  }
+
+  handleLogout() {
+    const { access_token, user_id } = this.props.auth.token;
+    this.props.handleLogout(access_token, user_id);
+  }
+
   render() {
     const { navigate, state } = this.props.navigation;
     const { routes } = state;
@@ -53,7 +63,7 @@ class Drawer extends Component {
                 </Button>
               );
             })}
-            <Button block transparent onPress={this.props.handleLogout} iconLeft>
+            <Button block transparent onPress={this.handleLogout} iconLeft>
               <Icon name="md-log-out" style={{ color: 'black' }} />
               <Left>
                 <Text style={{ color: 'black', marginLeft: 15 }}>Sign Out</Text>

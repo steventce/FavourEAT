@@ -11,7 +11,8 @@ from server.models import (
     Restaurant,
     Event,
     EventDetail,
-    Preference
+    Preference,
+    UserFcm
 )
 from django.contrib.auth.models import User
 from server.favoureat import views
@@ -65,6 +66,82 @@ class TokenTests(APITestCase):
 
         response = self.client.post(url, {}, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+class UserFcmTests(APITestCase):
+    FCM_TOKEN = 'ALJG1ZlLY1K01'
+    USER_ID = 10
+    URL = '/v1/users/{id}/fcm-token/'
+
+    def request_fcm_helper(self, user, method):
+        """
+        A helper for creating FCM requests
+
+        Args:
+            user (User): The User object
+            method (dict): Options for sending a request
+                - name (str): Name of the method
+                - authenticate (bool): Whether to authenticate the request
+                - data (dict): Dictionary of data params
+
+        Returns:
+            Response object with request response data
+        """
+        url = self.URL.format(id=user.id)
+        factory = APIRequestFactory()
+
+        request = None
+        if method['name'] == 'PUT':
+            request = factory.put(url, method.get('data', {}), format='json')
+        elif method['name'] == 'DELETE':
+            request = factory.delete(url)
+        else:
+            print 'No method exists for fcm view'
+            return
+
+        if method.get('authenticate', True):
+            force_authenticate(request, user=user)
+
+        view = views.FcmTokenView.as_view()
+        response = view(request, user_id=user.id)
+        return response
+
+    def test_error_no_token(self):
+        """ Ensure that an invalid client token throws an error """
+        user = User(pk=self.USER_ID)
+
+        response = self.request_fcm_helper(user, {'name': 'PUT', 'authenticate': False})
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        response = self.request_fcm_helper(user, {'name': 'DELETE', 'authenticate': False})
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_save_fcm_token(self):
+        """ Ensure that an fcm token can be saved successfully """
+        user_id = self.USER_ID
+        user = User(pk=user_id)
+        user.save()
+
+        response = self.request_fcm_helper(user, {
+            'name': 'PUT',
+            'data': {'fcm_token': self.FCM_TOKEN}
+        })
+        fcm_token = User.objects.get(pk=user_id).userfcm.fcm_token
+
+        self.assertEqual(fcm_token, self.FCM_TOKEN)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_delete_fcm_token(self):
+        """ Ensure that an fcm token can be deleted successfully """
+        user = User(pk=self.USER_ID)
+        user.save()
+        user_fcm = UserFcm(fcm_token=self.FCM_TOKEN, user=user)
+        user_fcm.save()
+
+        response = self.request_fcm_helper(user, {'name': 'DELETE'})
+        self.assertFalse(hasattr(User.objects.get(pk=self.USER_ID), 'userfcm'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.request_fcm_helper(user, {'name': 'DELETE'})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 class UserSwipeTests(APITestCase):
     def test_save_swipe(self):
