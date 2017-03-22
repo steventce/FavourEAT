@@ -21,7 +21,7 @@ class CreateEvent extends Component {
       eventName: '',
       date: moment().format('YYYY-MM-DD'),
       time: moment().format('HH:mm'),
-      duration: '',
+      duration: roundDurationOptions[0],
       modalVisible: false,
       modalOptions: {
         options: [],
@@ -96,7 +96,7 @@ class CreateEvent extends Component {
               })}
               label="Round Duration"
               disabled={false}
-              value={`${this.state.duration}`} />
+              value={`${this.state.duration} hr(s)`} />
           </View>
           <View>
             <Button primary onPress={() => this.props.validate(this.state.eventName, this.state.date, this.state.time, this.state.duration)}>
