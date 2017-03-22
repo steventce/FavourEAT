@@ -14,7 +14,13 @@ export const API_BASE_URL = 'http://...';
 Build and run the project on Android:
 ```
 react-native run-android
-```  
+```
+
+### Troubleshooting
+```
+adb devices
+adb reverse tcp:8081 tcp:8081
+```
 
 ## Server instructions:
 Using Python 2.7.10, install dependencies from the root folder by running :
@@ -34,6 +40,7 @@ SOCIAL_AUTH_CLIENT_ID = 'XYZ...'
 SOCIAL_AUTH_CLIENT_SECRET = 'XYZ...'
 YELP_APP_ID = 'XYZ...'
 YELP_APP_SECRET = 'XYZ...'
+FCM_SERVER_KEY = 'XYZ...'
 # ...other private keys
 
 DATABASES = {

@@ -127,6 +127,8 @@ android {
 
 dependencies {
     compile project(':react-native-maps')
+    compile project(':react-native-fcm')
+    compile 'com.google.firebase:firebase-core:10.0.1' // Firebase SDK version
     compile project(':react-native-fbsdk')
     compile project(':react-native-vector-icons')
     compile fileTree(dir: "libs", include: ["*.jar"])
@@ -140,3 +142,5 @@ task copyDownloadableDepsToLibs(type: Copy) {
     from configurations.compile
     into 'libs'
 }
+
+apply plugin: 'com.google.gms.google-services'

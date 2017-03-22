@@ -18,6 +18,7 @@ export function login(accessToken) {
       if (!response.ok) throw Error();
       return response.json();
     }).then((json) => {
+      AsyncStorage.setItem('token', JSON.stringify(json));
       AsyncStorage.setItem('app_access_token', json.access_token);
       AsyncStorage.setItem('user_id', String(json.user_id));
       dispatch(loginSuccess(json));
@@ -27,11 +28,47 @@ export function login(accessToken) {
   }
 }
 
-export function logout() {
-  LoginManager.logOut();
-  AsyncStorage.removeItem('app_access_token');
+export function saveFcmToken(accessToken, userId, fcmToken) {
+  return function(dispatch) {
+    return fetch(`${API_BASE_URL}v1/users/${userId}/fcm-token/`, {
+      method: 'PUT',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({ fcm_token: fcmToken })
+    })
+    .catch((error) => console.error(error));
+  }
+}
 
-  return logoutSuccess();
+export function logout(accessToken, userId) {
+  return function(dispatch) {
+    LoginManager.logOut();
+    // TODO: Depreciate user_id and app_access_token
+    AsyncStorage.removeItem('token');
+    AsyncStorage.removeItem('app_access_token');
+    AsyncStorage.removeItem('user_id');
+    return fetch(`${API_BASE_URL}v1/users/${userId}/fcm-token/`, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      }
+    }).then((response) => {
+      dispatch(logoutSuccess());
+    })
+    .catch((error) => console.error(error));
+  }
+}
+
+export function setToken(token) {
+  return {
+    type: actionTypes.SET_TOKEN,
+    token
+  };
 }
 
 // Login Actions
@@ -42,7 +79,7 @@ function loginSuccess(token) {
     status: 'success',
     msg: '',
     token
-  }
+  };
 }
 
 function loginError() {
@@ -50,7 +87,7 @@ function loginError() {
     type: actionTypes.LOGIN_ERROR,
     status: 'error',
     msg: 'Sign in failed. Please try again.'
-  }
+  };
 }
 
 // Logout Actions
@@ -60,5 +97,5 @@ function logoutSuccess() {
     type: actionTypes.LOGOUT_SUCCESS,
     status: 'success',
     msg: ''
-  }
+  };
 }
