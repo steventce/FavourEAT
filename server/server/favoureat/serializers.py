@@ -50,9 +50,12 @@ class TournamentSerializer(serializers.ModelSerializer):
 
 
 class EventDetailSerializer(serializers.ModelSerializer):
+    restaurant = RestaurantSerializer()
+
     class Meta:
         model = EventDetail
-        fields = ('id', 'yelp_id', 'preference', 'datetime', 'name', 'description', 'invite_code')
+        fields = ('id', 'restaurant', 'preference',
+                  'datetime', 'name', 'description', 'invite_code')
 
 
 class EventSerializer(serializers.ModelSerializer):

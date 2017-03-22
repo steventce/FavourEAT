@@ -16,8 +16,25 @@ class Cuisine(models.Model):
     category = models.CharField(max_length=200, null=False)
 
 
+class PreferenceCuisine(models.Model):
+    preference = models.ForeignKey(Preference)
+    cuisine = models.ForeignKey(Cuisine)
+
+
+class Swipe(models.Model):
+    user = models.ForeignKey(User)
+    yelp_id = models.CharField(max_length=200, null=False)
+    right_swipe_count = models.IntegerField(default=0)
+    left_swipe_count = models.IntegerField(default=0)
+
+
+class Restaurant(models.Model):
+    yelp_id = models.CharField(max_length=200, null=False)
+    json = models.TextField(null=True, blank=True)
+
+
 class EventDetail(models.Model):
-    yelp_id = models.CharField(max_length=200, null=True, blank=True)
+    restaurant = models.ForeignKey(Restaurant, null=True, blank=True)
     preference = models.ForeignKey(Preference)
     datetime = models.DateTimeField(null=False)
     name = models.CharField(max_length=200, null=False)
@@ -37,23 +54,6 @@ class Event(models.Model):
 class EventUserAttach(models.Model):
     user = models.ForeignKey(User)
     event = models.ForeignKey(Event)
-
-
-class PreferenceCuisine(models.Model):
-    preference = models.ForeignKey(Preference)
-    cuisine = models.ForeignKey(Cuisine)
-
-
-class Swipe(models.Model):
-    user = models.ForeignKey(User)
-    yelp_id = models.CharField(max_length=200, null=False)
-    right_swipe_count = models.IntegerField(default=0)
-    left_swipe_count = models.IntegerField(default=0)
-
-
-class Restaurant(models.Model):
-    yelp_id = models.CharField(max_length=200, null=False)
-    json = models.TextField(null=True, blank=True)
 
 
 class Tournament(models.Model):

@@ -91,9 +91,35 @@ export function createEvent(accessToken, userId, eventDetail, preferences) {
   }
 };
 
+export function editEventDetails(accessToken, userId, eventId, datetime) {
+  return function(dispatch) {
+    return fetch(`${API_BASE_URL}v1/users/${userId}/events/${eventId}/`, {
+      method: 'PUT',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({ datetime })
+    }).then((response) => {
+      return response.json();
+    })
+    .then((responseJson) => {
+      dispatch(editEventDetailsSuccess())
+    });
+  }
+}
+
 function fetchEventsSuccess(json) {
   return {
     type: actionTypes.FETCH_EVENTS_SUCCESS,
     events: json
+  }
+}
+
+function editEventDetailsSuccess() {
+  return {
+    type: actionTypes.EDIT_EVENT_DETAILS_SUCCESS,
+    status: 'success'
   }
 }

@@ -15,6 +15,7 @@ import Swipe from './src/scenes/Swipe';
 import CreateEvent from './src/scenes/Events/CreateEvent';
 import Tournament from './src/scenes/Tournament';
 import RestaurantDetails from './src/scenes/RestaurantDetails';
+import EventDetails from './src/scenes/Events/EventDetails';
 
 const store = configureStore();
 
@@ -36,6 +37,7 @@ const MainStack = StackNavigator({
   Swipe: { screen: Swipe },
   Tournament: { screen: Tournament },
   Winner: { screen: Winner },
+  EventDetails: { screen: EventDetails }
 }, {
   initialRouteName: 'Login'
 });

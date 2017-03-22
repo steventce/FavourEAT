@@ -33,6 +33,16 @@ class UserEvents extends Component {
     }
   };
 
+  constructor(props) {
+    super(props);
+    this.handleViewEventDetails = this.handleViewEventDetails.bind(this);
+  }
+
+  handleViewEventDetails(userEvent, event) {
+    const { navigate } = this.props.navigation;
+    navigate('EventDetails', { userEvent });
+  }
+
   async componentDidMount() {
     try {
       const appAccessToken = await AsyncStorage.getItem('app_access_token');
@@ -46,7 +56,7 @@ class UserEvents extends Component {
   }
 
   render() {
-    const { navigate } = this.props.navigation;
+    const { navigate, state } = this.props.navigation;
     const { events } = this.props;
     return (
       <Container>
@@ -67,7 +77,7 @@ class UserEvents extends Component {
             const { id, name, datetime } = event.event_detail;
             return (
               <ListItem key={id} style={{ margin: 0, padding: 0 }}>
-                <TouchableNativeFeedback onPress={() => {}}>
+                <TouchableNativeFeedback onPress={this.handleViewEventDetails.bind(null, event)}>
                   <View style={styles.container}>
                     <Left>
                       <Text>{name}</Text>
