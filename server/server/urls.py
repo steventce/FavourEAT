@@ -21,6 +21,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 urlpatterns = [
     url(r'^v1/token/$', views.TokenView.as_view()),
     url(r'^v1/users/(?P<user_id>[0-9]+)/$', views.UserView.as_view()),
+    url(r'^v1/users/(?P<user_id>[0-9]+)/fcm-token/$', views.FcmTokenView.as_view()),
     url(r'^v1/users/(?P<user>[0-9]+)/swipes/$', views.UserSwipeView.as_view()),
     url(r'^v1/users/(?P<user_id>[0-9]+)/events/$',
         views.EventView.as_view()),

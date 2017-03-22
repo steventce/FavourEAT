@@ -2,6 +2,10 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.timezone import now
 
+class UserFcm(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    fcm_token = models.CharField(max_length=200, null=True, blank=True)
+
 
 class Preference(models.Model):
     min_price = models.DecimalField(null=True, blank=True, decimal_places=2, max_digits=5)

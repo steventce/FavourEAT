@@ -9,7 +9,7 @@ const reducer = (state = initialState, action) => {
         ...state,
         status: action.status,
         msg: action.msg,
-        token: action.token
+        token: { ...action.token }
       };
     case actionTypes.LOGIN_ERROR:
       return {
@@ -22,6 +22,11 @@ const reducer = (state = initialState, action) => {
         ...state,
         status: action.status,
         msg: action.msg
+      };
+    case actionTypes.SET_TOKEN:
+      return {
+        ...state,
+        token: { ...action.token }
       };
     default:
       return state;
