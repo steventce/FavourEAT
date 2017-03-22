@@ -58,7 +58,7 @@ class UserEvents extends Component {
             </Text>
             <View style={styles.btnContainer}>
               <Button success style={{ margin: 10 }}
-                onPress={() => navigate('CreateEvent')}>
+                onPress={() => navigate('Preferences')}>
                 <Text>Start Session</Text>
               </Button>
             </View>

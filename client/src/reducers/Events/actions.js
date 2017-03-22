@@ -50,7 +50,11 @@ export function joinEvent(accessToken, userId, inviteCode) {
 
 export function createEvent(accessToken, userId, eventDetail, preferences) {
   return function (dispatch) {
-    const { name, date, time, rndDuration } = eventDetail;
+    const is_group = (eventDetail) ? true : false;
+    const name = (is_group) ? eventDetail.name : null;
+    const date = (is_group) ? eventDetail.date : null;
+    const time = (is_group) ? eventDetail.time : null;
+    const rndDuration = (is_group) ? eventDetail.rndDuration : null;
     const { radius, minPrice, maxPrice, cuisineTypes } = preferences;
 
     const cuisineTypeData = [];
@@ -59,6 +63,7 @@ export function createEvent(accessToken, userId, eventDetail, preferences) {
     }
 
     const data = {
+      is_group: is_group,
       name: name,
       date: date,
       time: time,

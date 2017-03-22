@@ -11,8 +11,9 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = (dispatch, ownProps) => {
   return {
-    createEvent: (access_token, event_id, preferences) => {
-      dispatch(createEvent(access_token, event_id, ownProps.navigation.state.params.eventDetail, preferences));
+    createEvent: (access_token, user_id, preferences) => {
+      let eventDetail = (ownProps.navigation.state.params) ? ownProps.navigation.state.params.eventDetail : null;
+      dispatch(createEvent(access_token, user_id, eventDetail, preferences));
     },
     startTournament: () => {
       ownProps.navigation.navigate('Swipe');
