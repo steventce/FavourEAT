@@ -37,12 +37,15 @@ export function joinEvent(accessToken, userId, inviteCode) {
       }
     })
       .then((response) => {
-        if (!response.ok) throw Error();
-        console.log('joinEvent success');
+        if (!response.ok) throw Error();        
         // update store 
-        dispatch(fetchEvents(accessToken, userId));
+        // dispatch(fetchEvents(accessToken, userId));
 
-        return response;
+        return response.json();
+      })
+      .then((json) => {
+        console.log(json);
+        return json;
       })
       .catch((error) => console.error(error));
   }

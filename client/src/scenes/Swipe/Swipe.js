@@ -78,8 +78,10 @@ class Swipe extends Component {
     }
 
     onClickYup(restaurant) {
-        this.swiper._goToNextCard();
-        this.handleYup(restaurant);
+        if (restaurant) {
+            this.swiper._goToNextCard();
+            this.handleYup(restaurant);
+        }
     }
 
     handleNope(restaurant) {
@@ -89,8 +91,10 @@ class Swipe extends Component {
     }
 
     onClickNope(restaurant) {
-        this.swiper._goToNextCard();
-        this.handleNope(restaurant);
+        if (restaurant) {
+            this.swiper._goToNextCard();
+            this.handleNope(restaurant);
+        }
     }
 
     noMore() {
@@ -102,12 +106,14 @@ class Swipe extends Component {
         );
     }
 
-    handleGoToDetails = () => {
-      this.props.navigate('RestaurantDetails', {
-        restaurant: this.swiper.state.card, 
-        caller: this,
-        swipeable: true,
-      });
+    handleGoToDetails()  {
+        if (this.swiper) {
+            this.props.navigate('RestaurantDetails', {
+                restaurant: this.swiper.state.card, 
+                caller: this,
+                swipeable: true,
+            });
+        }
     };
 
     render() {
