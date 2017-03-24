@@ -17,13 +17,26 @@ const initialState = {
     {value: 5, label: 'Barbeque', category: 'bbq'}
   ],
   // list of events user is participating
-  events: []
+  events: [],
+  // used for forcing a change
+  timestamp: false
 };
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
     case actionTypes.FETCH_EVENTS_SUCCESS: {
       return { ...state, events: action.events };
+    }
+    case actionTypes.JOIN_EVENT_SUCCESS: {
+      // Check if store already contains this event
+      for (var i=0; i < state.events.length; i++) {
+        if (state.events[i].id === action.event.id) {
+          // change timestamp to force trigger componentWillReceiveProps
+          return { ...state, timestamp: !state.timestamp };
+        }
+      }
+      // must add new element to last index of array (refer to JoinEventContainer)
+      return { ...state, events: [...state.events, action.event] };
     }
     default:
       return state;

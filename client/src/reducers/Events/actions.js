@@ -37,15 +37,12 @@ export function joinEvent(accessToken, userId, inviteCode) {
       }
     })
       .then((response) => {
-        if (!response.ok) throw Error();        
-        // update store 
-        // dispatch(fetchEvents(accessToken, userId));
-
+        if (!response.ok) throw Error();
         return response.json();
       })
       .then((json) => {
-        console.log(json);
-        return json;
+        // update store with new event
+        dispatch(joinEventSuccess(json));
       })
       .catch((error) => console.error(error));
   }
@@ -103,5 +100,12 @@ function fetchEventsSuccess(json) {
   return {
     type: actionTypes.FETCH_EVENTS_SUCCESS,
     events: json
+  }
+}
+
+function joinEventSuccess(json) {
+  return {
+    type: actionTypes.JOIN_EVENT_SUCCESS,
+    event: json
   }
 }
