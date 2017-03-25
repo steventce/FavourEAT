@@ -7,7 +7,11 @@ const mapStateToProps = function(state, props) {
   const { userEvent } = navigation.state.params;
   const { status, msg } = state.event;
 
-  return { navigation, userEvent: { ...userEvent, status, msg } };
+  return {
+    auth: state.auth,
+    navigation,
+    userEvent: { ...userEvent, status, msg }
+  };
 };
 
 const mapDispatchToProps = function(dispatch) {

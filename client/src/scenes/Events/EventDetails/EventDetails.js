@@ -34,31 +34,12 @@ class EventDetails extends Component {
     this.state = {
       date: moment(datetime).format('YYYY-MM-DD'),
       time: moment(datetime).format('HH:mm'),
-      active: false,
-      // TODO: Fetch values from the store
-      userId: null,
-      accessToken: null
+      active: false
     }
     this.hasDatetimeChanged = this.hasDatetimeChanged.bind(this);
     this.handleContinueVoting = this.handleContinueVoting.bind(this);
     this.handleSaveChanges = this.handleSaveChanges.bind(this);
     this.handleCancelEvent = this.handleCancelEvent.bind(this);
-  }
-
-  async componentDidMount() {
-    try {
-      const accessToken = await AsyncStorage.getItem('app_access_token');
-      const userId = await AsyncStorage.getItem('user_id');
-      if (userId && accessToken) {
-        this.setState({
-          userId,
-          accessToken
-        });
-        this.props.dispatch(fetchEvents(accessToken, userId));
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Loading Error. Please try again.');
-    }
   }
 
   hasDatetimeChanged() {
@@ -76,13 +57,15 @@ class EventDetails extends Component {
   }
 
   handleCancelEvent() {
-    const { accessToken, userId, date, time } = this.state;
+    const { access_token: accessToken, user_id: userId } = this.props.auth.token;
+    const { date, time } = this.state;
     const { id: eventId } = this.props.userEvent;
     this.props.cancelEvent(accessToken, userId, eventId);
   }
 
   handleSaveChanges() {
-    const { accessToken, userId, date, time } = this.state;
+    const { access_token: accessToken, user_id: userId } = this.props.auth.token;
+    const { date, time } = this.state;
     const { id: eventId } = this.props.userEvent;
     const eventDateTime = moment(`${date} ${time}`, 'YYYY-MM-DD HH:mm');
     this.props.editEventDetails(accessToken, userId, eventId, eventDateTime.format('YYYY-MM-DD HH:mmZ'));
@@ -97,6 +80,7 @@ class EventDetails extends Component {
   }
 
   render() {
+    const { user_id: userId } = this.props.auth.token;
     const { round_num: roundNumber, event_detail, creator } = this.props.userEvent;
 
     const {
@@ -151,7 +135,7 @@ class EventDetails extends Component {
         </Card>
 
         { /* Show an 'admin' panel if the user is the event creator */ }
-        {String(creator.id) === String(this.state.userId) &&
+        {String(creator.id) === String(userId) &&
         (<Card style={StyleSheet.flatten(styles.card)}>
           {this.renderCardTitle('Admin')}
           <Text>
