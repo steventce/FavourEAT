@@ -29,14 +29,17 @@ const PARALLAX_HEADER_HEIGHT = 225;
 class EventDetails extends Component {
   constructor(props) {
     super(props);
+
+    const datetime = this.props.userEvent.event_detail.datetime;
     this.state = {
-      date: moment(new Date()).format('YYYY-MM-DD'),
-      time: moment(new Date()).format('HH:mm'),
+      date: moment(datetime).format('YYYY-MM-DD'),
+      time: moment(datetime).format('HH:mm'),
       active: false,
       // TODO: Fetch values from the store
       userId: null,
       accessToken: null
     }
+    this.hasDatetimeChanged = this.hasDatetimeChanged.bind(this);
     this.handleContinueVoting = this.handleContinueVoting.bind(this);
     this.handleSaveChanges = this.handleSaveChanges.bind(this);
     this.handleCancelEvent = this.handleCancelEvent.bind(this);
@@ -58,6 +61,14 @@ class EventDetails extends Component {
     }
   }
 
+  hasDatetimeChanged() {
+    const { date, time } = this.state;
+    const newMoment = moment(`${date} ${time}`, 'YYYY-MM-DD HH:mm');
+    const initialMoment = moment(this.props.userEvent.event_detail.datetime);
+
+    return !newMoment.isSame(initialMoment, 'minute');
+  }
+
   handleContinueVoting() {
     const { id: eventId } = this.props.userEvent;
     // TODO: Navigate
@@ -74,7 +85,7 @@ class EventDetails extends Component {
     const { accessToken, userId, date, time } = this.state;
     const { id: eventId } = this.props.userEvent;
     const eventDateTime = moment(`${date} ${time}`, 'YYYY-MM-DD HH:mm');
-    this.props.editEventDetails(accessToken, userId, eventId, eventDateTime.toDate());
+    this.props.editEventDetails(accessToken, userId, eventId, eventDateTime.format('YYYY-MM-DD HH:mmZ'));
   }
 
   renderCardTitle(title) {
@@ -174,7 +185,11 @@ class EventDetails extends Component {
               onDateChange={(time) => { this.setState({ time }) }} />
           </View>
           <View style={styles.btnContainer}>
-            <Button success block style={StyleSheet.flatten(styles.btn)}
+            <Button
+              success
+              block
+              disabled={!this.hasDatetimeChanged()}
+              style={StyleSheet.flatten(styles.btn)}
               onPress={this.handleSaveChanges}>
               <Text>Save Changes</Text>
             </Button>

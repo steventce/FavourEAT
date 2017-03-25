@@ -24,6 +24,7 @@ from server.models import (
     UserFcm
 )
 from server.favoureat.recommendation_service import RecommendationService
+from server.favoureat.fcm_service import FcmService
 import string
 import random
 from rest_framework.views import APIView
@@ -117,6 +118,8 @@ class FcmTokenView(APIView):
         try:
             user = User.objects.get(pk=request.user.id)
             fcm_token = request.data.get('fcm_token')
+            if user.id != request.user.id:
+                return Response('Invalid user id', status=status.HTTP_401_UNAUTHORIZED)
             if fcm_token is None:
                 return Response('Bad request', status=status.HTTP_400_BAD_REQUEST)
             user_fcm, created = UserFcm.objects.get_or_create(user_id=request.user.id)
@@ -326,6 +329,14 @@ class EventDetailsView(APIView):
         serializer = EventDetailSerializer(event_detail, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
+
+            fcm_service = FcmService()
+            title = '{name} updated'.format(name=event_detail.name)
+            date_str = event_detail.datetime.strftime(fcm_service.DATETIME_FORMAT)
+            body = '{first_name} updated the event date to {date}'.format(
+                first_name=event.creator.first_name, date=date_str)
+            fcm_service.notify_all_participants(event.id, title, body)
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

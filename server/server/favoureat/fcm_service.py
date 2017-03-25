@@ -1,6 +1,6 @@
 from django.conf import settings
 from pyfcm import FCMNotification
-from server.models import UserFcm
+from server.models import EventUserAttach
 
 class FcmService(object):
     """
@@ -10,9 +10,26 @@ class FcmService(object):
     DEFAULT_ICON = 'ic_stat_name'
     DEFAULT_PRIORITY = 'high'
     DEFAULT_SOUND = 'default'
+    DATETIME_FORMAT = '%-I:%M %p, %a, %b %d'
 
     def __init__(self):
         self.push_service = FCMNotification(api_key=settings.FCM_SERVER_KEY)
+
+    def notify_all_participants(self, event_id, title, body, **options):
+        """
+        Notify all the participants in the event, including the creator.
+
+        Args:
+            event_id (int): The id of the event_id
+            ...See args of method 'notify'
+
+        Returns:
+            dict: The result after notifying the devices
+        """
+        event_user_attaches = EventUserAttach.objects.filter(event=event_id)
+        tokens = [a.user.userfcm.fcm_token for a in event_user_attaches if
+                  hasattr(a.user, 'userfcm') and a.user.userfcm is not None]
+        return self.notify(tokens, title, body, **options)
 
     def notify(self, fcm_tokens, title, body, **options):
         """
@@ -50,7 +67,7 @@ class FcmService(object):
             'priority': options.get('priority', self.DEFAULT_PRIORITY),
             'show_in_foreground': options.get('show_in_foreground', True),
             'sound': options.get('sound', self.DEFAULT_SOUND),
-            'sub_text': options.get('sub_text', ''),
+            'sub_text': options.get('sub_text', None),
             'ticker': options.get('ticker', title),
             'tag': options.get('tag', ''),
             'group': options.get('group', '')

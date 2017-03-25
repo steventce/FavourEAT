@@ -14,7 +14,7 @@ import Login from './Login';
 
 class LoginContainer extends Component {
   static navigationOptions = { header: { visible: false } }
-  
+
   handleFacebookLogin() {
     LoginManager.logInWithReadPermissions(['public_profile']).then((result) => {
       if (!result.isCancelled) {
