@@ -1,3 +1,1 @@
-import UserEvents from './UserEvents';
-
-export default UserEvents;
+export { default } from './UserEventsContainer';

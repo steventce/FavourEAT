@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import {
   StyleSheet,
   Text,
@@ -19,10 +18,8 @@ import {
   Body
 } from 'native-base';
 import moment from 'moment';
-import { fetchEvents } from '../../../reducers/Events/actions';
 import { colors } from '../../../styles/common';
 import styles from './styles';
-import { logo, thumbnail } from '../../../config/images';
 
 import Preferences from '../Preferences/index';
 
@@ -43,26 +40,20 @@ class UserEvents extends Component {
     navigate('EventDetails', { userEvent });
   }
 
-  async componentDidMount() {
-    try {
-      const appAccessToken = await AsyncStorage.getItem('app_access_token');
-      const userId = await AsyncStorage.getItem('user_id');
-      if (appAccessToken) {
-        this.props.dispatch(fetchEvents(appAccessToken, userId));
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Loading Error. Please try again.');
-    }
+  componentDidMount() {
+    const { access_token, user_id } = this.props.auth.token;
+    this.props.fetchEvents(access_token, user_id);
   }
 
   render() {
     const { navigate, state } = this.props.navigation;
-    const { events } = this.props;
+    const { events, auth } = this.props;
+
     return (
       <Container>
         <Content>
           <View style={{ backgroundColor: colors.APP_PRIMARY_LIGHT }}>
-            <Thumbnail size={100} source={thumbnail} style={{ alignSelf: 'center', marginTop: 40 }} />
+            <Thumbnail large source={{uri: auth.imageUrl}} style={{ alignSelf: 'center', marginTop: 40 }} />
             <Text style={styles.event}>
               Your Events
             </Text>
@@ -96,8 +87,4 @@ class UserEvents extends Component {
   }
 }
 
-const mapStateToProps = function(state) {
-  return { events: state.event.events };
-};
-
-export default connect(mapStateToProps)(UserEvents);
+export default UserEvents;

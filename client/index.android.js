@@ -24,7 +24,7 @@ const HomeDrawer = DrawerNavigator({
 }, {
   initialRouteName: 'Home',
   drawerWidth: 300,
-  contentComponent: Drawer  
+  contentComponent: Drawer
 });
 
 const MainStack = StackNavigator({

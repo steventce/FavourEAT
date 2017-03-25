@@ -7,6 +7,8 @@ import styles from './styles';
 import { logo } from '../../config/images';
 
 class Login extends Component {
+  static navigationOptions = { header: { visible: false } }
+
   render() {
     return (
       <Container>
