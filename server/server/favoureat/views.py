@@ -299,6 +299,9 @@ class JoinEventView(APIView):
         if event_user_attach.count() == 0:
             event_user_attach = EventUserAttach(user=user, event=event)
             event_user_attach.save()
+            if not event.is_group:
+                event.is_group = True
+                event.save()
 
         serializer = EventSerializer(event)
         resp = serializer.data
