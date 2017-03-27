@@ -126,6 +126,9 @@ class EventDetails extends Component {
             {description}
           </Text>
           <Text>
+            Invite Code: {inviteCode}
+          </Text>
+          <Text>
             Status: In Progress (Round {roundNumber})
           </Text>
           <Button success block style={StyleSheet.flatten(styles.btn)}

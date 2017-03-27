@@ -18,6 +18,7 @@ export function fetchEvents(accessToken, userId) {
       }
     })
       .then((response) => {
+        if (!response.ok) throw Error();
         return response.json();
       })
       .then((json) => {
@@ -53,7 +54,7 @@ export function joinEvent(accessToken, userId, inviteCode) {
 export function createEvent(accessToken, userId, eventDetail, preferences) {
   return function (dispatch) {
     dispatch(resetStatus());
-    const { name, date, time, rndDuration } = eventDetail;
+    const { name, datetime, rndDuration } = eventDetail;
     const { radius, minPrice, maxPrice, cuisineTypes } = preferences;
 
     const cuisineTypeData = [];
@@ -63,9 +64,8 @@ export function createEvent(accessToken, userId, eventDetail, preferences) {
 
     const data = {
       name: name,
-      date: date,
-      time: time,
-      roundDuration: rndDuration,
+      datetime: datetime,
+      round_duration: rndDuration,
       radius: radius * METERS_IN_KILOMETER,
       min_price: minPrice,
       max_price: maxPrice,
@@ -84,6 +84,7 @@ export function createEvent(accessToken, userId, eventDetail, preferences) {
       body: JSON.stringify(data)
     })
       .then((response) => {
+        if (!response.ok) throw Error();
         return response.json();
       })
       .then((responseJson) => {
@@ -107,6 +108,7 @@ export function editEventDetails(accessToken, userId, eventId, datetime) {
       body: JSON.stringify({ datetime })
     })
     .then((response) => {
+      if (!response.ok) throw Error();
       return response.json();
     })
     .then((responseJson) => {
@@ -128,11 +130,15 @@ export function cancelEvent(accessToken, userId, eventId) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`
       }
-    }).then((response) => {
-      return response.json();
-    }).then((responseJson) => {
-      dispatch(cancelEventSuccess());
     })
+    .then((response) => {
+      if (!response.ok) throw Error();
+      dispatch(cancelEventSuccess());
+      return response.json();
+    })
+    .catch((error) => {
+      console.log(error);
+    });
   }
 }
 
