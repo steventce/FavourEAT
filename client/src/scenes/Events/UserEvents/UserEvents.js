@@ -4,10 +4,10 @@ import {
   Text,
   View,
   Alert,
-  AsyncStorage,
   TouchableNativeFeedback,
   ListView,
-  RefreshControl
+  RefreshControl,
+  Image
 } from 'react-native';
 import {
   Container,
@@ -17,13 +17,19 @@ import {
   Button,
   Left,
   Right,
-  Body
+  Body,
+  Card
 } from 'native-base';
 import moment from 'moment';
-import { colors } from '../../../styles/common';
-import styles from './styles';
+import ParallaxScrollView from 'react-native-parallax-scroll-view';
 
-import Preferences from '../Preferences/index';
+import backgroundImg from '../../../images/suika.jpg';
+import { colors } from '../../../styles/common';
+import styles, { PARALLAX_HEADER_HEIGHT } from './styles';
+
+const isUpcoming = function(event) {
+  return moment(event.event_detail.datetime).isSameOrAfter(moment(new Date()));
+}
 
 class UserEvents extends Component {
   static navigationOptions = {
@@ -35,13 +41,59 @@ class UserEvents extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      refreshing: false
+      refreshing: false,
+      numUpcomingEvents: 0
     }
 
-    this.ds = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
+    this.ds = new ListView.DataSource({
+      rowHasChanged: (r1, r2) => r1 !== r2,
+      sectionHeaderHasChanged: (s1, s2) => s1 !== s2
+    });
     this.handleViewEventDetails = this.handleViewEventDetails.bind(this);
     this.renderEventRow = this.renderEventRow.bind(this);
     this.handleRefresh = this.handleRefresh.bind(this);
+  }
+
+  // Adapted from Spencer Carli:
+  // https://medium.com/differential/react-native-basics-how-to-use-the-listview-component-a0ec44cf1fe8#.p4466zws2
+  getEventListData(events) {
+    const dataBlob = {};
+    const sections = [{
+      id: 'upcoming',
+      title: 'Upcoming Events',
+      belongs: (event) => {
+        return isUpcoming(event);
+      }
+    }, {
+      id: 'past',
+      title: 'Past Events',
+      belongs: (event) => {
+        return moment(event.event_detail.datetime).isBefore(moment(new Date()));
+      }
+    }];
+    const rowIds = [];
+
+    for (var i = 0; i < sections.length; i++) {
+      const { id, title, belongs } = sections[i];
+      dataBlob[id] = { title };
+
+      filteredEvents = events.filter(belongs);
+      // Add the eventId: eventData into the blob
+      for (var j = 0; j < filteredEvents.length; j++) {
+        const event = filteredEvents[j];
+        dataBlob[id][event.id] = event;
+      }
+
+      // Add the row ids for this section
+      filteredIds = filteredEvents.map(event => event.id);
+      rowIds.push(filteredIds);
+    }
+
+    return {
+      dataBlob,
+      sectionIds: sections.map(section => section.id),
+      rowIds
+    };
   }
 
   handleViewEventDetails(userEvent, event) {
@@ -61,64 +113,106 @@ class UserEvents extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.status === 'success') {
+    const { status, events } = nextProps;
+    if (status === 'success') {
       this.setState({
         refreshing: false
       });
     }
+
+    const numUpcomingEvents = events.filter(isUpcoming).length;
+    if (numUpcomingEvents.length !== this.state.numUpcomingEvents) {
+      this.setState({ numUpcomingEvents });
+    }
+  }
+
+  renderSectionHeader(section) {
+    return (
+      <Card style={StyleSheet.flatten(styles.sectionHeader)}>
+        <View style={styles.container}>
+          <Text>{section.title}</Text>
+        </View>
+      </Card>
+    );
   }
 
   renderEventRow(event) {
-    const { id, name, datetime } = event.event_detail;
+    const { id, name, datetime, restaurant } = event.event_detail;
+
     return (
-      <ListItem style={{ margin: 0, padding: 0 }}>
+      <Card style={{ margin: 0, padding: 0 }}>
         <TouchableNativeFeedback onPress={this.handleViewEventDetails.bind(null, event)}>
           <View style={styles.container}>
             <Left>
               <Text>{name}</Text>
+              <Text>{restaurant ? restaurant.name : 'Voting in Progress'}</Text>
             </Left>
             <Right>
-              <Text>{moment(datetime).format('MMM Do YY, h:mm a')}</Text>
+              <Text>{moment(datetime).format('ddd, MMM Do @ h:mm A')}</Text>
             </Right>
           </View>
         </TouchableNativeFeedback>
-      </ListItem>
+      </Card>
     );
   }
 
   render() {
     const { navigate, state } = this.props.navigation;
     const { events, auth } = this.props;
-    const dataSource = this.ds.cloneWithRows(events);
+
+    const { dataBlob, sectionIds, rowIds } = this.getEventListData(events);
+    const dataSource = this.ds.cloneWithRowsAndSections(dataBlob, sectionIds, rowIds);
 
     return (
-      <Container>
-        <Content>
-          <View style={{ backgroundColor: colors.APP_PRIMARY_LIGHT }}>
-            <Thumbnail large source={{uri: auth.imageUrl}} style={{ alignSelf: 'center', marginTop: 40 }} />
-            <Text style={styles.event}>
-              Your Events
-            </Text>
-            <View style={styles.btnContainer}>
-              <Button success style={{ margin: 10 }}
-                onPress={() => navigate('CreateEvent')}>
-                <Text>Start Session</Text>
-              </Button>
-            </View>
-          </View>
-          <ListView
-            dataSource={dataSource}
-            enableEmptySections={true}
-            refreshControl={
-              <RefreshControl
-                refreshing={this.state.refreshing}
-                onRefresh={this.handleRefresh}
-                colors={[colors.APP_PRIMARY_LIGHT, colors.APP_PRIMARY_DARK]}
-              />
-            }
-            renderRow={this.renderEventRow} />
-        </Content>
-      </Container>
+      <ListView
+        dataSource={dataSource}
+        enableEmptySections={true}
+        refreshControl={
+          <RefreshControl
+            refreshing={this.state.refreshing}
+            onRefresh={this.handleRefresh}
+            colors={[colors.APP_PRIMARY_LIGHT, colors.APP_PRIMARY_DARK]}
+          />
+        }
+        renderSectionHeader={this.renderSectionHeader}
+        renderRow={this.renderEventRow}
+        renderScrollComponent={(props) => {
+          return (
+            <ParallaxScrollView
+              {...props}
+              parallaxHeaderHeight={PARALLAX_HEADER_HEIGHT}
+              renderBackground={() => {
+                return (
+                  <Image
+                    source={backgroundImg}
+                    resizeMode="cover" style={{ height: PARALLAX_HEADER_HEIGHT }} />
+                );
+              }}
+              renderForeground={() => {
+                return (
+                  <View style={styles.foreground}>
+                    <Thumbnail
+                      large
+                      source={{uri: auth.imageUrl}}
+                      style={StyleSheet.flatten(styles.thumbnail)} />
+                    <Text style={styles.event}>
+                      Your Events
+                    </Text>
+                    <Text style={styles.upcomingCount}>
+                      {this.state.numUpcomingEvents} Upcoming Events
+                    </Text>
+                    <Button success bordered light style={StyleSheet.flatten(styles.createEventBtn)}
+                      onPress={() => navigate('CreateEvent')}>
+                      <Text style={{ color: 'white' }}>Create an Event</Text>
+                    </Button>
+                  </View>
+                );
+              }}
+            >
+            </ParallaxScrollView>
+          );
+        }}
+      />
     );
   }
 }
