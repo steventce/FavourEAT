@@ -5,7 +5,9 @@ import {
   View,
   Alert,
   AsyncStorage,
-  TouchableNativeFeedback
+  TouchableNativeFeedback,
+  ListView,
+  RefreshControl
 } from 'react-native';
 import {
   Container,
@@ -32,7 +34,14 @@ class UserEvents extends Component {
 
   constructor(props) {
     super(props);
+    this.state = {
+      refreshing: false
+    }
+
+    this.ds = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
     this.handleViewEventDetails = this.handleViewEventDetails.bind(this);
+    this.renderEventRow = this.renderEventRow.bind(this);
+    this.handleRefresh = this.handleRefresh.bind(this);
   }
 
   handleViewEventDetails(userEvent, event) {
@@ -40,14 +49,47 @@ class UserEvents extends Component {
     navigate('EventDetails', { userEvent });
   }
 
+  handleRefresh() {
+    const { access_token, user_id } = this.props.auth.token;
+    this.setState({ refreshing: true });
+    this.props.fetchEvents(access_token, user_id);
+  }
+
   componentDidMount() {
     const { access_token, user_id } = this.props.auth.token;
     this.props.fetchEvents(access_token, user_id);
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.status === 'success') {
+      this.setState({
+        refreshing: false
+      });
+    }
+  }
+
+  renderEventRow(event) {
+    const { id, name, datetime } = event.event_detail;
+    return (
+      <ListItem style={{ margin: 0, padding: 0 }}>
+        <TouchableNativeFeedback onPress={this.handleViewEventDetails.bind(null, event)}>
+          <View style={styles.container}>
+            <Left>
+              <Text>{name}</Text>
+            </Left>
+            <Right>
+              <Text>{moment(datetime).format('MMM Do YY, h:mm a')}</Text>
+            </Right>
+          </View>
+        </TouchableNativeFeedback>
+      </ListItem>
+    );
+  }
+
   render() {
     const { navigate, state } = this.props.navigation;
     const { events, auth } = this.props;
+    const dataSource = this.ds.cloneWithRows(events);
 
     return (
       <Container>
@@ -64,23 +106,17 @@ class UserEvents extends Component {
               </Button>
             </View>
           </View>
-          {events.map((event) => {
-            const { id, name, datetime } = event.event_detail;
-            return (
-              <ListItem key={id} style={{ margin: 0, padding: 0 }}>
-                <TouchableNativeFeedback onPress={this.handleViewEventDetails.bind(null, event)}>
-                  <View style={styles.container}>
-                    <Left>
-                      <Text>{name}</Text>
-                    </Left>
-                    <Right>
-                      <Text>{moment(datetime).format('MMM Do YY, h:mm a')}</Text>
-                    </Right>
-                  </View>
-                </TouchableNativeFeedback>
-              </ListItem>
-            );
-          })}
+          <ListView
+            dataSource={dataSource}
+            enableEmptySections={true}
+            refreshControl={
+              <RefreshControl
+                refreshing={this.state.refreshing}
+                onRefresh={this.handleRefresh}
+                colors={[colors.APP_PRIMARY_LIGHT, colors.APP_PRIMARY_DARK]}
+              />
+            }
+            renderRow={this.renderEventRow} />
         </Content>
       </Container>
     );

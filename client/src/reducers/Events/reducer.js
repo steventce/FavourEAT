@@ -25,10 +25,11 @@ const initialState = {
 const reducer = (state = initialState, action) => {
   switch (action.type) {
     case actionTypes.FETCH_EVENTS_SUCCESS: {
-      return { ...state, events: action.events };
+      return { ...state, events: action.events, status: action.status };
     }
     case actionTypes.EDIT_EVENT_DETAILS_SUCCESS:
-    case actionTypes.CANCEL_EVENT_SUCCESS: {
+    case actionTypes.CANCEL_EVENT_SUCCESS:
+    case actionTypes.RESET_STATUS: {
       const { status, msg } = action;
       return { ...state, status, msg };
     }

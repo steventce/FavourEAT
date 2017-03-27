@@ -4,7 +4,7 @@ import UserEvents from './UserEvents';
 
 const mapStateToProps = function(state) {
   const { auth, event } = state;
-  return { auth, events: event.events };
+  return { auth, events: event.events, status: event.status };
 };
 
 const mapDispatchToProps = function(dispatch) {

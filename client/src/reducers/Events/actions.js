@@ -8,6 +8,7 @@ const METERS_IN_KILOMETER = 1000;
 
 export function fetchEvents(accessToken, userId) {
   return function (dispatch) {
+    dispatch(resetStatus());
     fetch(`${API_BASE_URL}v1/users/${userId}/events/`, {
       method: 'GET',
       headers: {
@@ -28,6 +29,7 @@ export function fetchEvents(accessToken, userId) {
 
 export function joinEvent(accessToken, userId, inviteCode) {
   return function (dispatch) {
+    dispatch(resetStatus());
     return fetch(`${API_BASE_URL}v1/users/${userId}/join/${inviteCode}/`, {
       method: 'POST',
       headers: {
@@ -50,6 +52,7 @@ export function joinEvent(accessToken, userId, inviteCode) {
 
 export function createEvent(accessToken, userId, eventDetail, preferences) {
   return function (dispatch) {
+    dispatch(resetStatus());
     const { name, date, time, rndDuration } = eventDetail;
     const { radius, minPrice, maxPrice, cuisineTypes } = preferences;
 
@@ -93,6 +96,7 @@ export function createEvent(accessToken, userId, eventDetail, preferences) {
 
 export function editEventDetails(accessToken, userId, eventId, datetime) {
   return function(dispatch) {
+    dispatch(resetStatus());
     return fetch(`${API_BASE_URL}v1/users/${userId}/events/${eventId}/`, {
       method: 'PUT',
       headers: {
@@ -116,7 +120,7 @@ export function editEventDetails(accessToken, userId, eventId, datetime) {
 
 export function cancelEvent(accessToken, userId, eventId) {
   return function(dispatch) {
-    console.log(accessToken);
+    dispatch(resetStatus());
     return fetch(`${API_BASE_URL}v1/users/${userId}/events/${eventId}/`, {
       method: 'DELETE',
       headers: {
@@ -135,7 +139,8 @@ export function cancelEvent(accessToken, userId, eventId) {
 function fetchEventsSuccess(json) {
   return {
     type: actionTypes.FETCH_EVENTS_SUCCESS,
-    events: json
+    events: json,
+    status: 'success'
   };
 }
 
@@ -152,5 +157,13 @@ function cancelEventSuccess() {
     type: actionTypes.CANCEL_EVENT_SUCCESS,
     status: 'success',
     msg: 'Event cancelled'
+  };
+}
+
+function resetStatus() {
+  return {
+    type: actionTypes.RESET_STATUS,
+    status: '',
+    msg: ''
   };
 }
