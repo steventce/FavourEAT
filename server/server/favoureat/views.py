@@ -389,13 +389,18 @@ class IndividualTournamentView(APIView):
         event.round_num += 1
         event.round_start = timezone.now()
         event.save()
+
+        num_remaining = 0
+        winner = None
         # Update restaurants for next tournament round
         if event.round_num == 1:
             for t in tournament_data:
                 tournament = Tournament.objects.get(pk=t['id'])
                 if tournament.vote_count > 0:
                     tournament.vote_count = 0
+                    num_remaining += 1
                     tournament.save()
+                    winner = tournament.restaurant
                 else:
                     tournament.delete()
         else:
@@ -407,15 +412,25 @@ class IndividualTournamentView(APIView):
                     tournament1.save()
                     tournament2.vote_count = 0
                     tournament2.save()
+                    num_remaining += 2
                 elif tournament1.vote_count > tournament2.vote_count:
                     tournament1.vote_count = 0
                     tournament1.save()
+                    num_remaining += 1
+                    winner = tournament1.restaurant
                     tournament2.delete()
                 else:
                     tournament2 = Tournament.objects.get(pk=t[1]['id'])
                     tournament2.save()
+                    num_remaining += 1
+                    winner = tournament2.restaurant
                     tournament1.delete()
 
+        # If only 1 restaurant left, then update event details with the winner.
+        if num_remaining == 1:
+            event_details = event.event_detail
+            event_details.restaurant = winner
+            event_details.save()
         return True
 
     def get(self, request, event_id, format=None):
