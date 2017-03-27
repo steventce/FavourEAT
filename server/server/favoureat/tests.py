@@ -217,7 +217,8 @@ class ClearRestaurantCacheTests(TestCase):
 class EventTests(APITestCase):
     data = {
         'radius': 100, 'latitude': 49, 'longitude': -123, 'min_price': 10,
-        'max_price': 50, 'name': 'Test'
+        'max_price': 50, 'name': 'Test', 'cuisine_types': ['chinese', 'pizza'],
+        'datetime': timezone.now(), 'round_duration': 5
     }
 
     def event_helper(self, user_id, data, authenticate, method='GET'):
@@ -234,6 +235,14 @@ class EventTests(APITestCase):
         view = views.EventView.as_view()
         response = view(request, user_id=user_id)
         return response
+
+    def create_restaurants(self):
+        restaurants = Restaurant.objects.bulk_create([
+            Restaurant(yelp_id='Cheap Foods'),
+            Restaurant(yelp_id='Some Pizza'),
+            Restaurant(yelp_id='Good Rice')
+        ])
+        return restaurants
 
     def test_get_user_events(self):
         """ Ensures that a user can successfully retrieve their events """
@@ -277,7 +286,7 @@ class EventTests(APITestCase):
         """ Ensure that preferences are saved correctly when creating an event """
         user_id = 10
         # Mock out the Yelp API call
-        get_restaurants_mock.return_value = []
+        get_restaurants_mock.return_value = self.create_restaurants()
 
         response = self.event_helper(user_id, self.data, True, 'POST')
         event = Event.objects.get(creator=user_id)
@@ -297,7 +306,7 @@ class EventTests(APITestCase):
         """ Ensure that event details are saved correctly when creating an event """
         user_id = 10
         # Mock out the Yelp API call
-        get_restaurants_mock.return_value = []
+        get_restaurants_mock.return_value = self.create_restaurants()
 
         response = self.event_helper(user_id, self.data, True, 'POST')
         event = Event.objects.get(creator=user_id)
@@ -309,7 +318,7 @@ class EventTests(APITestCase):
         """ Ensure that event user attach is saved correctly when creating an event """
         user_id = 10
         # Mock out the Yelp API call
-        get_restaurants_mock.return_value = []
+        get_restaurants_mock.return_value = self.create_restaurants()
 
         response = self.event_helper(user_id, self.data, True, 'POST')
         event = Event.objects.get(creator=user_id)
@@ -325,7 +334,7 @@ class EventTests(APITestCase):
             Restaurant(yelp_id='Some Pizza'),
             Restaurant(yelp_id='Good Rice')
         ])
-        get_restaurants_mock.return_value = restaurants
+        get_restaurants_mock.return_value = self.create_restaurants()
 
         response = self.event_helper(user_id, self.data, True, 'POST')
         event = Event.objects.get(creator=user_id)

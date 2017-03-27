@@ -54,7 +54,7 @@ export function joinEvent(accessToken, userId, inviteCode) {
 export function createEvent(accessToken, userId, eventDetail, preferences) {
   return function (dispatch) {
     dispatch(resetStatus());
-    const { name, date, time, rndDuration } = eventDetail;
+    const { name, datetime, rndDuration } = eventDetail;
     const { radius, minPrice, maxPrice, cuisineTypes } = preferences;
 
     const cuisineTypeData = [];
@@ -64,9 +64,8 @@ export function createEvent(accessToken, userId, eventDetail, preferences) {
 
     const data = {
       name: name,
-      date: date,
-      time: time,
-      roundDuration: rndDuration,
+      datetime: datetime,
+      round_duration: rndDuration,
       radius: radius * METERS_IN_KILOMETER,
       min_price: minPrice,
       max_price: maxPrice,

@@ -12,7 +12,7 @@ class CreateEventContainer extends Component {
   validate(name, date, time, rndDuration) {
     if (!name) {
       Alert.alert('Error', 'Please enter an event name.')
-      return;      
+      return;
     }
     var event = moment(date+" "+time, 'YYYY-MM-DD  HH:mm');
     if (!event.isValid() || moment().isAfter(event)) {
@@ -21,7 +21,7 @@ class CreateEventContainer extends Component {
     }
 
     // Proceed to setting the preferences
-    const eventDetail = { name, date, time, rndDuration };
+    const eventDetail = { name, datetime: event.toDate(), rndDuration };
     this.props.navigation.navigate('Preferences', { eventDetail });
   }
 

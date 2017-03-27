@@ -209,6 +209,17 @@ class EventView(APIView):
 
         return prefs, params
 
+    def get_invite_code(self):
+        """ Generate unique 8-digit invite code """
+        code_taken = True
+        invite_code = ''
+        while code_taken:
+            invite_code = ''.join(
+                random.choice(string.ascii_uppercase + string.digits) for _ in range(8))
+            if EventDetail.objects.filter(invite_code=invite_code).count() == 0:
+                code_taken = False
+        return invite_code
+
     def post(self, request, user_id, format=None):
         """
         Creates the specified event for a particular user.
@@ -220,42 +231,55 @@ class EventView(APIView):
 
             prefs_data, params = self.get_prefs_params_data(**request.data)
 
-            serializer = PreferenceSerializer(data=prefs_data)
-            if not serializer.is_valid():
-                return Response('Bad request', status=status.HTTP_400_BAD_REQUEST)
+            # Validate preferences
+            preference_serializer = PreferenceSerializer(data=prefs_data)
+            if not preference_serializer.is_valid():
+                return Response(preference_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            preference = preference_serializer.save()
 
             # Get restaurants
             restaurants = RecommendationService().get_restaurants(
                 user_id=user_id, preference=params)
 
-            # Start saving
-            preference = serializer.save()
+            if len(restaurants) == 0:
+                preference.delete()
+                return Response('No restaurants found.', status=status.HTTP_400_BAD_REQUEST)
 
+            # Validate event detail
+            invite_code = self.get_invite_code()
+            event_detail_data = {
+                'datetime': request.data.get('datetime'),
+                'name': request.data.get('name', 'Unnamed Event'),
+                'invite_code': invite_code,
+                'preference': preference.id
+            }
+
+            event_detail_serializer = EventDetailSerializer(
+                None, data=event_detail_data, partial=True)
+            if not event_detail_serializer.is_valid():
+                preference.delete()
+                return Response(event_detail_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            event_detail = event_detail_serializer.save()
+
+            # Save cusine preferences
             cuisines = Cuisine.objects.filter(category__in=request.data.get('cuisine_types', []))
             for cuisine in cuisines:
                 preference_cuisine = PreferenceCuisine(
                     preference=preference, cuisine=cuisine)
                 preference_cuisine.save()
 
-            # Generate unique 8-digit invite code
-            code_taken = True
-            invite_code = ''
-            while code_taken:
-                invite_code = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(8))
-                if EventDetail.objects.filter(invite_code=invite_code).count() == 0:
-                    code_taken = False
-
-            event_detail = EventDetail(
-                datetime=timezone.now(),
-                name=request.data.get('name', timezone.now()),
-                preference=preference,
-                invite_code=invite_code
+            # Create the event
+            event = Event(
+                round_num=0,
+                event_detail=event_detail,
+                creator=user,
+                round_duration=request.data.get('round_duration', 1)
             )
-            event_detail.save()
-
-            user = User.objects.get(pk=user_id)
-            event = Event(creator=user, event_detail=event_detail, round_num=0)
             event.save()
+
+            # Attach the user with the event
             event_user_attach = EventUserAttach(user=user, event=event)
             event_user_attach.save()
 
@@ -264,7 +288,10 @@ class EventView(APIView):
                 tournament = Tournament(event=event, restaurant=restaurant, vote_count=0)
                 tournament.save()
 
-            response = Response({'event_id': event.id, 'invite_code': invite_code}, status=status.HTTP_201_CREATED)
+            response = Response({
+                'event_id': event.id,
+                'invite_code': invite_code
+            }, status=status.HTTP_201_CREATED)
             response['Location'] = '/v1/events/{id}'.format(id=event.id)
             return response
 
