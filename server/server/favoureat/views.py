@@ -173,7 +173,12 @@ class EventView(APIView):
             user_id=request.user.id).values_list('event_id', flat=True)
         events = Event.objects.filter(pk__in=user_event_ids).order_by('-event_detail__datetime')
         serializer = EventSerializer(events, many=True)
-        return Response(serializer.data)
+        events_data = serializer.data
+        for event in events_data:
+            participants = EventUserAttach.objects.filter(event=event['id'])
+            event['num_participants'] = participants.count()
+            event['participants'] = EventUserAttachSerializer(participants, many=True).data
+        return Response(events_data)
 
     def get_prefs_params_data(self, **request_data):
         """
