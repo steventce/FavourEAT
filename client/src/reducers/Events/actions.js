@@ -18,6 +18,7 @@ export function fetchEvents(accessToken, userId) {
       }
     })
       .then((response) => {
+        if (!response.ok) throw Error();
         return response.json();
       })
       .then((json) => {
@@ -84,6 +85,7 @@ export function createEvent(accessToken, userId, eventDetail, preferences) {
       body: JSON.stringify(data)
     })
       .then((response) => {
+        if (!response.ok) throw Error();
         return response.json();
       })
       .then((responseJson) => {
@@ -107,6 +109,7 @@ export function editEventDetails(accessToken, userId, eventId, datetime) {
       body: JSON.stringify({ datetime })
     })
     .then((response) => {
+      if (!response.ok) throw Error();
       return response.json();
     })
     .then((responseJson) => {
@@ -128,11 +131,15 @@ export function cancelEvent(accessToken, userId, eventId) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`
       }
-    }).then((response) => {
-      return response.json();
-    }).then((responseJson) => {
-      dispatch(cancelEventSuccess());
     })
+    .then((response) => {
+      if (!response.ok) throw Error();
+      dispatch(cancelEventSuccess());
+      return response.json();
+    })
+    .catch((error) => {
+      console.log(error);
+    });
   }
 }
 
