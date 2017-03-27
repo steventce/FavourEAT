@@ -357,7 +357,8 @@ class EventDetailsView(APIView):
         if User.objects.filter(id=user_id).count() == 0:
             return Response("User not found", status=status.HTTP_404_NOT_FOUND)
         event, event_detail = self.get_object(event_id)
-        if event.creator != long(user_id):
+
+        if event.creator.id != long(user_id):
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
         event.delete()
         event_detail.delete()
