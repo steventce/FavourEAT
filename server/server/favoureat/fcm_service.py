@@ -31,8 +31,24 @@ class FcmService(object):
                   hasattr(a.user, 'userfcm') and a.user.userfcm is not None]
         # If no tokens, return empty dict
         if len(tokens) == 0:
-            return {}
+            return None
         return self.notify(tokens, title, body, **options)
+
+    def notify_creator(self, user, title, body, **options):
+        """
+        Notify event creator.
+
+        Args:
+            user: The user object
+            ...See args of method 'notify'
+
+        Returns:
+            dict: The result after notifying the devices
+        """
+        if hasattr(user, 'userfcm') and user.userfcm is not None:
+            tokens = [user.userfcm.fcm_token]
+            return self.notify(tokens, title, body, **options)
+        return None
 
     def notify(self, fcm_tokens, title, body, **options):
         """

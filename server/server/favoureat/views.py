@@ -351,6 +351,13 @@ class JoinEventView(APIView):
                 event.is_group = True
                 event.save()
 
+            # Notify creator of new member
+            fcm_service = FcmService()
+            title = '{name} updated'.format(name=event_detail.name)
+            body = '{first_name} has joined the event {name}'.format(
+                first_name=user.first_name, name=event_detail.name)
+            fcm_service.notify_creator(user, title, body)
+
         serializer = EventSerializer(event)
         resp = serializer.data
         return Response(data=resp, status=status.HTTP_201_CREATED)
