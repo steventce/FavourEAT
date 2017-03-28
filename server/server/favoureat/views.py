@@ -591,3 +591,25 @@ class IndividualTournamentView(APIView):
             return Response({'Next': 0}, status=status.HTTP_200_OK)
         except Tournament.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class EventUserAttachView(APIView):
+    def get_object(self, user_id, event_id):
+        try:
+            event = Event.objects.get(pk=event_id)
+            user = User.objects.get(pk=user_id)
+            attach = EventUserAttach.objects.get(event=event, user=user)
+            return attach
+        except Event.DoesNotExist:
+            return Response("Event does not exist", status=status.HTTP_404_NOT_FOUND)
+        except User.DoesNotExist:
+            return Response("User does not exist", status=status.HTTP_404_NOT_FOUND)
+        except EventUserAttach.DoesNotExist:
+            return Response("EventUserAttach does not exist", status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, user_id, event_id):
+        """Updates rating of a user's event. User can rate the restaurant that the event is attached to"""
+        attach = self.get_object(user_id, event_id)
+        attach.rating = request.data['rating']
+        attach.save()
+        return Response({'rating': attach.rating}, status=status.HTTP_200_OK)

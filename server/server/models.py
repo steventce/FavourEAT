@@ -59,6 +59,7 @@ class EventUserAttach(models.Model):
     user = models.ForeignKey(User)
     event = models.ForeignKey(Event)
     last_round_voted = models.IntegerField(default=-1)
+    rating = models.IntegerField(default=0)
 
 
 class Tournament(models.Model):
