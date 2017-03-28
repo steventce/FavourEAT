@@ -341,26 +341,32 @@ class JoinEventView(APIView):
     def post(self, request, user_id, invite_code, format=None):
         """Join an event given an invite code"""
         user = self.get_user(user_id)
-        event, event_detail = self.get_object(invite_code)
-        # Check if user has already joined event
-        event_user_attach = EventUserAttach.objects.filter(event=event, user=user)
-        if event_user_attach.count() == 0:
-            event_user_attach = EventUserAttach(user=user, event=event)
-            event_user_attach.save()
-            if not event.is_group:
-                event.is_group = True
-                event.save()
+        try:
+            event_detail = EventDetail.objects.get(invite_code=invite_code)
+            event = Event.objects.get(event_detail=event_detail)
+            # Check if user has already joined event
+            event_user_attach = EventUserAttach.objects.filter(event=event, user=user)
+            if event_user_attach.count() == 0:
+                event_user_attach = EventUserAttach(user=user, event=event)
+                event_user_attach.save()
+                if not event.is_group:
+                    event.is_group = True
+                    event.save()
 
-            # Notify creator of new member
-            fcm_service = FcmService()
-            title = '{name} updated'.format(name=event_detail.name)
-            body = '{first_name} has joined the event {name}'.format(
-                first_name=user.first_name, name=event_detail.name)
-            fcm_service.notify_creator(user, title, body)
+                # Notify creator of new member
+                fcm_service = FcmService()
+                title = '{name} updated'.format(name=event_detail.name)
+                body = '{first_name} has joined the event {name}'.format(
+                    first_name=user.first_name, name=event_detail.name)
+                fcm_service.notify_creator(user, title, body)
 
-        serializer = EventSerializer(event)
-        resp = serializer.data
-        return Response(data=resp, status=status.HTTP_201_CREATED)
+            serializer = EventSerializer(event)
+            resp = serializer.data
+            return Response(data=resp, status=status.HTTP_201_CREATED)
+        except EventDetail.DoesNotExist:
+            return Response("Event detail with this invite code does not exist", status=status.HTTP_404_NOT_FOUND)
+        except Event.DoesNotExist:
+            return Response("Event does not exist", status=status.HTTP_404_NOT_FOUND)
 
 
 class EventDetailsView(APIView):
@@ -387,7 +393,7 @@ class EventDetailsView(APIView):
         event_data['num_participants'] = participants.count()
         event_data['participants'] = EventUserAttachSerializer(participants, many=True).data
 
-        return Response(event_data)
+        return Response(event_data, status=status.HTTP_200_OK)
 
     def put(self, request, user_id, event_id, format=None):
         """Updates event detail. Note that only the user who created the event can update the details."""

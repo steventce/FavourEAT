@@ -12,17 +12,20 @@ from server.models import (
     Event,
     EventDetail,
     Preference,
-    UserFcm
+    UserFcm,
+    EventUserAttach,
+    Tournament
 )
 from django.contrib.auth.models import User
 from server.favoureat import views
+import datetime
 
 class UserTests(APITestCase):
     def test_success_get_user(self):
         """ Ensure that a user can be retrieved """
         user_id = 2
         name = 'bob'
-        user = User.objects.create(username=name)
+        user = User.objects.create(pk=user_id, username=name)
         self.assertEqual(User.objects.count(), 1)
 
         url = ''.join(['/v1/users', '/', str(user_id)])
@@ -39,7 +42,7 @@ class UserTests(APITestCase):
     def test_error_no_token(self):
         """ Ensure that the endpoint requires an access token """
         user_id = 2
-        User.objects.create(username='bob')
+        User.objects.create(pk=user_id, username='bob')
         self.assertEqual(User.objects.count(), 1)
 
         url = ''.join(['/v1/users', '/', str(user_id)])
@@ -244,6 +247,18 @@ class EventTests(APITestCase):
         ])
         return restaurants
 
+    def test_generate_invite_code(self):
+        """ Ensure that an 8-digit unique invite code is generated when creating an event """
+        user = User(pk=10)
+        user.save()
+        preference = Preference(radius=1, latitude=2, longitude=3)
+        preference.save()
+
+        response = self.event_helper(10, self.data, True, method='POST')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(len(response.data['invite_code']), 8)
+
     def test_get_user_events(self):
         """ Ensures that a user can successfully retrieve their events """
         expected_len = 5
@@ -340,3 +355,225 @@ class EventTests(APITestCase):
         event = Event.objects.get(creator=user_id)
         self.assertEqual(len(event.tournament_set.values()), len(restaurants))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+class JoinEventTests(APITestCase):
+    def join_event_helper(self, user, data, authenticate):
+        """ Helper to post to the create event endpoint """
+        url = 'v1/users/{user_id}/join/{invite_code}'.format(user_id=str(user.id), invite_code=data['invite_code'])
+        factory = APIRequestFactory()
+        request = factory.post(url, {}, format='json')
+
+        if authenticate:
+            force_authenticate(request, user)
+        view = views.JoinEventView.as_view()
+        response = view(request, user_id=user.id, invite_code=data['invite_code'])
+        return response
+
+    def test_join_event_success(self):
+        """ Ensure that user can join an event using an invite code """
+        user = User(pk=10)
+        user.save()
+        pref = Preference(radius=2, latitude=10, longitude=10)
+        pref.save()
+        event_detail = EventDetail(preference=pref,
+                                   datetime=timezone.now(),
+                                   name="My event details",
+                                   description="Cool event",
+                                   invite_code="8UF1H02P")
+        event_detail.save()
+        event = Event(creator=user, event_detail=event_detail)
+        event.save()
+
+        response = self.join_event_helper(user, {'invite_code': '8UF1H02P'}, True)
+
+        event_user_attach = EventUserAttach.objects.filter(event=event, user=user)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(1, event_user_attach.count())
+
+    def test_join_event_invalid_code(self):
+        """ Ensure that user cannot join an event if invite code does not map to an event """
+        user = User(pk=10)
+        user.save()
+        pref = Preference(radius=2, latitude=10, longitude=10)
+        pref.save()
+        event_detail = EventDetail(preference=pref,
+                                   datetime=timezone.now(),
+                                   name="My event details",
+                                   description="Cool event",
+                                   invite_code="8UF1H02P")
+        event_detail.save()
+        event = Event(creator=user, event_detail=event_detail)
+        event.save()
+
+        response = self.join_event_helper(user, {'invite_code': '8UA0IE12'}, True)
+
+        event_user_attach = EventUserAttach.objects.filter(event=event, user=user)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(0, event_user_attach.count())
+
+
+class TestEventDetails(APITestCase):
+    def generate_event_details_helper(self):
+        user = User(pk=10)
+        user.save()
+        pref = Preference(radius=2, latitude=10, longitude=10)
+        pref.save()
+        event_detail = EventDetail(preference=pref,
+                                   datetime=timezone.now(),
+                                   name="My event details",
+                                   description="Cool event",
+                                   invite_code="8UF1H02P")
+        event_detail.save()
+        event = Event(creator=user, event_detail=event_detail)
+        event.save()
+        return user, event_detail, event
+
+    def request_helper(self, user, event, authenticate, data=None, method='GET'):
+        url = 'v1/users/{user_id}/events/{event_id}'.format(user_id=str(user.id), event_id=str(event.id))
+        factory = APIRequestFactory()
+        request = None
+        if method == 'GET':
+            request = factory.get(url)
+        elif method == 'PUT':
+            request = factory.put(url, data, format='json')
+        elif method == "DELETE":
+            request = factory.delete(url, format='json')
+
+        if authenticate:
+            force_authenticate(request, user)
+        view = views.EventDetailsView.as_view()
+        response = view(request, user_id=user.id, event_id=event.id)
+        return response
+
+    def test_get_event_details(self):
+        user, event_detail, event = self.generate_event_details_helper()
+
+        response = self.request_helper(user, event, True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(event_detail.name, response.data['name'])
+        self.assertEqual(event_detail.description, response.data['description'])
+        self.assertEqual(event_detail.invite_code, response.data['invite_code'])
+
+    def test_get_event_details_invalid_user(self):
+        _, event_detail, event = self.generate_event_details_helper()
+        user = User(pk=11)
+
+        response = self.request_helper(user, event, True)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_change_event_name_success(self):
+        """Ensure that event details are updated successfully"""
+        user, event_detail, event = self.generate_event_details_helper()
+        data = {'name': 'New event detail name'}
+        response = self.request_helper(user, event, True, data=data, method='PUT')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(data['name'], response.data['name'])
+
+    def test_change_event_datetime_success(self):
+        """Ensure that event details are updated successfully"""
+        user, event_detail, event = self.generate_event_details_helper()
+        data = {'datetime': datetime.datetime(2016, 02, 02)}
+        response = self.request_helper(user, event, True, data=data, method='PUT')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual('2016-02-02T00:00:00', response.data['datetime'])
+
+    def test_change_event_not_creator(self):
+        """Ensure non-creator cannot update event details"""
+        user1 = User(username='hei')
+        user1.save()
+        user, event_detail, event = self.generate_event_details_helper()
+        data = {'datetime': datetime.datetime(2016, 02, 02)}
+        response = self.request_helper(user1, event, True, data=data, method='PUT')
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_change_event_invalid_user(self):
+        """Ensure non-creator cannot update event details"""
+        user1 = User(username='hei')
+        user, event_detail, event = self.generate_event_details_helper()
+        data = {'datetime': datetime.datetime(2016, 02, 02)}
+        response = self.request_helper(user1, event, True, data=data, method='PUT')
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_event_success(self):
+        """Ensure creator can delete event"""
+        user, event_detail, event = self.generate_event_details_helper()
+        response = self.request_helper(user, event, True, data=None, method='DELETE')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_delete_event_failure(self):
+        """Ensure non-creator cannot delete event"""
+        user1 = User(username='hei')
+        user1.save()
+        user, event_detail, event = self.generate_event_details_helper()
+        response = self.request_helper(user1, event, True, data=None, method='DELETE')
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class IndividualTournamentTest(APITestCase):
+    def generate_tournament_helper(self):
+        user = User(pk=10)
+        user.save()
+        pref = Preference(radius=2, latitude=10, longitude=10)
+        pref.save()
+        event_detail = EventDetail(preference=pref,
+                                   datetime=timezone.now(),
+                                   name="My event details",
+                                   description="Cool event",
+                                   invite_code="8UF1H02P")
+        event_detail.save()
+        event = Event(creator=user, event_detail=event_detail)
+        event.save()
+        user1 = User(username='test1')
+        user2 = User(username='test2')
+        user1.save()
+        user2.save()
+        user_attach = EventUserAttach(event=event, user=user1)
+        user_attach.save()
+        user_attach2 = EventUserAttach(event=event, user=user2)
+        user_attach2.save()
+
+        return user, event
+
+    def request_helper(self, user, event, authenticate, data=None, method='GET'):
+        url = 'v1/events/{event_id}/tournament'.format(event_id=str(event.id))
+        factory = APIRequestFactory()
+        request = None
+        if method == 'GET':
+            request = factory.get(url)
+        elif method == 'PUT':
+            request = factory.put(url, data, format='json')
+        elif method == "DELETE":
+            request = factory.delete(url, format='json')
+
+        if authenticate:
+            force_authenticate(request, user)
+        view = views.EventDetailsView.as_view()
+        response = view(request, user_id=user.id, event_id=event.id)
+        return response
+
+    def test_get_tournament_success(self):
+        user, event = self.generate_tournament_helper()
+        restaurant1 = Restaurant(yelp_id="1234", json="{'name': Miku}")
+        restaurant2 = Restaurant(yelp_id="1235", json="{'name': Sushi California}")
+        restaurant3 = Restaurant(yelp_id="1236", json="{'name': Mcdonalds}")
+        restaurant1.save()
+        restaurant2.save()
+        restaurant3.save()
+        tournament1 = Tournament(event=event, restaurant=restaurant1)
+        tournament2 = Tournament(event=event, restaurant=restaurant2)
+        tournament3 = Tournament(event=event, restaurant=restaurant3)
+        tournament1.save()
+        tournament2.save()
+        tournament3.save()
+
+        response = self.request_helper(user, event, True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
