@@ -35,6 +35,10 @@ class Swipe(models.Model):
 class Restaurant(models.Model):
     yelp_id = models.CharField(max_length=200, null=False)
     json = models.TextField(null=True, blank=True)
+    latitude = models.DecimalField(null=True, blank=True, decimal_places=6, max_digits=8)
+    longitude = models.DecimalField(null=True, blank=True, decimal_places=6, max_digits=9)
+    price = models.IntegerField(null=True, blank=True)
+    cuisines = models.ManyToManyField(Cuisine)
 
 
 class EventDetail(models.Model):
@@ -60,7 +64,6 @@ class EventUserAttach(models.Model):
     event = models.ForeignKey(Event)
     last_round_voted = models.IntegerField(default=-1)
     rating = models.IntegerField(default=0)
-
 
 class Tournament(models.Model):
     event = models.ForeignKey(Event)
