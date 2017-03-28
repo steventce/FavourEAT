@@ -375,9 +375,16 @@ class EventDetailsView(APIView):
 
             fcm_service = FcmService()
             title = '{name} updated'.format(name=event_detail.name)
-            date_str = event_detail.datetime.strftime(fcm_service.DATETIME_FORMAT)
-            body = '{first_name} updated the event date to {date}'.format(
-                first_name=event.creator.first_name, date=date_str)
+            body = None
+            if 'datetime' in request.data.keys():
+                date_str = event_detail.datetime.strftime(fcm_service.DATETIME_FORMAT)
+                body = '{first_name} updated the event date to {date}'.format(
+                    first_name=event.creator.first_name, date=date_str)
+            elif 'name' in request.data.keys():
+                name_str = event_detail.name
+                body = '{first_name} updated the event name to {name}'.format(
+                    first_name=event.creator.first_name, name=name_str)
+
             fcm_service.notify_all_participants(event.id, title, body)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)

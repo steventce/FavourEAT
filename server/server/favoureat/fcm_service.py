@@ -29,6 +29,9 @@ class FcmService(object):
         event_user_attaches = EventUserAttach.objects.filter(event=event_id)
         tokens = [a.user.userfcm.fcm_token for a in event_user_attaches if
                   hasattr(a.user, 'userfcm') and a.user.userfcm is not None]
+        # If no tokens, return empty dict
+        if len(tokens) == 0:
+            return {}
         return self.notify(tokens, title, body, **options)
 
     def notify(self, fcm_tokens, title, body, **options):
