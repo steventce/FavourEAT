@@ -474,6 +474,17 @@ class IndividualTournamentView(APIView):
             event_details = event.event_detail
             event_details.restaurant = winner
             event_details.save()
+
+            # Notify participants of update
+            fcm_service = FcmService()
+            title = '{name} updated'.format(name=event_details.name)
+            restaurant_data = json.loads(event_details.restaurant.json)
+            winner_str = restaurant_data['name']
+            body = '{first_name} updated the winning restaurant to {name}'.format(
+                first_name=event.creator.first_name, name=winner_str)
+
+            fcm_service.notify_all_participants(event.id, title, body)
+
         return True
 
     def get(self, request, event_id, format=None):
