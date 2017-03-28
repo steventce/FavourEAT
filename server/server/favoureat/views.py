@@ -394,11 +394,23 @@ class EventDetailsView(APIView):
         if User.objects.filter(id=user_id).count() == 0:
             return Response("User not found", status=status.HTTP_404_NOT_FOUND)
         event, event_detail = self.get_object(event_id)
+        event_user_attaches = EventUserAttach.objects.filter(event=event)
 
         if event.creator.id != long(user_id):
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+
+        # Notify event participants of the deletion
+        fcm_service = FcmService()
+        title = '{name} deleted'.format(name=event_detail.name)
+        body = '{first_name} has deleted the event {name}'.format(
+            first_name=event.creator.first_name, name=event_detail.name)
+        fcm_service.notify_all_participants(event.id, title, body)
+
+        if event_user_attaches.count() > 0:
+            event_user_attaches.delete()
         event.delete()
         event_detail.delete()
+
         return Response(status=status.HTTP_200_OK)
 
 
