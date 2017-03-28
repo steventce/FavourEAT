@@ -13,6 +13,7 @@ import Winner from './src/scenes/Events/Winner';
 import Swipe from './src/scenes/Swipe';
 import Tournament from './src/scenes/Tournament';
 import RestaurantDetails from './src/scenes/RestaurantDetails';
+import Map from './src/scenes/Map';
 
 const store = configureStore();
 
@@ -38,6 +39,7 @@ const MainStack = StackNavigator({
   HomeDrawer: { screen: HomeDrawer },
   RestaurantDetails: { screen: RestaurantDetails },
   Winner: { screen: Winner },
+  Map: { screen: Map },
 }, {
   initialRouteName: 'Login',
   backBehavior: 'none',
