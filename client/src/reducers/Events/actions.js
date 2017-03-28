@@ -41,11 +41,14 @@ export function joinEvent(accessToken, userId, inviteCode) {
     })
       .then((response) => {
         if (!response.ok) throw Error();
-        console.log('joinEvent success');
         // update store
-        dispatch(fetchEvents(accessToken, userId));
+        // dispatch(fetchEvents(accessToken, userId));
 
-        return response;
+        return response.json();
+      })
+      .then((json) => {
+        console.log(json);
+        return json;
       })
       .catch((error) => console.error(error));
   }
@@ -54,7 +57,11 @@ export function joinEvent(accessToken, userId, inviteCode) {
 export function createEvent(accessToken, userId, eventDetail, preferences) {
   return function (dispatch) {
     dispatch(resetStatus());
-    const { name, datetime, rndDuration } = eventDetail;
+
+    const is_group = (eventDetail) ? true : false;
+    const name = (is_group) ? eventDetail.name : null;
+    const datetime = (is_group) ? eventDetail.datetime : null;
+    const rndDuration = (is_group) ? eventDetail.rndDuration : null;
     const { radius, minPrice, maxPrice, cuisineTypes } = preferences;
 
     const cuisineTypeData = [];
@@ -63,6 +70,7 @@ export function createEvent(accessToken, userId, eventDetail, preferences) {
     }
 
     const data = {
+      is_group: is_group,
       name: name,
       datetime: datetime,
       round_duration: rndDuration,

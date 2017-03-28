@@ -20,6 +20,11 @@ class CreateEventContainer extends Component {
       return;
     }
 
+    if (!rndDuration) {
+      Alert.alert('Error', 'Please select an option for round duration.')
+      return;   
+    }
+
     // Proceed to setting the preferences
     const eventDetail = { name, datetime: event.toDate(), rndDuration };
     this.props.navigation.navigate('Preferences', { eventDetail });

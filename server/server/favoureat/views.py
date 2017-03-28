@@ -175,13 +175,17 @@ class EventView(APIView):
 
         # Get active events
         active_events = Event.objects.filter(
-            pk__in=user_event_ids, event_detail__datetime__gte=timezone.now()
-            ).order_by('-event_detail__datetime')
+            pk__in=user_event_ids,
+            is_group=True,
+            event_detail__datetime__gte=timezone.now()
+        ).order_by('-event_detail__datetime')
 
         # Get the last X past events
         past_events = Event.objects.filter(
-            pk__in=user_event_ids, event_detail__datetime__lt=timezone.now()
-            ).order_by('-event_detail__datetime')[0:self.MAX_PAST_EVENTS]
+            pk__in=user_event_ids,
+            is_group=True,
+            event_detail__datetime__lt=timezone.now()
+        ).order_by('-event_detail__datetime')[0:self.MAX_PAST_EVENTS]
 
         active_events_serializer = EventSerializer(active_events, many=True)
         active_events_data = active_events_serializer.data
@@ -291,6 +295,7 @@ class EventView(APIView):
                 round_num=0,
                 event_detail=event_detail,
                 creator=user,
+                is_group=request.data.get('is_group', False),
                 round_duration=request.data.get('round_duration', 1)
             )
             event.save()
@@ -447,12 +452,13 @@ class IndividualTournamentView(APIView):
         num_participants = EventUserAttach.objects.filter(event=event_id).count()
         round_completed = True
         event = Event.objects.get(pk=event_id)
-        if event.is_group and ((timezone.now() - event.round_start).total_seconds() / 3600) >= event.round_duration:
+        if event.is_group:
             if event.round_num == 0:
-                return False
-            for t in tournament_data:
-                if t[0].vote_count + t[1].vote_count != num_participants:
-                    round_completed = False
+                    return False
+            if ((timezone.now() - event.round_start).total_seconds() / 3600) >= event.round_duration:
+                for t in tournament_data:
+                    if t[0].vote_count + t[1].vote_count != num_participants:
+                        round_completed = False
 
         if not round_completed:
             return False
@@ -555,7 +561,7 @@ class IndividualTournamentView(APIView):
             if 'is_finished' in request.data.keys() and request.data['is_finished']:
                 is_round_over = self.update_next_round(event_id, request.data['tournament_data'])
                 if is_round_over:
-                    return Response(status=status.HTTP_200_OK)
-            return Response(status=status.HTTP_200_OK)
+                    return Response({'Next': 1}, status=status.HTTP_200_OK)
+            return Response({'Next': 0}, status=status.HTTP_200_OK)
         except Tournament.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)

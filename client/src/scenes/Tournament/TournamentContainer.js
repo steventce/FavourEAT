@@ -68,7 +68,7 @@ class TournamentContainer extends Component {
       } else if (this.state.cards.length == 0 || this.state.cards.length > this.props.tournamentArr.length) {
         /*  A tournament rounds is returned in an array of pairs
         *   of restaurants i.e. [ [a,b], [c,d] ... ].
-        *   Since only once restaurant from the pairing can advance,
+        *   Since only one restaurant from the pairing can advance,
         *   the next round's array must be shorter length.
         */
         this.setState({ cards: tournamentArr });
