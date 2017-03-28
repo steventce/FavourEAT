@@ -52,8 +52,12 @@ class EventDetails extends Component {
 
   handleContinueVoting() {
     const { id: eventId } = this.props.userEvent;
-    // TODO: Navigate
-    // this.props.navigation.navigate('Tournament', eventId);
+    if (this.props.userEvent.round_num == 0) {
+      this.props.getRound(this.props.auth.token.access_token, eventId);
+      this.props.navigation.navigate('Swipe', { eventId });
+    } else {
+      this.props.navigation.navigate('Tournament', { eventId });
+    }
   }
 
   handleCancelEvent() {
