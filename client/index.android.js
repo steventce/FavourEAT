@@ -16,6 +16,7 @@ import CreateEvent from './src/scenes/Events/CreateEvent';
 import Tournament from './src/scenes/Tournament';
 import RestaurantDetails from './src/scenes/RestaurantDetails';
 import EventDetails from './src/scenes/Events/EventDetails';
+import Map from './src/scenes/Map';
 
 const store = configureStore();
 
@@ -37,7 +38,8 @@ const MainStack = StackNavigator({
   Swipe: { screen: Swipe },
   Tournament: { screen: Tournament },
   Winner: { screen: Winner },
-  EventDetails: { screen: EventDetails }
+  EventDetails: { screen: EventDetails },
+  Map: { screen: Map }
 }, {
   initialRouteName: 'Login'
 });

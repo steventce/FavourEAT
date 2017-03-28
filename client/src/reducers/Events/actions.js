@@ -62,7 +62,7 @@ export function createEvent(accessToken, userId, eventDetail, preferences) {
     const name = (is_group) ? eventDetail.name : null;
     const datetime = (is_group) ? eventDetail.datetime : null;
     const rndDuration = (is_group) ? eventDetail.rndDuration : null;
-    const { radius, minPrice, maxPrice, cuisineTypes } = preferences;
+    const { radius, minPrice, maxPrice, cuisineTypes, latitude, longitude } = preferences;
 
     const cuisineTypeData = [];
     for (var i = 0; i < preferences.cuisineTypes.length; i++) {
@@ -78,8 +78,8 @@ export function createEvent(accessToken, userId, eventDetail, preferences) {
       min_price: minPrice,
       max_price: maxPrice,
       cuisine_types: cuisineTypeData,
-      latitude: 49.2827,
-      longitude: -123.1207,
+      latitude: latitude.toFixed(6),
+      longitude: longitude.toFixed(6),
     }
 
     return fetch(`${API_BASE_URL}v1/users/${userId}/events/`, {
