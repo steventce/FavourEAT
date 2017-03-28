@@ -182,15 +182,17 @@ class RestaurantDetails extends Component {
               <Icon name='menu' />
               <NBButton 
                   style={{ backgroundColor: '#EFBE79' }}
-                   onPress={() => Communications.phonecall(restaurant.phone, true)}>
+                  onPress={() => Communications.phonecall(restaurant.phone, true)}>
                 <Icon name='call' />
+              </NBButton>
+              <NBButton 
+                  style={{ backgroundColor: '#EFBE79' }}
+                  onPress={() => navigate('Map', { restaurant: restaurant })}>
+                <Icon name='locate' />
               </NBButton>
               {/*
                 <NBButton style={{ backgroundColor: '#EFBE79' }}>
                   <Icon name='restaurant' />
-                </NBButton>
-                <NBButton style={{ backgroundColor: '#EFBE79' }}>
-                  <Icon name='locate' />
                 </NBButton>
               */}
             </Fab>

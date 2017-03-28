@@ -156,6 +156,7 @@ class EventView(APIView):
     TERM = 'restaurants'
     YELP_LIMIT = 50
     DEFAULT_RADIUS = 100
+    DEFAULT_NAME = 'Unnamed Event'
     PRICE_THRESHOLDS = [
         {'price': 20, 'yelp_cd': '1'},
         {'price': 40, 'yelp_cd': '2'},
@@ -268,9 +269,11 @@ class EventView(APIView):
 
             # Validate event detail
             invite_code = self.get_invite_code()
+            date_time = request.data.get('datetime', timezone.now())
+            name = request.data.get('name', self.DEFAULT_NAME)
             event_detail_data = {
-                'datetime': request.data.get('datetime'),
-                'name': request.data.get('name', 'Unnamed Event'),
+                'datetime': date_time if date_time else timezone.now(),
+                'name': name if name else self.DEFAULT_NAME,
                 'invite_code': invite_code,
                 'preference': preference.id
             }
@@ -291,12 +294,13 @@ class EventView(APIView):
                 preference_cuisine.save()
 
             # Create the event
+            round_duration = request.data.get('round_duration', 1)
             event = Event(
                 round_num=0,
                 event_detail=event_detail,
                 creator=user,
                 is_group=request.data.get('is_group', False),
-                round_duration=request.data.get('round_duration', 1)
+                round_duration=round_duration if round_duration else 0
             )
             event.save()
 
@@ -469,11 +473,11 @@ class IndividualTournamentView(APIView):
             return Response("User does not exist", status=status.HTTP_404_NOT_FOUND)
 
     def update_next_round(self, event, tournament_data):
-        num_participants = EventUserAttach.objects.filter(event=event_id).count()
+        num_participants = EventUserAttach.objects.filter(event=event.id).count()
         round_completed = True
         if event.is_group:
             if event.round_num == 0:
-                    return False
+                return False
             if ((timezone.now() - event.round_start).total_seconds() / 3600) >= event.round_duration:
                 for t in tournament_data:
                     if t[0].vote_count + t[1].vote_count != num_participants:
@@ -587,7 +591,7 @@ class IndividualTournamentView(APIView):
             # Check if tournament round is over. If so, handle it.
             if 'is_finished' in request.data.keys() and request.data['is_finished']:
                 event = self.get_object(event_id)
-                user = self.get_object(request.data['user_id'])
+                user = request.user
                 event_user_attach = EventUserAttach.objects.get(event=event, user=user)
                 event_user_attach.last_round_voted += 1
 

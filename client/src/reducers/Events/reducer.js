@@ -5,7 +5,9 @@ const initialState = {
     radius: 5,
     minPrice: 5,
     maxPrice: 25,
-    cuisineTypes: []
+    cuisineTypes: [],
+    latitude: null,
+    longitude: null,
   },
   // TODO: need to fetch the list from server
   // list of cuisine options displayed to user
