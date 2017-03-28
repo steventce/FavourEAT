@@ -265,7 +265,11 @@ class EventTests(APITestCase):
         user = User(pk=10)
         user.save()
         for index in xrange(expected_len):
-            preference = Preference(radius=1, latitude=2, longitude=3)
+            preference = Preference(
+                radius=1,
+                latitude=2,
+                longitude=3
+            )
             preference.save()
 
             event_detail = EventDetail(
@@ -275,7 +279,13 @@ class EventTests(APITestCase):
             )
             event_detail.save()
 
-            event = Event(creator=user, event_detail=event_detail, round_num=0)
+            event = Event(
+                round_num=0,
+                event_detail=event_detail,
+                creator=user,
+                is_group=True,
+                round_duration=0
+            )
             event.save()
             user.eventuserattach_set.create(event=event, user=user)
 
