@@ -162,6 +162,7 @@ class EventView(APIView):
         {'price': 60, 'yelp_cd': '3'},
         {'price': float('inf'), 'yelp_cd': '4'}
     ]
+    MAX_PAST_EVENTS = 10
 
     def get(self, request, user_id, format=None):
         """
@@ -171,9 +172,24 @@ class EventView(APIView):
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
         user_event_ids = EventUserAttach.objects.filter(
             user_id=request.user.id).values_list('event_id', flat=True)
-        events = Event.objects.filter(pk__in=user_event_ids).order_by('-event_detail__datetime')
-        serializer = EventSerializer(events, many=True)
-        events_data = serializer.data
+
+        # Get active events
+        active_events = Event.objects.filter(
+            pk__in=user_event_ids, event_detail__datetime__gte=timezone.now()
+            ).order_by('-event_detail__datetime')
+
+        # Get the last X past events
+        past_events = Event.objects.filter(
+            pk__in=user_event_ids, event_detail__datetime__lt=timezone.now()
+            ).order_by('-event_detail__datetime')[0:self.MAX_PAST_EVENTS]
+
+        active_events_serializer = EventSerializer(active_events, many=True)
+        active_events_data = active_events_serializer.data
+        past_events_serializer = EventSerializer(past_events, many=True)
+        past_events_data = past_events_serializer.data
+
+        events_data = active_events_data + past_events_data
+
         for event in events_data:
             participants = EventUserAttach.objects.filter(event=event['id'])
             event['num_participants'] = participants.count()
