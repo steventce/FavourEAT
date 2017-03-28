@@ -5,7 +5,8 @@ import {
   View,
   Alert,
   AsyncStorage,
-  Image
+  Image,
+  TextInput
 } from 'react-native';
 import {
   Button,
@@ -30,24 +31,29 @@ class EventDetails extends Component {
   constructor(props) {
     super(props);
 
-    const datetime = this.props.userEvent.event_detail.datetime;
+    const { datetime, name } = this.props.userEvent.event_detail;
     this.state = {
       date: moment(datetime).format('YYYY-MM-DD'),
       time: moment(datetime).format('HH:mm'),
-      active: false
-    }
-    this.hasDatetimeChanged = this.hasDatetimeChanged.bind(this);
+      active: false,
+      eventName: name
+    };
+    this.hasEventDetailsChanged = this.hasEventDetailsChanged.bind(this);
     this.handleContinueVoting = this.handleContinueVoting.bind(this);
     this.handleSaveChanges = this.handleSaveChanges.bind(this);
     this.handleCancelEvent = this.handleCancelEvent.bind(this);
   }
 
-  hasDatetimeChanged() {
-    const { date, time } = this.state;
+  hasEventDetailsChanged() {
+    const { date, time, eventName: tempName } = this.state;
+    const { datetime, name } = this.props.userEvent.event_detail;
+
     const newMoment = moment(`${date} ${time}`, 'YYYY-MM-DD HH:mm');
     const initialMoment = moment(this.props.userEvent.event_detail.datetime);
+    const hasDateTimeChanged = !newMoment.isSame(initialMoment, 'minute')
+    const hasNameChanged = tempName !== name;
 
-    return !newMoment.isSame(initialMoment, 'minute');
+    return hasNameChanged || hasDateTimeChanged;
   }
 
   handleContinueVoting() {
@@ -69,10 +75,15 @@ class EventDetails extends Component {
 
   handleSaveChanges() {
     const { access_token: accessToken, user_id: userId } = this.props.auth.token;
-    const { date, time } = this.state;
+    const { date, time, eventName } = this.state;
     const { id: eventId } = this.props.userEvent;
     const eventDateTime = moment(`${date} ${time}`, 'YYYY-MM-DD HH:mm');
-    this.props.editEventDetails(accessToken, userId, eventId, eventDateTime.format('YYYY-MM-DD HH:mmZ'));
+    this.props.editEventDetails(
+      accessToken,
+      userId,
+      eventId,
+      { name: eventName, datetime: eventDateTime.format('YYYY-MM-DD HH:mmZ') },
+    );
   }
 
   renderCardTitle(title) {
@@ -148,7 +159,13 @@ class EventDetails extends Component {
           <Text>
             You are the creator of this event.
           </Text>
-          <Text>
+          <Text style={{ marginTop: 20 }}>
+            Event Name:
+          </Text>
+          <TextInput
+            onChangeText={(name) => this.setState({ eventName: name })}
+            value={this.state.eventName} />
+          <Text style={{ marginTop: 20 }}>
             Event Date: {moment(datetime).format('ddd, MMM Do @ h:mm A')}
           </Text>
           <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
@@ -179,7 +196,7 @@ class EventDetails extends Component {
             <Button
               success
               block
-              disabled={!this.hasDatetimeChanged()}
+              disabled={!this.hasEventDetailsChanged()}
               style={StyleSheet.flatten(styles.btn)}
               onPress={this.handleSaveChanges}>
               <Text>Save Changes</Text>

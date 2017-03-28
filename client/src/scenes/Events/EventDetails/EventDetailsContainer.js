@@ -17,8 +17,8 @@ const mapStateToProps = function(state, props) {
 
 const mapDispatchToProps = function(dispatch) {
   return {
-    editEventDetails: (accessToken, userId, eventId, datetime) => {
-      dispatch(editEventDetails(accessToken, userId, eventId, datetime));
+    editEventDetails: (accessToken, userId, eventId, eventDetails) => {
+      dispatch(editEventDetails(accessToken, userId, eventId, eventDetails));
     },
     cancelEvent: (accessToken, userId, eventId) => {
       dispatch(cancelEvent(accessToken, userId, eventId));

@@ -103,7 +103,7 @@ export function createEvent(accessToken, userId, eventDetail, preferences) {
   }
 };
 
-export function editEventDetails(accessToken, userId, eventId, datetime) {
+export function editEventDetails(accessToken, userId, eventId, eventDetails) {
   return function(dispatch) {
     dispatch(resetStatus());
     return fetch(`${API_BASE_URL}v1/users/${userId}/events/${eventId}/`, {
@@ -113,7 +113,7 @@ export function editEventDetails(accessToken, userId, eventId, datetime) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`
       },
-      body: JSON.stringify({ datetime })
+      body: JSON.stringify(eventDetails)
     })
     .then((response) => {
       if (!response.ok) throw Error();
