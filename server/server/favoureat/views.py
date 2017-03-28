@@ -467,11 +467,11 @@ class IndividualTournamentView(APIView):
             return Response("User does not exist", status=status.HTTP_404_NOT_FOUND)
 
     def update_next_round(self, event, tournament_data):
-        num_participants = EventUserAttach.objects.filter(event=event_id).count()
+        num_participants = EventUserAttach.objects.filter(event=event.id).count()
         round_completed = True
         if event.is_group:
             if event.round_num == 0:
-                    return False
+                return False
             if ((timezone.now() - event.round_start).total_seconds() / 3600) >= event.round_duration:
                 for t in tournament_data:
                     if t[0].vote_count + t[1].vote_count != num_participants:
@@ -585,7 +585,7 @@ class IndividualTournamentView(APIView):
             # Check if tournament round is over. If so, handle it.
             if 'is_finished' in request.data.keys() and request.data['is_finished']:
                 event = self.get_object(event_id)
-                user = self.get_object(request.data['user_id'])
+                user = request.user
                 event_user_attach = EventUserAttach.objects.get(event=event, user=user)
                 event_user_attach.last_round_voted += 1
 
