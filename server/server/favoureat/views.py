@@ -455,10 +455,16 @@ class IndividualTournamentView(APIView):
         except Event.DoesNotExist:
             return Response("Event does not exist", status=status.HTTP_404_NOT_FOUND)
 
-    def update_next_round(self, event_id, tournament_data):
+    def get_user(self, user_id):
+        try:
+            user = User.objects.get(pk=user_id)
+            return user
+        except User.DoesNotExist:
+            return Response("User does not exist", status=status.HTTP_404_NOT_FOUND)
+
+    def update_next_round(self, event, tournament_data):
         num_participants = EventUserAttach.objects.filter(event=event_id).count()
         round_completed = True
-        event = Event.objects.get(pk=event_id)
         if event.is_group:
             if event.round_num == 0:
                     return False
@@ -535,6 +541,14 @@ class IndividualTournamentView(APIView):
         rounds, restaurants are paired up.
         """
         event = self.get_object(event_id)
+
+        # Check if user has already voted for this round
+        if 'user_id' in request.data.keys():
+            user = self.get_user(request.data['user_id'])
+            event_user_attach = EventUserAttach.objects.get(event=event, user=user)
+            if event_user_attach.last_round_voted == event.round_num:
+                return Response("User has already voted", status=status.HTTP_409_CONFLICT)
+
         tournaments = Tournament.objects.filter(event_id=event_id)
         data = TournamentSerializer(tournaments, many=True).data
 
@@ -566,9 +580,36 @@ class IndividualTournamentView(APIView):
             tournament.save()
             # Check if tournament round is over. If so, handle it.
             if 'is_finished' in request.data.keys() and request.data['is_finished']:
-                is_round_over = self.update_next_round(event_id, request.data['tournament_data'])
+                event = self.get_object(event_id)
+                user = self.get_object(request.data['user_id'])
+                event_user_attach = EventUserAttach.objects.get(event=event, user=user)
+                event_user_attach.last_round_voted += 1
+
+                is_round_over = self.update_next_round(event, request.data['tournament_data'])
                 if is_round_over:
                     return Response({'Next': 1}, status=status.HTTP_200_OK)
             return Response({'Next': 0}, status=status.HTTP_200_OK)
         except Tournament.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class EventUserAttachView(APIView):
+    def get_object(self, user_id, event_id):
+        try:
+            event = Event.objects.get(pk=event_id)
+            user = User.objects.get(pk=user_id)
+            attach = EventUserAttach.objects.get(event=event, user=user)
+            return attach
+        except Event.DoesNotExist:
+            return Response("Event does not exist", status=status.HTTP_404_NOT_FOUND)
+        except User.DoesNotExist:
+            return Response("User does not exist", status=status.HTTP_404_NOT_FOUND)
+        except EventUserAttach.DoesNotExist:
+            return Response("EventUserAttach does not exist", status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, user_id, event_id):
+        """Updates rating of a user's event. User can rate the restaurant that the event is attached to"""
+        attach = self.get_object(user_id, event_id)
+        attach.rating = request.data['rating']
+        attach.save()
+        return Response({'rating': attach.rating}, status=status.HTTP_200_OK)
