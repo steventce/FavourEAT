@@ -28,6 +28,11 @@ const reducer = (state = initialState, action) => {
         ...state,
         token: { ...action.token }
       };
+    case actionTypes.SET_PROFILE_PICTURE:
+      return {
+        ...state,
+        imageUrl: action.imageUrl
+      }
     default:
       return state;
   }

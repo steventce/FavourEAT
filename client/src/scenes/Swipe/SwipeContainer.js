@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Alert, AsyncStorage } from 'react-native';
+import { NavigationActions } from 'react-navigation';
 import { Spinner } from 'native-base';
 import { connect } from 'react-redux';
 import Swipe from './Swipe';
@@ -15,8 +16,14 @@ class SwipeContainer extends Component {
       user_id: '',
       appAccessToken: '',
     }
+    this.gotoTournament = this.gotoTournament.bind(this);
   }
 
+  static navigationOptions = { header: { visible: false } }
+
+  // NOT USED FOR DEMO
+  // needs to be updated to use data properly
+  // i.e. leftSwipes.id
   postSwipe(leftSwipes, rightSwipes) {
     try {
       for (var i = 0; i < leftSwipes.length; i++) {
@@ -35,14 +42,24 @@ class SwipeContainer extends Component {
       for (var i = 0; i < restaurants.length - 1; i++) {
         this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId, restaurants[i].id));
       }
-      // TODO fix hack
       // last restaurant needs to include specific data
       this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId,
         restaurants[restaurants.length - 1].id, true, this.state.cards,
-        () => this.props.navigation.navigate('Tournament', { eventId: this.state.eventId, hack: this.state.cards.length})));
+        () => this.gotoTournament()));
     } catch (error) {
       Alert.alert('Error', error.message);
     }
+  }
+
+  gotoTournament() {
+    const resetAction = NavigationActions.reset({
+      index: 1,
+      actions: [
+        NavigationActions.navigate({ routeName: 'HomeDrawer'}),
+        NavigationActions.navigate({ routeName: 'Tournament', params: { eventId: this.state.eventId }})
+      ]
+    })
+    this.props.navigation.dispatch(resetAction);
   }
 
   async componentDidMount() {

@@ -33,9 +33,7 @@ class RestaurantDetails extends Component {
         }
     }
 
-    static navigationOptions = {
-        title: 'Restaurant Details'
-    };
+    static navigationOptions = { header: { visible: false } }
 
     getRating(rating, restaurant) {
         var icons = [];

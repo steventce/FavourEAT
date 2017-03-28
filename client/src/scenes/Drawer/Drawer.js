@@ -5,22 +5,20 @@ import { Container, Content, Left, Button, Icon } from 'native-base';
 import styles from './styles';
 import { logo } from '../../config/images';
 
+const navItem = ['Home','CreateEvent','JoinEvent'];
+
 const navItemConfig = {
   Home: {
     color: 'black',
     iconName: 'md-home'
   },
-  Preferences: {
-    color: 'black',
-    iconName: 'md-heart-outline'
+  CreateEvent: {
+    color: 'black', 
+    iconName: 'md-add'
   },
-  Swipe: {
+  JoinEvent: {
     color: 'black',
-    iconName: 'md-swap'
-  },
-  RestaurantDetails: {
-    color: 'black',
-    iconName: 'md-swap'
+    iconName: 'md-people'
   }
 }
 
@@ -36,8 +34,7 @@ class Drawer extends Component {
   }
 
   render() {
-    const { navigate, state } = this.props.navigation;
-    const { routes } = state;
+    const { navigate } = this.props.navigation;
 
     return (
       <Container>
@@ -46,19 +43,14 @@ class Drawer extends Component {
             <Image style={styles.logo} source={logo} />
           </View>
           <View style={{ flex: 1, backgroundColor: 'white' }}>
-            {routes.map((route) => {
-              const { key, routeName } = route;
-              const { iconName, color } = navItemConfig[key];
+            {navItem.map((route) => {
+              const { iconName, color } = navItemConfig[route];
               return (
-                <Button
-                  key={key}
-                  block
-                  transparent
-                  iconLeft
-                  onPress={() => navigate(key)}>
+                <Button key={route} block transparent iconLeft
+                  onPress={() => navigate(route)}>
                   <Icon name={iconName} style={{ color: color }} />
                   <Left>
-                    <Text style={{ color: color, marginLeft: 15 }} >{routeName}</Text>
+                    <Text style={{ color: color, marginLeft: 15 }}>{route}</Text>
                   </Left>
                 </Button>
               );

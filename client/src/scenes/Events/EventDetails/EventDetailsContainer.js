@@ -1,0 +1,32 @@
+import { connect } from 'react-redux';
+import EventDetails from './EventDetails';
+import { editEventDetails, cancelEvent } from '../../../reducers/Events/actions';
+import { getRound } from '../../../reducers/Tournament/actions';
+
+const mapStateToProps = function(state, props) {
+  const { navigation } = props;
+  const { userEvent } = navigation.state.params;
+  const { status, msg } = state.event;
+
+  return {
+    auth: state.auth,
+    navigation,
+    userEvent: { ...userEvent, status, msg }
+  };
+};
+
+const mapDispatchToProps = function(dispatch) {
+  return {
+    editEventDetails: (accessToken, userId, eventId, eventDetails) => {
+      dispatch(editEventDetails(accessToken, userId, eventId, eventDetails));
+    },
+    cancelEvent: (accessToken, userId, eventId) => {
+      dispatch(cancelEvent(accessToken, userId, eventId));
+    },
+    getRound: (accessToken, eventId) => {
+      dispatch(getRound(accessToken, eventId));
+    }
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(EventDetails);

@@ -9,6 +9,7 @@ from server.favoureat.serializers import (
     TournamentSerializer,
     EventDetailSerializer,
     EventSerializer,
+    EventUserAttachSerializer,
     PreferenceSerializer
 )
 from server.models import (
@@ -24,6 +25,9 @@ from server.models import (
     UserFcm
 )
 from server.favoureat.recommendation_service import RecommendationService
+from server.favoureat.fcm_service import FcmService
+import string
+import random
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -114,6 +118,8 @@ class FcmTokenView(APIView):
         try:
             user = User.objects.get(pk=request.user.id)
             fcm_token = request.data.get('fcm_token')
+            if user.id != request.user.id:
+                return Response('Invalid user id', status=status.HTTP_401_UNAUTHORIZED)
             if fcm_token is None:
                 return Response('Bad request', status=status.HTTP_400_BAD_REQUEST)
             user_fcm, created = UserFcm.objects.get_or_create(user_id=request.user.id)
@@ -149,12 +155,14 @@ class EventView(APIView):
     TERM = 'restaurants'
     YELP_LIMIT = 50
     DEFAULT_RADIUS = 100
+    DEFAULT_NAME = 'Unnamed Event'
     PRICE_THRESHOLDS = [
         {'price': 20, 'yelp_cd': '1'},
         {'price': 40, 'yelp_cd': '2'},
         {'price': 60, 'yelp_cd': '3'},
         {'price': float('inf'), 'yelp_cd': '4'}
     ]
+    MAX_PAST_EVENTS = 10
 
     def get(self, request, user_id, format=None):
         """
@@ -164,9 +172,33 @@ class EventView(APIView):
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
         user_event_ids = EventUserAttach.objects.filter(
             user_id=request.user.id).values_list('event_id', flat=True)
-        events = Event.objects.filter(pk__in=user_event_ids).order_by('-event_detail__datetime')
-        serializer = EventSerializer(events, many=True)
-        return Response(serializer.data)
+
+        # Get active events
+        active_events = Event.objects.filter(
+            pk__in=user_event_ids,
+            is_group=True,
+            event_detail__datetime__gte=timezone.now()
+        ).order_by('-event_detail__datetime')
+
+        # Get the last X past events
+        past_events = Event.objects.filter(
+            pk__in=user_event_ids,
+            is_group=True,
+            event_detail__datetime__lt=timezone.now()
+        ).order_by('-event_detail__datetime')[0:self.MAX_PAST_EVENTS]
+
+        active_events_serializer = EventSerializer(active_events, many=True)
+        active_events_data = active_events_serializer.data
+        past_events_serializer = EventSerializer(past_events, many=True)
+        past_events_data = past_events_serializer.data
+
+        events_data = active_events_data + past_events_data
+
+        for event in events_data:
+            participants = EventUserAttach.objects.filter(event=event['id'])
+            event['num_participants'] = participants.count()
+            event['participants'] = EventUserAttachSerializer(participants, many=True).data
+        return Response(events_data)
 
     def get_prefs_params_data(self, **request_data):
         """
@@ -197,6 +229,17 @@ class EventView(APIView):
 
         return prefs, params
 
+    def get_invite_code(self):
+        """ Generate unique 8-digit invite code """
+        code_taken = True
+        invite_code = ''
+        while code_taken:
+            invite_code = ''.join(
+                random.choice(string.ascii_uppercase + string.digits) for _ in range(8))
+            if EventDetail.objects.filter(invite_code=invite_code).count() == 0:
+                code_taken = False
+        return invite_code
+
     def post(self, request, user_id, format=None):
         """
         Creates the specified event for a particular user.
@@ -208,33 +251,59 @@ class EventView(APIView):
 
             prefs_data, params = self.get_prefs_params_data(**request.data)
 
-            serializer = PreferenceSerializer(data=prefs_data)
-            if not serializer.is_valid():
-                return Response('Bad request', status=status.HTTP_400_BAD_REQUEST)
+            # Validate preferences
+            preference_serializer = PreferenceSerializer(data=prefs_data)
+            if not preference_serializer.is_valid():
+                return Response(preference_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            preference = preference_serializer.save()
 
             # Get restaurants
             restaurants = RecommendationService().get_restaurants(
                 user_id=user_id, preference=params)
 
-            # Start saving
-            preference = serializer.save()
+            if len(restaurants) == 0:
+                preference.delete()
+                return Response('No restaurants found.', status=status.HTTP_400_BAD_REQUEST)
 
+            # Validate event detail
+            invite_code = self.get_invite_code()
+            date_time = request.data.get('datetime', timezone.now())
+            name = request.data.get('name', self.DEFAULT_NAME)
+            event_detail_data = {
+                'datetime': date_time if date_time else timezone.now(),
+                'name': name if name else self.DEFAULT_NAME,
+                'invite_code': invite_code,
+                'preference': preference.id
+            }
+
+            event_detail_serializer = EventDetailSerializer(
+                None, data=event_detail_data, partial=True)
+            if not event_detail_serializer.is_valid():
+                preference.delete()
+                return Response(event_detail_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            event_detail = event_detail_serializer.save()
+
+            # Save cusine preferences
             cuisines = Cuisine.objects.filter(category__in=request.data.get('cuisine_types', []))
             for cuisine in cuisines:
                 preference_cuisine = PreferenceCuisine(
                     preference=preference, cuisine=cuisine)
                 preference_cuisine.save()
 
-            event_detail = EventDetail(
-                datetime=timezone.now(),
-                name=request.data.get('name', timezone.now()),
-                preference=preference
+            # Create the event
+            round_duration = request.data.get('round_duration', 1)
+            event = Event(
+                round_num=0,
+                event_detail=event_detail,
+                creator=user,
+                is_group=request.data.get('is_group', False),
+                round_duration=round_duration if round_duration else 0
             )
-            event_detail.save()
-
-            user = User.objects.get(pk=user_id)
-            event = Event(creator=user, event_detail=event_detail, round_num=0)
             event.save()
+
+            # Attach the user with the event
             event_user_attach = EventUserAttach(user=user, event=event)
             event_user_attach.save()
 
@@ -243,12 +312,64 @@ class EventView(APIView):
                 tournament = Tournament(event=event, restaurant=restaurant, vote_count=0)
                 tournament.save()
 
-            response = Response({'event_id': event.id}, status=status.HTTP_201_CREATED)
+            response = Response({
+                'event_id': event.id,
+                'invite_code': invite_code
+            }, status=status.HTTP_201_CREATED)
             response['Location'] = '/v1/events/{id}'.format(id=event.id)
             return response
 
         except User.DoesNotExist:
             return Response('User not found', status=status.HTTP_404_NOT_FOUND)
+
+
+class JoinEventView(APIView):
+    def get_object(self, invite_code):
+        try:
+            event_detail = EventDetail.objects.get(invite_code=invite_code)
+            event = Event.objects.get(event_detail=event_detail)
+            return event, event_detail
+        except EventDetail.DoesNotExist:
+            return Response("Event detail with this invite code does not exist", status=status.HTTP_404_NOT_FOUND)
+        except Event.DoesNotExist:
+            return Response("Event does not exist", status=status.HTTP_404_NOT_FOUND)
+
+    def get_user(self, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+            return user
+        except User.DoesNotExist:
+            return Response("User not found", status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, user_id, invite_code, format=None):
+        """Join an event given an invite code"""
+        user = self.get_user(user_id)
+        try:
+            event_detail = EventDetail.objects.get(invite_code=invite_code)
+            event = Event.objects.get(event_detail=event_detail)
+            # Check if user has already joined event
+            event_user_attach = EventUserAttach.objects.filter(event=event, user=user)
+            if event_user_attach.count() == 0:
+                event_user_attach = EventUserAttach(user=user, event=event)
+                event_user_attach.save()
+                if not event.is_group:
+                    event.is_group = True
+                    event.save()
+
+                # Notify creator of new member
+                fcm_service = FcmService()
+                title = '{name} updated'.format(name=event_detail.name)
+                body = '{first_name} has joined the event {name}'.format(
+                    first_name=user.first_name, name=event_detail.name)
+                fcm_service.notify_creator(user, title, body)
+
+            serializer = EventSerializer(event)
+            resp = serializer.data
+            return Response(data=resp, status=status.HTTP_201_CREATED)
+        except EventDetail.DoesNotExist:
+            return Response("Event detail with this invite code does not exist", status=status.HTTP_404_NOT_FOUND)
+        except Event.DoesNotExist:
+            return Response("Event does not exist", status=status.HTTP_404_NOT_FOUND)
 
 
 class EventDetailsView(APIView):
@@ -268,7 +389,14 @@ class EventDetailsView(APIView):
             return Response("User not found", status=status.HTTP_404_NOT_FOUND)
         event, event_detail = self.get_object(event_id)
         serializer = EventDetailSerializer(event_detail)
-        return Response(serializer.data)
+        event_data = serializer.data
+
+        # Retrieve users invited to event
+        participants = EventUserAttach.objects.filter(event=event_id)
+        event_data['num_participants'] = participants.count()
+        event_data['participants'] = EventUserAttachSerializer(participants, many=True).data
+
+        return Response(event_data, status=status.HTTP_200_OK)
 
     def put(self, request, user_id, event_id, format=None):
         """Updates event detail. Note that only the user who created the event can update the details."""
@@ -281,6 +409,21 @@ class EventDetailsView(APIView):
         serializer = EventDetailSerializer(event_detail, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
+
+            fcm_service = FcmService()
+            title = '{name} updated'.format(name=event_detail.name)
+            body = None
+            if 'datetime' in request.data.keys():
+                date_str = event_detail.datetime.strftime(fcm_service.DATETIME_FORMAT)
+                body = '{first_name} updated the event date to {date}'.format(
+                    first_name=event.creator.first_name, date=date_str)
+            elif 'name' in request.data.keys():
+                name_str = event_detail.name
+                body = '{first_name} updated the event name to {name}'.format(
+                    first_name=event.creator.first_name, name=name_str)
+
+            fcm_service.notify_all_participants(event.id, title, body)
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -288,10 +431,23 @@ class EventDetailsView(APIView):
         if User.objects.filter(id=user_id).count() == 0:
             return Response("User not found", status=status.HTTP_404_NOT_FOUND)
         event, event_detail = self.get_object(event_id)
-        if event.creator != long(user_id):
+        event_user_attaches = EventUserAttach.objects.filter(event=event)
+
+        if event.creator.id != long(user_id):
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+
+        # Notify event participants of the deletion
+        fcm_service = FcmService()
+        title = '{name} deleted'.format(name=event_detail.name)
+        body = '{first_name} has deleted the event {name}'.format(
+            first_name=event.creator.first_name, name=event_detail.name)
+        fcm_service.notify_all_participants(event.id, title, body)
+
+        if event_user_attaches.count() > 0:
+            event_user_attaches.delete()
         event.delete()
         event_detail.delete()
+
         return Response(status=status.HTTP_200_OK)
 
 
@@ -308,29 +464,42 @@ class IndividualTournamentView(APIView):
         except Event.DoesNotExist:
             return Response("Event does not exist", status=status.HTTP_404_NOT_FOUND)
 
-    def update_next_round(self, event_id, tournament_data):
-        num_participants = EventUserAttach.objects.filter(event=event_id).count()
+    def get_user(self, user_id):
+        try:
+            user = User.objects.get(pk=user_id)
+            return user
+        except User.DoesNotExist:
+            return Response("User does not exist", status=status.HTTP_404_NOT_FOUND)
+
+    def update_next_round(self, event, tournament_data):
+        num_participants = EventUserAttach.objects.filter(event=event.id).count()
         round_completed = True
-        event = Event.objects.get(pk=event_id)
-        if num_participants > 1 and timezone.now() < event.event_detail.voting_deadline:
+        if event.is_group:
             if event.round_num == 0:
                 return False
-            for t in tournament_data:
-                if t[0].vote_count + t[1].vote_count != num_participants:
-                    round_completed = False
+            if ((timezone.now() - event.round_start).total_seconds() / 3600) >= event.round_duration:
+                for t in tournament_data:
+                    if t[0].vote_count + t[1].vote_count != num_participants:
+                        round_completed = False
 
         if not round_completed:
             return False
 
         event.round_num += 1
+        event.round_start = timezone.now()
         event.save()
+
+        num_remaining = 0
+        winner = None
         # Update restaurants for next tournament round
         if event.round_num == 1:
             for t in tournament_data:
                 tournament = Tournament.objects.get(pk=t['id'])
                 if tournament.vote_count > 0:
                     tournament.vote_count = 0
+                    num_remaining += 1
                     tournament.save()
+                    winner = tournament.restaurant
                 else:
                     tournament.delete()
         else:
@@ -342,14 +511,35 @@ class IndividualTournamentView(APIView):
                     tournament1.save()
                     tournament2.vote_count = 0
                     tournament2.save()
+                    num_remaining += 2
                 elif tournament1.vote_count > tournament2.vote_count:
                     tournament1.vote_count = 0
                     tournament1.save()
+                    num_remaining += 1
+                    winner = tournament1.restaurant
                     tournament2.delete()
                 else:
                     tournament2 = Tournament.objects.get(pk=t[1]['id'])
                     tournament2.save()
+                    num_remaining += 1
+                    winner = tournament2.restaurant
                     tournament1.delete()
+
+        # If only 1 restaurant left, then update event details with the winner.
+        if num_remaining == 1:
+            event_details = event.event_detail
+            event_details.restaurant = winner
+            event_details.save()
+
+            # Notify participants of update
+            fcm_service = FcmService()
+            title = '{name} updated'.format(name=event_details.name)
+            restaurant_data = json.loads(event_details.restaurant.json)
+            winner_str = restaurant_data['name']
+            body = '{first_name} updated the winning restaurant to {name}'.format(
+                first_name=event.creator.first_name, name=winner_str)
+
+            fcm_service.notify_all_participants(event.id, title, body)
 
         return True
 
@@ -360,6 +550,14 @@ class IndividualTournamentView(APIView):
         rounds, restaurants are paired up.
         """
         event = self.get_object(event_id)
+
+        # Check if user has already voted for this round
+        if 'user_id' in request.data.keys():
+            user = self.get_user(request.data['user_id'])
+            event_user_attach = EventUserAttach.objects.get(event=event, user=user)
+            if event_user_attach.last_round_voted == event.round_num:
+                return Response("User has already voted", status=status.HTTP_409_CONFLICT)
+
         tournaments = Tournament.objects.filter(event_id=event_id)
         data = TournamentSerializer(tournaments, many=True).data
 
@@ -391,9 +589,36 @@ class IndividualTournamentView(APIView):
             tournament.save()
             # Check if tournament round is over. If so, handle it.
             if 'is_finished' in request.data.keys() and request.data['is_finished']:
-                is_round_over = self.update_next_round(event_id, request.data['tournament_data'])
+                event = self.get_object(event_id)
+                user = request.user
+                event_user_attach = EventUserAttach.objects.get(event=event, user=user)
+                event_user_attach.last_round_voted += 1
+
+                is_round_over = self.update_next_round(event, request.data['tournament_data'])
                 if is_round_over:
-                    return Response("Next", status=status.HTTP_200_OK)
-            return Response(status=status.HTTP_200_OK)
+                    return Response({'Next': 1}, status=status.HTTP_200_OK)
+            return Response({'Next': 0}, status=status.HTTP_200_OK)
         except Tournament.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class EventUserAttachView(APIView):
+    def get_object(self, user_id, event_id):
+        try:
+            event = Event.objects.get(pk=event_id)
+            user = User.objects.get(pk=user_id)
+            attach = EventUserAttach.objects.get(event=event, user=user)
+            return attach
+        except Event.DoesNotExist:
+            return Response("Event does not exist", status=status.HTTP_404_NOT_FOUND)
+        except User.DoesNotExist:
+            return Response("User does not exist", status=status.HTTP_404_NOT_FOUND)
+        except EventUserAttach.DoesNotExist:
+            return Response("EventUserAttach does not exist", status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, user_id, event_id):
+        """Updates rating of a user's event. User can rate the restaurant that the event is attached to"""
+        attach = self.get_object(user_id, event_id)
+        attach.rating = request.data['rating']
+        attach.save()
+        return Response({'rating': attach.rating}, status=status.HTTP_200_OK)

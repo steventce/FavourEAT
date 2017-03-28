@@ -10,6 +10,7 @@ const initialState = {
     longitude: null,
   },
   // TODO: need to fetch the list from server
+  // list of cuisine options displayed to user
   allCuisineTypes: [
     {value: 1, label: 'Chinese', category: 'chinese'},
     {value: 2, label: 'Japanese', category: 'japanese'},
@@ -17,31 +18,23 @@ const initialState = {
     {value: 4, label: 'Pizza', category: 'pizza'},
     {value: 5, label: 'Barbeque', category: 'bbq'}
   ],
+  // list of events user is participating
+  events: [],
   status: '',
-  eventId: -1
+  msg: ''
 };
 
 const reducer = (state = initialState, action) => {
-  switch(action.type) {
-    case actionTypes.SAVE_PREFERENCES_SUCCESS:
-      return {
-        ...state,
-        status: action.status,
-        eventId: action.eventId
-      };
-    case actionTypes.SAVE_PREFERENCES:
-      return {
-        ...state,
-        preferences: action.preferences
-      };
-    case actionTypes.CHANGE_RADIUS:
-      return {
-        ...state,
-        preferences: {
-          ...state.preferences,
-          distance: action.radius
-        }
-      };
+  switch (action.type) {
+    case actionTypes.FETCH_EVENTS_SUCCESS: {
+      return { ...state, events: action.events, status: action.status };
+    }
+    case actionTypes.EDIT_EVENT_DETAILS_SUCCESS:
+    case actionTypes.CANCEL_EVENT_SUCCESS:
+    case actionTypes.RESET_STATUS: {
+      const { status, msg } = action;
+      return { ...state, status, msg };
+    }
     default:
       return state;
   }

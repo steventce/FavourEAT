@@ -10,24 +10,18 @@ import Drawer from './src/scenes/Drawer';
 import { UserEvents } from './src/scenes/Events';
 import Preferences from './src/scenes/Events/Preferences';
 import Winner from './src/scenes/Events/Winner';
+import JoinEvent from './src/scenes/Events/JoinEvent';
 import Swipe from './src/scenes/Swipe';
+import CreateEvent from './src/scenes/Events/CreateEvent';
 import Tournament from './src/scenes/Tournament';
 import RestaurantDetails from './src/scenes/RestaurantDetails';
+import EventDetails from './src/scenes/Events/EventDetails';
 import Map from './src/scenes/Map';
 
 const store = configureStore();
 
-const HomeStack = StackNavigator({
-  UserEvents: { screen: UserEvents },
-  Preferences: { screen: Preferences },
-  Tournament: { screen: Tournament }
-}, {
-  initialRouteName: 'UserEvents'
-});
-
 const HomeDrawer = DrawerNavigator({
-  Home: { screen: HomeStack },
-  Swipe: { screen: Swipe }
+  Home: { screen: UserEvents }
 }, {
   initialRouteName: 'Home',
   drawerWidth: 300,
@@ -36,18 +30,18 @@ const HomeDrawer = DrawerNavigator({
 
 const MainStack = StackNavigator({
   Login: { screen: Login },
-  HomeDrawer: { screen: HomeDrawer },
+  HomeDrawer: { screen: HomeDrawer, navigationOptions: { header: { visible: false } } },
+  CreateEvent: { screen: CreateEvent },
+  JoinEvent: { screen: JoinEvent },
   RestaurantDetails: { screen: RestaurantDetails },
+  Preferences: { screen: Preferences },
+  Swipe: { screen: Swipe },
+  Tournament: { screen: Tournament },
   Winner: { screen: Winner },
-  Map: { screen: Map },
+  EventDetails: { screen: EventDetails },
+  Map: { screen: Map }
 }, {
-  initialRouteName: 'Login',
-  backBehavior: 'none',
-  navigationOptions: {
-    header: {
-      visible: false
-    }
-  }
+  initialRouteName: 'Login'
 });
 
 class FavourEAT extends Component {
