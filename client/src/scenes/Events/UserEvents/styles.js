@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 import { colors } from '../../../styles/common';
 
-export const PARALLAX_HEADER_HEIGHT = 260;
+export const PARALLAX_HEADER_HEIGHT = 270;
 
 const styles = StyleSheet.create({
   container: {
@@ -36,7 +36,9 @@ const styles = StyleSheet.create({
   },
   createEventBtn: {
     alignSelf: 'center',
-    margin: 5
+    margin: 5,
+    justifyContent: 'center',
+    width: 140
   },
   sectionHeader: {
     backgroundColor: colors.APP_PRIMARY_LIGHT,

@@ -201,10 +201,16 @@ class UserEvents extends Component {
                     <Text style={styles.upcomingCount}>
                       {this.state.numUpcomingEvents} Upcoming Events
                     </Text>
-                    <Button success bordered light style={StyleSheet.flatten(styles.createEventBtn)}
-                      onPress={() => navigate('CreateEvent')}>
-                      <Text style={{ color: 'white' }}>Create an Event</Text>
-                    </Button>
+                    <View style={styles.btnContainer}>
+                      <Button bordered light style={StyleSheet.flatten(styles.createEventBtn)}
+                        onPress={() => navigate('Preferences')}>
+                        <Text style={{ color: 'white' }}>Single Session</Text>
+                      </Button>
+                      <Button bordered light style={StyleSheet.flatten(styles.createEventBtn)}
+                        onPress={() => navigate('CreateEvent')}>
+                        <Text style={{ color: 'white' }}>Create an Event</Text>
+                      </Button>
+                    </View>
                   </View>
                 );
               }}
