@@ -6,20 +6,21 @@ const METERS_IN_KILOMETER = 1000;
 
 export function savePreferences(accessToken, userId, preferences) {
   return function (dispatch) {
-    const { radius, minPrice, maxPrice, cuisineTypes } = preferences;
+    const { radius, minPrice, maxPrice, cuisineTypes, latitude, longitude } = preferences;
 
     const cuisineTypeData = [];
     for (var i = 0; i < preferences.cuisineTypes.length; i++) {
       cuisineTypeData.push(preferences.cuisineTypes[i].category);
     }
 
+    console.log("position", latitude, longitude);
     const data = {
       radius: radius * METERS_IN_KILOMETER,
       min_price: minPrice,
       max_price: maxPrice,
       cuisine_types: cuisineTypeData,
-      latitude: 49.2827,
-      longitude: -123.1207,
+      latitude: latitude.toFixed(6),
+      longitude: longitude.toFixed(6),
       name: 'Test'
     }
 
