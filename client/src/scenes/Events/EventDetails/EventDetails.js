@@ -32,6 +32,10 @@ import { logo } from '../../../config/images';
 const PARALLAX_HEADER_HEIGHT = 225;
 
 class EventDetails extends Component {
+  static navigationOptions = {
+    header: { visible: false }
+  }
+
   constructor(props) {
     super(props);
 
