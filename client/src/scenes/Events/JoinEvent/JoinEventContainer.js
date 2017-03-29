@@ -48,14 +48,14 @@ class JoinEventContainer extends Component {
 
   componentWillReceiveProps(nextProps) {
     const { events }  = nextProps;
-    if (events) {
+    if (events && events.length > 0) {
       /*  Instead of comparing the 2 arrays to find the joined event,
       *   have the joined event be added to the last index thus if
       *   there's a diff in length, then the last index is the joined event
       */
       if (this.state.userEvents.length < events.length) {
         console.log(events[events.length - 1]);
-        //this.props.navigation.navigate('EventDetails',  params: { event: events[events.length - 1] });
+        this.props.navigation.navigate('EventDetails',  { userEvent: events[events.length - 1] });
       } else {
         // already participating in this event
         Alert.alert('Error', 'Already registered in this event.');
