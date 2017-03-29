@@ -2,7 +2,7 @@ import json
 import requests
 
 from django.conf import settings
-from server.models import Restaurant
+from server.models import Restaurant, Cuisine
 
 class YelpAPIService(object):
     """
@@ -86,13 +86,6 @@ class YelpAPIService(object):
             search_results = self.get_restaurants(access_token, params)
             restaurant_results = search_results.get('businesses', [])
 
-            # TODO: have better way of filtering cached restaurants to avoid the initial call to Yelp
-            # Use json of restaurants that are already cached
-            yelp_ids = [restaurant['id'] for restaurant in restaurant_results]
-            existing_restaurants = Restaurant.objects.filter(yelp_id__in=yelp_ids, json__isnull=False)
-            
-            restaurants += existing_restaurants
-
             for i, restaurant in enumerate(restaurant_results):
                 print restaurant['name']
                 yelp_id = restaurant['id']
@@ -100,25 +93,49 @@ class YelpAPIService(object):
                 try:
                     if len(restaurants) >= limit:
                         break
-                    
-                    if not existing_restaurants.filter(yelp_id= yelp_id).exists():
-                        # Fetch from the Reviews API
-                        reviews = self.get_reviews(access_token, yelp_id)
-                        restaurant['reviews'] = reviews
 
-                        # Fetch from the Business API
-                        details = self.get_details(access_token, yelp_id)
-                        restaurant['photos'] = details.get('photos', [])
-                        restaurant['hours'] = details.get('hours', [])
+                    cached = Restaurant.objects.filter(yelp_id=yelp_id, json__isnull=False).exists()
 
-                        saved_restaurant, created = Restaurant.objects.update_or_create(
-                            yelp_id=yelp_id,
-                            defaults={'json': json.dumps(restaurant)}
+                    # skip extra calls to yelp if already cached
+                    if cached:
+                        continue
+
+                    # Fetch from the Reviews API
+                    reviews = self.get_reviews(access_token, yelp_id)
+                    restaurant['reviews'] = reviews
+
+                    # Fetch from the Business API
+                    details = self.get_details(access_token, yelp_id)
+                    restaurant['photos'] = details.get('photos', [])
+                    restaurant['hours'] = details.get('hours', [])
+
+                    cuisines = restaurant.get("categories")
+                    saved_cuisines = []
+                    for cuisine in cuisines:
+                        saved_cuisine, created = Cuisine.objects.get_or_create(
+                            name=cuisine.get('title'),
+                            category=cuisine.get('alias')
                         )
+                        saved_cuisines.append(saved_cuisine)
 
-                        restaurants.append(saved_restaurant)
-                except requests.exceptions.HTTPError as err:
-                    # Acceptable if cannot retrieve details or reviews
+                    coordinates = restaurant.get('coordinates')
+                    price = restaurant.get('price').count('$')
+
+                    saved_restaurant, created = Restaurant.objects.update_or_create(
+                        yelp_id=yelp_id,
+                        defaults={
+                            'json': json.dumps(restaurant),
+                            'price': price,
+                            'latitude': coordinates.get('latitude'),
+                            'longitude': coordinates.get('longitude')
+                        }
+                    )
+
+                    saved_restaurant.cuisines.add(*saved_cuisines)
+                    saved_restaurant.save()
+                    restaurants.append(saved_restaurant)
+                except Exception as err:
+                    # Acceptable if cannot retrieve details or reviews or cannot create restaurant
                     print err
                     continue
         except requests.exceptions.HTTPError as err:
