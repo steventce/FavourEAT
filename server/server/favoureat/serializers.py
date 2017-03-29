@@ -42,14 +42,6 @@ class RestaurantSerializer(serializers.ModelSerializer):
         return restaurant
 
 
-class TournamentSerializer(serializers.ModelSerializer):
-    restaurant = RestaurantSerializer()
-
-    class Meta:
-        model = Tournament
-        fields = ('id', 'restaurant')
-
-
 class EventDetailSerializer(serializers.ModelSerializer):
     restaurant = RestaurantSerializer()
 
@@ -65,7 +57,16 @@ class EventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ('id', 'creator', 'event_detail', 'round_num')
+        fields = ('id', 'creator', 'event_detail', 'round_num', 'round_duration', 'round_start', 'is_group')
+
+
+class TournamentSerializer(serializers.ModelSerializer):
+    restaurant = RestaurantSerializer()
+    event = EventSerializer()
+
+    class Meta:
+        model = Tournament
+        fields = ('id', 'restaurant', 'event', 'vote_count')
 
 
 class EventUserAttachSerializer(serializers.ModelSerializer):

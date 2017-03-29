@@ -20,6 +20,7 @@ from django.contrib.auth.models import User
 from server.favoureat import views
 import datetime
 
+
 class UserTests(APITestCase):
     def test_success_get_user(self):
         """ Ensure that a user can be retrieved """
@@ -50,6 +51,7 @@ class UserTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+
 class TokenTests(APITestCase):
     def test_error_invalid_token(self):
         """ Ensure that an invalid client token throws an error """
@@ -69,6 +71,7 @@ class TokenTests(APITestCase):
 
         response = self.client.post(url, {}, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class UserFcmTests(APITestCase):
     FCM_TOKEN = 'ALJG1ZlLY1K01'
@@ -146,6 +149,7 @@ class UserFcmTests(APITestCase):
         response = self.request_fcm_helper(user, {'name': 'DELETE'})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+
 class UserSwipeTests(APITestCase):
     def test_save_swipe(self):
         """ Ensure we can save a user swipe decision """
@@ -208,6 +212,7 @@ class UserSwipeTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+
 class ClearRestaurantCacheTests(TestCase):
     def test_clear_restaurant_cache(self):
         """ Ensure that the clear cache command removes the json from the Restaurant table """
@@ -216,6 +221,7 @@ class ClearRestaurantCacheTests(TestCase):
         self.assertEqual(data, Restaurant.objects.get().json)
         call_command('clear_restaurant_cache')
         self.assertEqual(None, Restaurant.objects.get().json)
+
 
 class EventTests(APITestCase):
     data = {
@@ -247,13 +253,15 @@ class EventTests(APITestCase):
         ])
         return restaurants
 
-    def test_generate_invite_code(self):
+    @patch('server.favoureat.recommendation_service.RecommendationService.get_restaurants')
+    def test_generate_invite_code(self, get_restaurants_mock):
         """ Ensure that an 8-digit unique invite code is generated when creating an event """
         user = User(pk=10)
         user.save()
         preference = Preference(radius=1, latitude=2, longitude=3)
         preference.save()
 
+        get_restaurants_mock.return_value = self.create_restaurants()
         response = self.event_helper(10, self.data, True, method='POST')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -478,9 +486,10 @@ class TestEventDetails(APITestCase):
         user, event_detail, event = self.generate_event_details_helper()
         data = {'datetime': datetime.datetime(2016, 02, 02)}
         response = self.request_helper(user, event, True, data=data, method='PUT')
+        exists = str(data['datetime'].date()) in response.data['datetime']
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual('2016-02-02T00:00:00', response.data['datetime'])
+        self.assertEqual(exists, True)
 
     def test_change_event_not_creator(self):
         """Ensure non-creator cannot update event details"""
@@ -519,7 +528,7 @@ class TestEventDetails(APITestCase):
 
 
 class IndividualTournamentTest(APITestCase):
-    def generate_tournament_helper(self):
+    def generate_tournament_helper(self, round_num=0):
         user = User(pk=10)
         user.save()
         pref = Preference(radius=2, latitude=10, longitude=10)
@@ -530,7 +539,7 @@ class IndividualTournamentTest(APITestCase):
                                    description="Cool event",
                                    invite_code="8UF1H02P")
         event_detail.save()
-        event = Event(creator=user, event_detail=event_detail)
+        event = Event(creator=user, event_detail=event_detail, round_num=round_num)
         event.save()
         user1 = User(username='test1')
         user2 = User(username='test2')
@@ -543,37 +552,195 @@ class IndividualTournamentTest(APITestCase):
 
         return user, event
 
-    def request_helper(self, user, event, authenticate, data=None, method='GET'):
-        url = 'v1/events/{event_id}/tournament'.format(event_id=str(event.id))
+    def request_helper_get(self, user, event, authenticate):
         factory = APIRequestFactory()
-        request = None
-        if method == 'GET':
-            request = factory.get(url)
-        elif method == 'PUT':
-            request = factory.put(url, data, format='json')
-        elif method == "DELETE":
-            request = factory.delete(url, format='json')
+        url = 'v1/events/{event_id}/tournament'.format(event_id=str(event.id))
+        request = factory.get(url)
 
         if authenticate:
             force_authenticate(request, user)
-        view = views.EventDetailsView.as_view()
-        response = view(request, user_id=user.id, event_id=event.id)
+        view = views.IndividualTournamentView.as_view()
+        response = view(request, event_id=event.id)
         return response
 
-    def test_get_tournament_success(self):
+    def request_helper_put(self, user, event, tournament_id, authenticate, data):
+        factory = APIRequestFactory()
+        url = 'v1/events/{event_id}/tournament/{tournament_id}'.format(event_id=str(event.id), tournament_id=str(tournament_id))
+        request = factory.put(url, data, format='json')
+
+        if authenticate:
+            force_authenticate(request, user)
+        view = views.IndividualTournamentView.as_view()
+        response = view(request, event_id=event.id, tournament_id=tournament_id)
+        return response
+
+    def test_get_tournament_first_round_success(self):
+        """Ensure user can get tournament info"""
         user, event = self.generate_tournament_helper()
-        restaurant1 = Restaurant(yelp_id="1234", json="{'name': Miku}")
-        restaurant2 = Restaurant(yelp_id="1235", json="{'name': Sushi California}")
-        restaurant3 = Restaurant(yelp_id="1236", json="{'name': Mcdonalds}")
+        restaurant1 = Restaurant(yelp_id="1234", json='{"name": "Miku"}')
+        restaurant2 = Restaurant(yelp_id="1235", json='{"name": "Sushi California"}')
+        restaurant3 = Restaurant(yelp_id="1236", json='{"name": "Mcdonalds"}')
         restaurant1.save()
         restaurant2.save()
         restaurant3.save()
-        tournament1 = Tournament(event=event, restaurant=restaurant1)
-        tournament2 = Tournament(event=event, restaurant=restaurant2)
-        tournament3 = Tournament(event=event, restaurant=restaurant3)
+        tournament1 = Tournament(event=event, restaurant=restaurant1, vote_count=0)
+        tournament2 = Tournament(event=event, restaurant=restaurant2, vote_count=0)
+        tournament3 = Tournament(event=event, restaurant=restaurant3, vote_count=0)
         tournament1.save()
         tournament2.save()
         tournament3.save()
 
-        response = self.request_helper(user, event, True)
+        response = self.request_helper_get(user, event, True)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 3)
+
+    def test_get_tournament_first_round_success(self):
+        """Ensure user can get tournament info"""
+        user, event = self.generate_tournament_helper()
+        attach = EventUserAttach(event=event, user=user)
+        attach.save()
+        restaurant1 = Restaurant(yelp_id="1234", json='{"name": "Miku"}')
+        restaurant2 = Restaurant(yelp_id="1235", json='{"name": "Sushi California"}')
+        restaurant3 = Restaurant(yelp_id="1236", json='{"name": "Mcdonalds"}')
+        restaurant1.save()
+        restaurant2.save()
+        restaurant3.save()
+        tournament1 = Tournament(event=event, restaurant=restaurant1, vote_count=0)
+        tournament2 = Tournament(event=event, restaurant=restaurant2, vote_count=0)
+        tournament3 = Tournament(event=event, restaurant=restaurant3, vote_count=0)
+        tournament1.save()
+        tournament2.save()
+        tournament3.save()
+
+        response = self.request_helper_get(user, event, True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 3)
+
+    def test_get_tournament_second_round_success(self):
+        """Ensure user can get tournament info"""
+        user, event = self.generate_tournament_helper(round_num=1)
+        attach = EventUserAttach(event=event, user=user)
+        attach.save()
+        restaurant1 = Restaurant(yelp_id="1234", json='{"name": "Miku"}')
+        restaurant2 = Restaurant(yelp_id="1235", json='{"name": "Sushi California"}')
+        restaurant3 = Restaurant(yelp_id="1236", json='{"name": "Mcdonalds"}')
+        restaurant1.save()
+        restaurant2.save()
+        restaurant3.save()
+        tournament1 = Tournament(event=event, restaurant=restaurant1, vote_count=0)
+        tournament2 = Tournament(event=event, restaurant=restaurant2, vote_count=0)
+        tournament3 = Tournament(event=event, restaurant=restaurant3, vote_count=0)
+        tournament1.save()
+        tournament2.save()
+        tournament3.save()
+
+        response = self.request_helper_get(user, event, True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
+    def test_get_tournament_error(self):
+        """Ensure user can't vote if they have already voted"""
+        user, event = self.generate_tournament_helper()
+        attach = EventUserAttach(event=event, user=user, last_round_voted=0)
+        attach.save()
+        restaurant1 = Restaurant(yelp_id="1234", json='{"name": "Miku"}')
+        restaurant2 = Restaurant(yelp_id="1235", json='{"name": "Sushi California"}')
+        restaurant3 = Restaurant(yelp_id="1236", json='{"name": "Mcdonalds"}')
+        restaurant1.save()
+        restaurant2.save()
+        restaurant3.save()
+        tournament1 = Tournament(event=event, restaurant=restaurant1, vote_count=0)
+        tournament2 = Tournament(event=event, restaurant=restaurant2, vote_count=0)
+        tournament3 = Tournament(event=event, restaurant=restaurant3, vote_count=0)
+        tournament1.save()
+        tournament2.save()
+        tournament3.save()
+        response = self.request_helper_get(user, event, True)
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+
+    def test_update_tournament_success(self):
+        """Ensure user can vote in a tournament"""
+        user, event = self.generate_tournament_helper()
+        restaurant1 = Restaurant(yelp_id="4562", json='{"name": "Miku"}')
+        restaurant1.save()
+        tournament1 = Tournament(event=event, restaurant=restaurant1, vote_count=1)
+        tournament1.save()
+
+        response = self.request_helper_put(user, event, tournament1.id, True, {})
+        result = Tournament.objects.get(pk=tournament1.id)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['Next'], 0)
+        self.assertEqual(result.vote_count, 2)
+
+
+class TestEventUser(APITestCase):
+    def generate_data(self):
+        user = User(pk=10)
+        user.save()
+        pref = Preference(radius=2, latitude=10, longitude=10)
+        pref.save()
+        event_detail = EventDetail(preference=pref,
+                                   datetime=timezone.now(),
+                                   name="My event details",
+                                   description="Cool event",
+                                   invite_code="8UF1H02P")
+        event_detail.save()
+        event = Event(creator=user, event_detail=event_detail, round_num=0)
+        event.save()
+        user_attach = EventUserAttach(event=event, user=user)
+        user_attach.save()
+        return user, event, user_attach
+
+    def request_helper(self, user, event, authenticate, data):
+        factory = APIRequestFactory()
+        url = 'v1/users/{user_id}/events/{event_id}/rate'.format(user_id=str(user.id), event_id=str(event.id))
+        request = factory.put(url, data, format='json')
+
+        if authenticate:
+            force_authenticate(request, user)
+        view = views.EventUserAttachView.as_view()
+        response = view(request, user_id=user.id, event_id=event.id)
+        return response
+
+    def test_add_rating_success(self):
+        user, event, user_attach = self.generate_data()
+        response = self.request_helper(user, event, True, data={'rating': 5})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['rating'], 5)
+
+    def test_add_rating_invalid_event(self):
+        user = User(pk=10)
+        user.save()
+        pref = Preference(radius=2, latitude=10, longitude=10)
+        pref.save()
+        event_detail = EventDetail(preference=pref,
+                                   datetime=timezone.now(),
+                                   name="My event details",
+                                   description="Cool event",
+                                   invite_code="8UF1H02P")
+        event_detail.save()
+        event = Event(creator=user, event_detail=event_detail, round_num=0)
+        response = self.request_helper(user, event, True, data={'rating': 5})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_add_rating_invalid_user(self):
+        user, event, user_attach = self.generate_data()
+        user1 = User(username="test223")
+        response = self.request_helper(user1, event, True, data={'rating': 5})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_add_rating_invalid_user_attach(self):
+        user = User(pk=10)
+        user.save()
+        pref = Preference(radius=2, latitude=10, longitude=10)
+        pref.save()
+        event_detail = EventDetail(preference=pref,
+                                   datetime=timezone.now(),
+                                   name="My event details",
+                                   description="Cool event",
+                                   invite_code="8UF1H02P")
+        event_detail.save()
+        event = Event(creator=user, event_detail=event_detail, round_num=0)
+        event.save()
+        response = self.request_helper(user, event, True, data={'rating': 5})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
