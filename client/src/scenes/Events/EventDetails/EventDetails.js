@@ -15,15 +15,18 @@ import {
   Body,
   Fab,
   Icon,
-  Card
+  Card,
+  List,
+  ListItem
 } from 'native-base';
 import moment from 'moment';
 import DatePicker from 'react-native-datepicker';
 import ParallaxScrollView from 'react-native-parallax-scroll-view';
+import ParticipantListItem from '../../../components/ParticipantListItem';
 import { isUpcoming } from '../../../utils/common';
 
 import styles from './styles';
-import { colors } from '../../../styles/common';
+import { colors, colorsList } from '../../../styles/common';
 import { logo } from '../../../config/images';
 
 const PARALLAX_HEADER_HEIGHT = 225;
@@ -97,8 +100,7 @@ class EventDetails extends Component {
 
   render() {
     const { user_id: userId } = this.props.auth.token;
-    const { round_num: roundNumber, event_detail, creator } = this.props.userEvent;
-    const isPast = !isUpcoming(this.props.userEvent);
+    const { round_num: roundNumber, event_detail, creator, participants } = this.props.userEvent;
 
     const {
       name,
@@ -109,6 +111,7 @@ class EventDetails extends Component {
       datetime
     } = event_detail;
 
+    const isPast = !isUpcoming(this.props.userEvent);
     const votingComplete = !!restaurant;
 
     return (
@@ -220,6 +223,19 @@ class EventDetails extends Component {
         { /* TODO: Show a list of participants */ }
         <Card style={StyleSheet.flatten(styles.card)}>
           {this.renderCardTitle('Participants')}
+          {participants.map((participant, i) => {
+            return (
+              <ParticipantListItem
+                key={participant.id}
+                participant={participant}
+                styles={{
+                  backgroundColor: colorsList[i % colorsList.length],
+                  height: 50,
+                  width: 50
+                }}
+              />
+            );
+          })}
         </Card>
         <Fab
           active={this.state.active}
