@@ -363,6 +363,8 @@ class JoinEventView(APIView):
                 body = '{first_name} has joined the event {name}'.format(
                     first_name=user.first_name, name=event_detail.name)
                 fcm_service.notify_creator(user, title, body)
+            else:
+                return Response("User has already joined the event", status=status.HTTP_409_CONFLICT)
 
             serializer = EventSerializer(event)
             resp = serializer.data

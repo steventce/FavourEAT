@@ -390,7 +390,7 @@ class JoinEventTests(APITestCase):
 
     def test_join_event_success(self):
         """ Ensure that user can join an event using an invite code """
-        user = User(pk=10)
+        user = User(username='testuser')
         user.save()
         pref = Preference(radius=2, latitude=10, longitude=10)
         pref.save()
@@ -403,16 +403,42 @@ class JoinEventTests(APITestCase):
         event = Event(creator=user, event_detail=event_detail)
         event.save()
 
-        response = self.join_event_helper(user, {'invite_code': '8UF1H02P'}, True)
+        user1 = User(username='testuser123')
+        user1.save()
 
-        event_user_attach = EventUserAttach.objects.filter(event=event, user=user)
+        response = self.join_event_helper(user1, {'invite_code': '8UF1H02P'}, True)
+
+        event_user_attach = EventUserAttach.objects.filter(event=event, user=user1)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(1, event_user_attach.count())
 
+    def test_join_event_already_joined(self):
+        """ Ensure that user can join an event using an invite code """
+        user = User(username='testuser')
+        user.save()
+        pref = Preference(radius=2, latitude=10, longitude=10)
+        pref.save()
+        event_detail = EventDetail(preference=pref,
+                                   datetime=timezone.now(),
+                                   name="My event details",
+                                   description="Cool event",
+                                   invite_code="8UF1H02P")
+        event_detail.save()
+        event = Event(creator=user, event_detail=event_detail)
+        event.save()
+
+        user1 = User(username='testuser123')
+        user1.save()
+        attach = EventUserAttach(user=user1, event=event)
+        attach.save()
+
+        response = self.join_event_helper(user1, {'invite_code': '8UF1H02P'}, True)
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+
     def test_join_event_invalid_code(self):
         """ Ensure that user cannot join an event if invite code does not map to an event """
-        user = User(pk=10)
+        user = User(username='testuser')
         user.save()
         pref = Preference(radius=2, latitude=10, longitude=10)
         pref.save()
@@ -432,10 +458,27 @@ class JoinEventTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(0, event_user_attach.count())
 
+    def test_join_event_invalid_event(self):
+        """ Ensure that user can join an event using an invite code """
+        user = User(username='testuser')
+        user.save()
+        pref = Preference(radius=2, latitude=10, longitude=10)
+        pref.save()
+        event_detail = EventDetail(preference=pref,
+                                   datetime=timezone.now(),
+                                   name="My event details",
+                                   description="Cool event",
+                                   invite_code="8UF1H02P")
+        event_detail.save()
+
+        response = self.join_event_helper(user, {'invite_code': '8UF1H02P'}, True)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
 
 class TestEventDetails(APITestCase):
     def generate_event_details_helper(self):
-        user = User(pk=10)
+        user = User(username='testuser')
         user.save()
         pref = Preference(radius=2, latitude=10, longitude=10)
         pref.save()
@@ -477,7 +520,7 @@ class TestEventDetails(APITestCase):
 
     def test_get_event_details_invalid_user(self):
         _, event_detail, event = self.generate_event_details_helper()
-        user = User(pk=11)
+        user = User(username='testuser1')
 
         response = self.request_helper(user, event, True)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -539,7 +582,7 @@ class TestEventDetails(APITestCase):
 
 class IndividualTournamentTest(APITestCase):
     def generate_tournament_helper(self, round_num=0):
-        user = User(pk=10)
+        user = User(username='testuser')
         user.save()
         pref = Preference(radius=2, latitude=10, longitude=10)
         pref.save()
@@ -685,7 +728,7 @@ class IndividualTournamentTest(APITestCase):
 
 class TestEventUser(APITestCase):
     def generate_data(self):
-        user = User(pk=10)
+        user = User(username='testuser')
         user.save()
         pref = Preference(radius=2, latitude=10, longitude=10)
         pref.save()
@@ -719,7 +762,7 @@ class TestEventUser(APITestCase):
         self.assertEqual(response.data['rating'], 5)
 
     def test_add_rating_invalid_event(self):
-        user = User(pk=10)
+        user = User(username='testuser')
         user.save()
         pref = Preference(radius=2, latitude=10, longitude=10)
         pref.save()
@@ -740,7 +783,7 @@ class TestEventUser(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_add_rating_invalid_user_attach(self):
-        user = User(pk=10)
+        user = User(username='testuser')
         user.save()
         pref = Preference(radius=2, latitude=10, longitude=10)
         pref.save()
