@@ -21,7 +21,9 @@ const initialState = {
   // list of events user is participating
   events: [],
   status: '',
-  msg: ''
+  msg: '',
+  // used for forcing a change in the store
+  timestamp: false,
 };
 
 const reducer = (state = initialState, action) => {
@@ -34,6 +36,17 @@ const reducer = (state = initialState, action) => {
     case actionTypes.RESET_STATUS: {
       const { status, msg } = action;
       return { ...state, status, msg };
+    }
+    case actionTypes.JOIN_EVENT_SUCCESS: {
+      // Check if store already contains this event
+      for (var i=0; i < state.events.length; i++) {
+        if (state.events[i].id === action.event.id) {
+          // change timestamp to force trigger componentWillReceiveProps
+          return { ...state, timestamp: !state.timestamp };
+        }
+      }
+      // must add new element to last index of array (refer to JoinEventContainer)
+      return { ...state, events: [...state.events, action.event] };
     }
     default:
       return state;

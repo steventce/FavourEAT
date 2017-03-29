@@ -41,14 +41,11 @@ export function joinEvent(accessToken, userId, inviteCode) {
     })
       .then((response) => {
         if (!response.ok) throw Error();
-        // update store
-        // dispatch(fetchEvents(accessToken, userId));
-
         return response.json();
       })
       .then((json) => {
-        console.log(json);
-        return json;
+        // update store with new event
+        dispatch(joinEventSuccess(json));
       })
       .catch((error) => console.error(error));
   }
@@ -180,4 +177,11 @@ function resetStatus() {
     status: '',
     msg: ''
   };
+}
+
+function joinEventSuccess(json) {
+  return {
+    type: actionTypes.JOIN_EVENT_SUCCESS,
+    event: json
+  }
 }
