@@ -51,7 +51,7 @@ class UserView(APIView):
         return Response(serializer.data)
 
 
-class UserSwipeView(APIView):
+class tUserSwipeView(APIView):
     """
     POST: add a swipe decision for user
     """
@@ -522,7 +522,7 @@ class IndividualTournamentView(APIView):
                     winner = tournament1.restaurant
                     tournament2.delete()
                 else:
-                    tournament2 = Tournament.objects.get(pk=t[1]['id'])
+                    tournament2.vote_count = 0
                     tournament2.save()
                     num_remaining += 1
                     winner = tournament2.restaurant

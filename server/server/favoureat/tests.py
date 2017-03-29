@@ -725,6 +725,48 @@ class IndividualTournamentTest(APITestCase):
         self.assertEqual(response.data['Next'], 0)
         self.assertEqual(result.vote_count, 2)
 
+    def test_next_round_success_t1(self):
+        """Ensure we move to next round successfully"""
+        user, event = self.generate_tournament_helper(round_num=1)
+        attach = EventUserAttach(event=event, user=user)
+        attach.save()
+        restaurant1 = Restaurant(yelp_id="1234", json='{"name": "Miku"}')
+        restaurant2 = Restaurant(yelp_id="1235", json='{"name": "Sushi California"}')
+        restaurant1.save()
+        restaurant2.save()
+        tournament1 = Tournament(event=event, restaurant=restaurant1, vote_count=1)
+        tournament2 = Tournament(event=event, restaurant=restaurant2, vote_count=0)
+        tournament1.save()
+        tournament2.save()
+
+        data = {"is_finished": True, "tournament_data": [[{'id': tournament1.id}, {'id': tournament2.id}]]}
+        response = self.request_helper_put(user, event, tournament1.id, True, data=data)
+        tournament_result = Tournament.objects.get(pk=tournament1.id)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['Next'], 1)
+        self.assertEqual(tournament_result.vote_count, 0)
+
+    def test_next_round_success_t2(self):
+        """Ensure we move to next round successfully"""
+        user, event = self.generate_tournament_helper(round_num=1)
+        attach = EventUserAttach(event=event, user=user)
+        attach.save()
+        restaurant1 = Restaurant(yelp_id="1234", json='{"name": "Miku"}')
+        restaurant2 = Restaurant(yelp_id="1235", json='{"name": "Sushi California"}')
+        restaurant1.save()
+        restaurant2.save()
+        tournament1 = Tournament(event=event, restaurant=restaurant1, vote_count=0)
+        tournament2 = Tournament(event=event, restaurant=restaurant2, vote_count=0)
+        tournament1.save()
+        tournament2.save()
+
+        data = {"is_finished": True, "tournament_data": [[{'id': tournament1.id}, {'id': tournament2.id}]]}
+        response = self.request_helper_put(user, event, tournament2.id, True, data=data)
+        tournament_result = Tournament.objects.get(pk=tournament2.id)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['Next'], 1)
+        self.assertEqual(tournament_result.vote_count, 0)
+
 
 class TestEventUser(APITestCase):
     def generate_data(self):
