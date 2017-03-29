@@ -51,7 +51,7 @@ class UserView(APIView):
         return Response(serializer.data)
 
 
-class tUserSwipeView(APIView):
+class UserSwipeView(APIView):
     """
     POST: add a swipe decision for user
     """
