@@ -43,10 +43,10 @@ export function putRound(accessToken, eventId, tournamentId, isFinished=false, t
         })
         .then((response) => {
             if (!response.ok) throw Error();            
-            return response.json;
+            return response.json();
         })
         .then((json) => {
-            if (json.next && callback)
+            if (callback && json.Next && json.Next == 1)
                 callback();
         })
         .catch((error) => console.error(error))
