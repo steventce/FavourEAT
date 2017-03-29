@@ -20,6 +20,7 @@ import {
 import moment from 'moment';
 import DatePicker from 'react-native-datepicker';
 import ParallaxScrollView from 'react-native-parallax-scroll-view';
+import { isUpcoming } from '../../../utils/common';
 
 import styles from './styles';
 import { colors } from '../../../styles/common';
@@ -97,6 +98,7 @@ class EventDetails extends Component {
   render() {
     const { user_id: userId } = this.props.auth.token;
     const { round_num: roundNumber, event_detail, creator } = this.props.userEvent;
+    const isPast = !isUpcoming(this.props.userEvent);
 
     const {
       name,
@@ -107,13 +109,15 @@ class EventDetails extends Component {
       datetime
     } = event_detail;
 
+    const votingComplete = !!restaurant;
+
     return (
       <ParallaxScrollView
         parallaxHeaderHeight={PARALLAX_HEADER_HEIGHT}
         renderBackground={() => {
           return (
             <Image
-              source={restaurant ? {uri: restaurant.image_url} : logo}
+              source={votingComplete ? {uri: restaurant.image_url} : logo}
               resizeMode="cover" style={{ height: PARALLAX_HEADER_HEIGHT }} />
           );
         }}
@@ -144,12 +148,14 @@ class EventDetails extends Component {
             Invite Code: {inviteCode}
           </Text>
           <Text>
-            Status: In Progress (Round {roundNumber})
+            Status: {votingComplete ? 'Complete' : `In Progress (Round ${roundNumber})`}
           </Text>
-          <Button success block style={StyleSheet.flatten(styles.btn)}
-            onPress={this.handleContinueVoting}>
-            <Text>Start Round</Text>
-          </Button>
+          {!votingComplete &&
+            <Button success block style={StyleSheet.flatten(styles.btn)}
+              onPress={this.handleContinueVoting}>
+              <Text>Start Round</Text>
+            </Button>
+          }
         </Card>
 
         { /* Show an 'admin' panel if the user is the event creator */ }
@@ -164,6 +170,7 @@ class EventDetails extends Component {
           </Text>
           <TextInput
             onChangeText={(name) => this.setState({ eventName: name })}
+            editable={!isPast}
             value={this.state.eventName} />
           <Text style={{ marginTop: 20 }}>
             Event Date: {moment(datetime).format('ddd, MMM Do @ h:mm A')}
@@ -178,6 +185,7 @@ class EventDetails extends Component {
               confirmBtnText="Confirm"
               cancelBtnText="Cancel"
               minDate={new Date()}
+              disabled={isPast}
               showIcon={false}
               onDateChange={(date) => { this.setState({ date }) }} />
             <DatePicker
@@ -189,6 +197,7 @@ class EventDetails extends Component {
               confirmBtnText="Confirm"
               cancelBtnText="Cancel"
               minDate={new Date()}
+              disabled={isPast}
               showIcon={false}
               onDateChange={(time) => { this.setState({ time }) }} />
           </View>
@@ -203,7 +212,7 @@ class EventDetails extends Component {
             </Button>
             <Button success block style={StyleSheet.flatten(styles.btn)}
               onPress={this.handleCancelEvent}>
-              <Text>Cancel Event</Text>
+              <Text>{isPast ? 'Delete Event' : 'Cancel Event'}</Text>
             </Button>
           </View>
         </Card>)}

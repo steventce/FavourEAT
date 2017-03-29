@@ -18,18 +18,18 @@ from server.models import (
 )
 from django.contrib.auth.models import User
 from server.favoureat import views
+from server.favoureat import yelp_api_service
 import datetime
 
 
 class UserTests(APITestCase):
     def test_success_get_user(self):
         """ Ensure that a user can be retrieved """
-        user_id = 2
         name = 'bob'
-        user = User.objects.create(pk=user_id, username=name)
+        user = User.objects.create(username=name)
         self.assertEqual(User.objects.count(), 1)
 
-        url = ''.join(['/v1/users', '/', str(user_id)])
+        url = ''.join(['/v1/users', '/', str(user.id)])
         factory = APIRequestFactory()
         request = factory.get(url)
         force_authenticate(request, user=user)
@@ -37,7 +37,7 @@ class UserTests(APITestCase):
         view = views.UserView.as_view()
         response = view(request, user_id=user.id)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        expected = {'first_name': '', 'last_name': '', 'id': user_id}
+        expected = {'first_name': '', 'last_name': '', 'id': user.id}
         self.assertEqual(response.data, expected)
 
     def test_error_no_token(self):
@@ -71,6 +71,18 @@ class TokenTests(APITestCase):
 
         response = self.client.post(url, {}, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_error_invalid_force_auth(self):
+        """ Ensure that an invalid client token throws an error even with force authenticate """
+        user = User(username='john_doe')
+        user.save()
+        factory = APIRequestFactory()
+        request = factory.post('/v1/token/', data={'access_token': 'LJG15SJG9KDDZ'}, format='json')
+        force_authenticate(request, user=user)
+        view = views.TokenView.as_view()
+        response = view(request)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['user_id'], user.id)
 
 
 class UserFcmTests(APITestCase):

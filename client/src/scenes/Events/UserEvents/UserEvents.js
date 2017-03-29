@@ -22,14 +22,11 @@ import {
 } from 'native-base';
 import moment from 'moment';
 import ParallaxScrollView from 'react-native-parallax-scroll-view';
+import { isUpcoming } from '../../../utils/common';
 
 import backgroundImg from '../../../images/suika.jpg';
 import { colors } from '../../../styles/common';
 import styles, { PARALLAX_HEADER_HEIGHT } from './styles';
-
-const isUpcoming = function(event) {
-  return moment(event.event_detail.datetime).isSameOrAfter(moment(new Date()));
-}
 
 class UserEvents extends Component {
   static navigationOptions = {
