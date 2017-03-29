@@ -1,0 +1,12 @@
+[run]
+branch = True
+
+include =
+          *server/favoureat*
+
+omit =
+       *__init__*
+       *server/migrations*
+       *server/favoureat/tests*
+       *server/favoureat/admin*
+       *server/favoureat/apps*
