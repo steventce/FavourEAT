@@ -68,6 +68,12 @@ When testing the API and need to run server locally: Run the following:
 python manage.py runserver
 ```
 
+To view the code coverage of the backend API, run:
+```
+coverage run --source='.' manage.py test server
+coverage report
+```
+
 To execute the Python unit tests, run:
 ```
 python manage.py test
