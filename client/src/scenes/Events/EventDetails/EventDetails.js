@@ -8,7 +8,8 @@ import {
   Image,
   TextInput,
   Modal,
-  Slider
+  Slider,
+  Linking
 } from 'react-native';
 import {
   Button,
@@ -115,6 +116,24 @@ class EventDetails extends Component {
     )
   }
 
+  renderRestaurantPanel(restaurant) {
+    const { name, display_phone, location, url } = restaurant;
+    return (
+      <Card style={StyleSheet.flatten(styles.card)}>
+        {this.renderCardTitle(name)}
+        <Text>
+          Phone: {display_phone}
+        </Text>
+        <Text>
+          Address: {`${location.address1} ${location.city}, ${location.state}`}
+        </Text>
+        <Text onPress={() => Linking.openURL(url)}>
+          Website
+        </Text>
+      </Card>
+    );
+  }
+
   render() {
     const { user_id: userId } = this.props.auth.token;
     const { round_num: roundNumber, event_detail, creator, participants } = this.props.userEvent;
@@ -158,6 +177,9 @@ class EventDetails extends Component {
           );
         }}
         >
+
+        { /* Show a restaurant panel if there is a winning restaurant */ }
+        { votingComplete && this.renderRestaurantPanel(restaurant) }
 
         <Card style={StyleSheet.flatten(styles.card)}>
           {this.renderCardTitle('Details')}
@@ -263,15 +285,20 @@ class EventDetails extends Component {
           style={{ backgroundColor: colors.APP_PRIMARY_LIGHT }}
           onPress={() => this.setState({ active: !this.state.active })}>
           <Icon name="menu" />
-          <Button 
+          <Button
             style={{ backgroundColor: '#EFBE79' }}
             onPress={() => Communications.phonecall(restaurant.phone, true)}>
               <Icon name='call' />
           </Button>
-          <Button 
+          <Button
             style={{ backgroundColor: '#EFBE79' }}
             onPress={() => this.setState({ ratingModal: !this.state.ratingModal })}>
               <Icon name='md-star' />
+          </Button>
+          <Button
+              style={{ backgroundColor: '#EFBE79' }}
+              onPress={() => navigate('Map', { restaurant: restaurant })}>
+            <Icon name='locate' />
           </Button>
         </Fab>)}
 
@@ -282,7 +309,7 @@ class EventDetails extends Component {
             <View style={{alignItems: 'center'}}>
               <Text>{this.state.userRating}</Text>
             </View>
-            <Slider 
+            <Slider
               value={0}
               minimumValue={0}
               maximumValue={5}
