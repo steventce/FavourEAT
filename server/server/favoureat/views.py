@@ -298,7 +298,8 @@ class EventView(APIView):
                 event_detail=event_detail,
                 creator=user,
                 is_group=request.data.get('is_group', False),
-                round_duration=round_duration if round_duration else 0
+                round_duration=round_duration if round_duration else 0,
+                randomize_tie=request.data.get('randomize_tie', False)
             )
             event.save()
 
@@ -508,11 +509,24 @@ class IndividualTournamentView(APIView):
                 tournament1 = Tournament.objects.get(pk=t[0]['id'])
                 tournament2 = Tournament.objects.get(pk=t[1]['id'])
                 if tournament1.vote_count == tournament2.vote_count:
-                    tournament1.vote_count = 0
-                    tournament1.save()
-                    tournament2.vote_count = 0
-                    tournament2.save()
-                    num_remaining += 2
+                    # Randomize winner if there is a tie
+                    if len(tournament_data) == 1 and event.randomize_tie:
+                        rand_index = random.choice([0, 1])
+                        if rand_index:
+                            tournament2.vote_count = 0
+                            winner = tournament2.restaurant
+                            tournament1.delete()
+                        else:
+                            tournament1.vote_count = 0
+                            winner = tournament1.restaurant
+                            tournament2.delete()
+                        num_remaining += 1
+                    else:
+                        tournament1.vote_count = 0
+                        tournament1.save()
+                        tournament2.vote_count = 0
+                        tournament2.save()
+                        num_remaining += 2
                 elif tournament1.vote_count > tournament2.vote_count:
                     tournament1.vote_count = 0
                     tournament1.save()
