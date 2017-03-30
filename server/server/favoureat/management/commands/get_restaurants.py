@@ -14,7 +14,12 @@ class Command(BaseCommand):
         """
         # an arbitrary list of locations to determine where to search for restaurants
         locations = [
-            (49.222036, -123.044693)
+            (49.168809, -123.138644),   # Richmond Centre
+            (49.263632, -123.245918),   # UBC
+            (49.282735, -123.118441),   # Vancouver City Centre
+            (49.240679, -123.112041),   # Queen Elizabeth Park
+            (49.226161, -122.998964),   # Metrotown
+            (49.277888, -122.918746),   # SFU
         ]
 
         YELP_LIMIT = 50
@@ -27,7 +32,6 @@ class Command(BaseCommand):
                 'longitude': location[1],
                 'radius': 40000,
                 'limit': YELP_LIMIT,
-                'sort_by': 'rating'
             }
 
             for i in range(0, YELP_OVERALL_LIMIT/YELP_LIMIT):
