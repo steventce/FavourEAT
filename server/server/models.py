@@ -58,6 +58,7 @@ class Event(models.Model):
     round_duration = models.IntegerField(default=0)
     round_start = models.DateTimeField(default=now)
     is_group = models.BooleanField(default=False)
+    randomize_tie = models.BooleanField(default=False)
 
 
 class EventUserAttach(models.Model):
@@ -65,6 +66,7 @@ class EventUserAttach(models.Model):
     event = models.ForeignKey(Event)
     last_round_voted = models.IntegerField(default=-1)
     rating = models.IntegerField(default=0)
+
 
 class Tournament(models.Model):
     event = models.ForeignKey(Event)
