@@ -99,8 +99,7 @@ class Swipe extends Component {
     }
 
     noMore() {
-        // NOT USED FOR DEMO
-        //this.props.postSwipe(this.state.leftSwipes, this.state.rightSwipes);
+        this.props.postSwipe(this.state.leftSwipes, this.state.rightSwipes);
         this.props.nextRound(this.state.rightSwipes);
         return (
             <Spinner color='red'/>

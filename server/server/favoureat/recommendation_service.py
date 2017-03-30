@@ -1,24 +1,61 @@
+from django.contrib.auth.models import User
 from server.favoureat.yelp_api_service import YelpAPIService
-from server.models import Swipe
+from server.favoureat.geo_utils import GeoUtils
+from recommends.providers import recommendation_registry
+import copy
+from itertools import chain
+
+from server.models import Swipe, Restaurant, Cuisine, EventUserAttach
 
 class RecommendationService(object):
     """
     Provides restaurant recommendations to users.
     """
-    QUERY_LIMIT = 3 # counts from 0
+    QUERY_LIMIT = 20 # counts from 0
 
     def get_restaurants(self, user_id, preference):
         """
         Gets recommended restaurants. If there is previous swipe data
-        available, use it to make a recommendation. Otherwise, query
-        the Yelp API.
+        available, use it to make a recommendation. 
         """
-        # Avoid sending additional API requests for unused restaurants
+        self.recommender = recommendation_registry.get_provider_for_content(Restaurant)
 
-        user_swipes = Swipe.objects.filter(pk=user_id)
+        # retrieve restaurants filtered by preference
+        current_lat = preference.get('latitude')
+        current_lon = preference.get('longitude')
+        radius = preference.get('radius')
+        price = preference.get('price')
+        cuisine_types = preference.get('categories').split(',')
+        min_coords, max_coords = GeoUtils().get_bounding_box((current_lat, current_lon), radius)
 
-        if not user_swipes.exists():
-            print 'User doesnt exist... call the Yelp API Service'
-            return YelpAPIService().get_and_save_restaurants(preference, self.QUERY_LIMIT)
+        min_lat, min_lon = min_coords
+        max_lat, max_lon = max_coords
 
-        # Make recommendation
+        cuisines = Cuisine.objects.filter(
+            category__in=cuisine_types
+        ).values_list('pk', flat=True)
+
+        current_user = User.objects.get(pk=user_id)
+        recommendations = self.recommender.storage.get_recommendations_for_user(current_user).values_list('object_id', flat=True)
+        # TODO: have to do a more complicated query to get restaurants within a circular radius rather than a bounding box
+        restaurants = []
+        kwargs = {
+            'latitude__range': (min_lat, max_lat),
+            'longitude__range': (min_lon, max_lon),
+            'price': price
+        }
+
+        if len(cuisines) > 0:
+            kwargs['cuisines__in'] = list(cuisines)
+
+        # retrieve recommended restaurants that fit preferences
+        rec_kwargs = copy.copy(kwargs)
+        rec_kwargs['pk__in'] = list(recommendations)
+        recommended_restaurants = Restaurant.objects.filter(**rec_kwargs)[:self.QUERY_LIMIT]
+
+        # if number of recommendations isn't enough, get more restaurants
+        num_other = self.QUERY_LIMIT - len(recommended_restaurants)
+        other_restaurants = Restaurant.objects.filter(**kwargs)[:num_other]
+        restaurants = list(chain(recommended_restaurants, other_restaurants))
+
+        return restaurants

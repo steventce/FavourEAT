@@ -56,18 +56,17 @@ class UserSwipeView(APIView):
     POST: add a swipe decision for user
     """
     def post(self, request, user, format=None):
-        if User.objects.filter(id=user).count() == 0:
-            return Response("User not found", status=status.HTTP_404_NOT_FOUND)
-        request.data['user'] = user
-        swipe = Swipe.objects.filter(yelp_id=request.data['yelp_id'], user=request.data['user']).first()
-        if swipe is not None:
-            if 'right_swipe_count' in request.data.keys():
-                request.data['right_swipe_count'] += swipe.right_swipe_count
-            if 'left_swipe_count' in request.data.keys():
-                request.data['left_swipe_count'] += swipe.left_swipe_count
-            serializer = SwipeSerializer(swipe, data=request.data)
-        else:
-            serializer = SwipeSerializer(None, data=request.data)
+        user = User.objects.get(pk=user)
+        if user.id != request.user.id:
+            return Response('Invalid user id', status=status.HTTP_401_UNAUTHORIZED)
+        swipe, created = Swipe.objects.get_or_create(yelp_id=request.data['yelp_id'], user=user)
+
+        if 'right_swipe_count' in request.data.keys():
+            request.data['right_swipe_count'] += swipe.right_swipe_count
+        if 'left_swipe_count' in request.data.keys():
+            request.data['left_swipe_count'] += swipe.left_swipe_count
+        serializer = SwipeSerializer(swipe, data=request.data, partial=True)
+     
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
