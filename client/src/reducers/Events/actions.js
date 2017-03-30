@@ -147,6 +147,22 @@ export function cancelEvent(accessToken, userId, eventId) {
   }
 }
 
+export function eventRating(accessToken, userId, eventId, rating)  {
+  return function(dispatch) {
+    return fetch(`${API_BASE_URL}v1/users/${userId}/events/${eventId}/rate/`, {
+      method: 'PUT',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({
+        rating: rating
+      })
+    })
+  }
+}
+
 function fetchEventsSuccess(json) {
   return {
     type: actionTypes.FETCH_EVENTS_SUCCESS,
