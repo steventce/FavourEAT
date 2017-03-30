@@ -1,7 +1,12 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Alert, AsyncStorage } from 'react-native';
-import { LoginManager, AccessToken } from 'react-native-fbsdk';
+import {
+  LoginManager,
+  AccessToken,
+  GraphRequest,
+  GraphRequestManager
+} from 'react-native-fbsdk';
 import FCM, {
   FCMEvent,
   RemoteNotificationResult,
@@ -9,10 +14,18 @@ import FCM, {
   NotificationType
 } from 'react-native-fcm';
 
-import { login, saveFcmToken, setToken } from '../../reducers/Login/actions';
+import { login, saveFcmToken, setToken, setProfilePicture } from '../../reducers/Login/actions';
 import Login from './Login';
 
 class LoginContainer extends Component {
+  constructor(props) {
+    super(props);
+    this.handleGraphRequest = this.handleGraphRequest.bind(this);
+    this.handleResponseInfo = this.handleResponseInfo.bind(this);
+  }
+
+  static navigationOptions = { header: { visible: false } }
+
   handleFacebookLogin() {
     LoginManager.logInWithReadPermissions(['public_profile']).then((result) => {
       if (!result.isCancelled) {
@@ -44,6 +57,19 @@ class LoginContainer extends Component {
     });
   }
 
+  handleGraphRequest() {
+    const infoRequest = new GraphRequest('/me', null, this.handleResponseInfo)
+    new GraphRequestManager().addRequest(infoRequest).start();
+  }
+
+  handleResponseInfo(error, result) {
+    if (error) { console.log(error); }
+    else {
+      const imageUrl = `http://graph.facebook.com/${result.id}/picture?type=normal`;
+      this.props.dispatch(setProfilePicture(imageUrl));
+    }
+  }
+
   componentWillReceiveProps(nextProps) {
     const { navigate } = this.props.navigation;
     const { status, msg, token } = nextProps;
@@ -70,7 +96,9 @@ class LoginContainer extends Component {
 
         // Add the auth info back into the store
         this.props.dispatch(setToken(token));
+        this.handleGraphRequest();
         this.handleFCMInit(accessToken, userId);
+
         navigate('HomeDrawer');
       }
     } catch (error) {

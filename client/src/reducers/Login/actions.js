@@ -71,6 +71,13 @@ export function setToken(token) {
   };
 }
 
+export function setProfilePicture(imageUrl) {
+  return {
+    type: actionTypes.SET_PROFILE_PICTURE,
+    imageUrl
+  }
+}
+
 // Login Actions
 
 function loginSuccess(token) {

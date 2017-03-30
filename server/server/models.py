@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.timezone import now
 
 class UserFcm(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -19,27 +20,6 @@ class Cuisine(models.Model):
     category = models.CharField(max_length=200, null=False)
 
 
-class EventDetail(models.Model):
-    yelp_id = models.CharField(max_length=200, null=True, blank=True)
-    preference = models.ForeignKey(Preference)
-    datetime = models.DateTimeField(null=False)
-    name = models.CharField(max_length=200, null=False)
-    description = models.TextField(null=True, blank=True)
-    invite_code = models.CharField(max_length=200, null=True, blank=True)
-    voting_deadline = models.DateTimeField(null=True, blank=True)
-
-
-class Event(models.Model):
-    creator = models.ForeignKey(User)
-    event_detail = models.ForeignKey(EventDetail)
-    round_num = models.IntegerField(default=0)
-
-
-class EventUserAttach(models.Model):
-    user = models.ForeignKey(User)
-    event = models.ForeignKey(Event)
-
-
 class PreferenceCuisine(models.Model):
     preference = models.ForeignKey(Preference)
     cuisine = models.ForeignKey(Cuisine)
@@ -55,6 +35,31 @@ class Swipe(models.Model):
 class Restaurant(models.Model):
     yelp_id = models.CharField(max_length=200, null=False)
     json = models.TextField(null=True, blank=True)
+
+
+class EventDetail(models.Model):
+    restaurant = models.ForeignKey(Restaurant, null=True, blank=True)
+    preference = models.ForeignKey(Preference)
+    datetime = models.DateTimeField(null=False)
+    name = models.CharField(max_length=200, null=False)
+    description = models.TextField(null=True, blank=True)
+    invite_code = models.CharField(max_length=200, null=True, blank=True)
+
+
+class Event(models.Model):
+    creator = models.ForeignKey(User)
+    event_detail = models.ForeignKey(EventDetail)
+    round_num = models.IntegerField(default=0)
+    round_duration = models.IntegerField(default=0)
+    round_start = models.DateTimeField(default=now)
+    is_group = models.BooleanField(default=False)
+
+
+class EventUserAttach(models.Model):
+    user = models.ForeignKey(User)
+    event = models.ForeignKey(Event)
+    last_round_voted = models.IntegerField(default=-1)
+    rating = models.IntegerField(default=0)
 
 
 class Tournament(models.Model):

@@ -12,10 +12,8 @@ const distanceOptions = [0.25, 0.5, 1, 2, 3, 5, 10, 20];
 
 class Preferences extends Component {
   static propTypes = {
-    preferences: PropTypes.object.isRequired,
-    changeRadius: PropTypes.func.isRequired,
     allCuisineTypes: PropTypes.array.isRequired,
-    savePreferences: PropTypes.func.isRequired
+    createEvent: PropTypes.func.isRequired
   };
 
   static navigationOptions = {
@@ -60,13 +58,6 @@ class Preferences extends Component {
       );
     } catch (error) {
       Alert.alert('Error', 'Loading Error. Please try again.');
-    }
-  }
-
-  // not really needed but keeping for now
-  componentWillReceiveProps(nextProps) {
-    if (this.props.eventId !== nextProps.eventId) {
-      this.props.startTournament();
     }
   }
 
@@ -154,7 +145,7 @@ class Preferences extends Component {
   }
 
   handleDoneClick()  {
-    this.props.savePreferences(this.state.appAccessToken, this.state.userId, this.state.preferences);
+    this.props.createEvent(this.state.appAccessToken, this.state.userId, this.state.preferences);
     this.props.startTournament();
   }
 

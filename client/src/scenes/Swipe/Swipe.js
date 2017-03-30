@@ -22,6 +22,7 @@ class Swipe extends Component {
         this.onClickNope = this.onClickNope.bind(this);
         this.getRating = this.getRating.bind(this);
         this.noMore = this.noMore.bind(this);
+        this.handleGoToDetails = this.handleGoToDetails.bind(this);
     }
 
     static navigationOptions = {
@@ -41,14 +42,14 @@ class Swipe extends Component {
           overflow: 'hidden',
           backgroundColor: 'white',
         };
-      
+
         return (
             <Card style={cardStyle}>
               <View>
                 <Image source={{uri: restaurant.image_url}} resizeMode="cover" style={[imageSize, styles.image]} />
               </View>
               <View style={[styles.cardMeta]}>
-                <Text 
+                <Text
                     numberOfLines={3}
                     style={styles.restaurantName}>
                   {restaurant.name}
@@ -78,8 +79,10 @@ class Swipe extends Component {
     }
 
     onClickYup(restaurant) {
-        this.swiper._goToNextCard();
-        this.handleYup(restaurant);
+        if (restaurant) {
+            this.swiper._goToNextCard();
+            this.handleYup(restaurant);
+        }
     }
 
     handleNope(restaurant) {
@@ -89,8 +92,10 @@ class Swipe extends Component {
     }
 
     onClickNope(restaurant) {
-        this.swiper._goToNextCard();
-        this.handleNope(restaurant);
+        if (restaurant) {
+            this.swiper._goToNextCard();
+            this.handleNope(restaurant);
+        }
     }
 
     noMore() {
@@ -102,13 +107,21 @@ class Swipe extends Component {
         );
     }
 
-    handleGoToDetails = () => {
-      this.props.navigate('RestaurantDetails', {
-        restaurant: this.swiper.state.card, 
-        caller: this,
-        swipeable: true,
-      });
+    handleGoToDetails()  {
+        if (this.swiper) {
+            this.props.navigate('RestaurantDetails', {
+                restaurant: this.swiper.state.card,
+                caller: this,
+                swipeable: true,
+            });
+        }
     };
+
+    shouldComponentUpdate(nextProps, nextState) {
+        /*  navigate in props triggers a re-render
+            so only update if have not navigated away */
+        return nextProps == this.props;
+    }
 
     render() {
         return (
@@ -124,18 +137,18 @@ class Swipe extends Component {
                     handleNope={(restaurant) => this.handleNope(restaurant)}
                 />
                 <View style={styles.actionBtns}>
-                    <TouchableOpacity 
-                        style={[styles.button, styles.noBtn]} 
+                    <TouchableOpacity
+                        style={[styles.button, styles.noBtn]}
                         onPress={() => this.onClickNope(this.swiper.state.card)}>
                       <Icon name='close' size={45} style={StyleSheet.flatten(styles.btnIcon)} />
                     </TouchableOpacity>
-                    <TouchableOpacity 
-                        style={[styles.button, styles.detailsBtn]} 
+                    <TouchableOpacity
+                        style={[styles.button, styles.detailsBtn]}
                         onPress={this.handleGoToDetails}>
                         <Icon name='information' style={{color: 'white', fontSize: 40}} />
                     </TouchableOpacity>
-                    <TouchableOpacity 
-                        style={[styles.button, styles.yesBtn]} 
+                    <TouchableOpacity
+                        style={[styles.button, styles.yesBtn]}
                         onPress={() => this.onClickYup(this.swiper.state.card)}>
                       <Icon name='heart' size={36} style={StyleSheet.flatten(styles.btnIcon)} />
                     </TouchableOpacity>
@@ -181,10 +194,10 @@ const styles = StyleSheet.create({
       overflow: 'hidden',
     },
     actionBtns: {
-      flexDirection: 'row', 
-      alignItems: 'center', 
-      justifyContent: 'center', 
-      marginTop: 5, 
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 5,
     },
     cardMeta: {
       flex: 1,
@@ -192,8 +205,8 @@ const styles = StyleSheet.create({
       paddingHorizontal: 20
     },
     restaurantName: {
-      fontSize: 30,  
-      color: '#444', 
+      fontSize: 30,
+      color: '#444',
     }
 })
 

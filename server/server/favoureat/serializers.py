@@ -8,6 +8,7 @@ from server.models import (
     Tournament,
     EventDetail,
     Event,
+    EventUserAttach,
     Preference
 )
 
@@ -41,18 +42,13 @@ class RestaurantSerializer(serializers.ModelSerializer):
         return restaurant
 
 
-class TournamentSerializer(serializers.ModelSerializer):
+class EventDetailSerializer(serializers.ModelSerializer):
     restaurant = RestaurantSerializer()
 
     class Meta:
-        model = Tournament
-        fields = ('id', 'restaurant')
-
-
-class EventDetailSerializer(serializers.ModelSerializer):
-    class Meta:
         model = EventDetail
-        fields = ('id', 'yelp_id', 'preference', 'datetime', 'name', 'description', 'invite_code', 'voting_deadline')
+        fields = ('id', 'restaurant', 'preference',
+                  'datetime', 'name', 'description', 'invite_code')
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -61,7 +57,24 @@ class EventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ('id', 'creator', 'event_detail', 'round_num')
+        fields = ('id', 'creator', 'event_detail', 'round_num', 'round_duration', 'round_start', 'is_group')
+
+
+class TournamentSerializer(serializers.ModelSerializer):
+    restaurant = RestaurantSerializer()
+    event = EventSerializer()
+
+    class Meta:
+        model = Tournament
+        fields = ('id', 'restaurant', 'event', 'vote_count')
+
+
+class EventUserAttachSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
+    class Meta:
+        model = EventUserAttach
+        fields = ('id', 'user')
 
 
 class PreferenceSerializer(serializers.ModelSerializer):
