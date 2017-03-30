@@ -52,14 +52,8 @@ class SwipeContainer extends Component {
   }
 
   gotoTournament() {
-    const resetAction = NavigationActions.reset({
-      index: 1,
-      actions: [
-        NavigationActions.navigate({ routeName: 'HomeDrawer'}),
-        NavigationActions.navigate({ routeName: 'Tournament', params: { eventId: this.state.eventId }})
-      ]
-    })
-    this.props.navigation.dispatch(resetAction);
+    // TODO: handle back button
+    this.props.navigation.navigate('Tournament', { eventId: this.state.eventId });
   }
 
   async componentDidMount() {

@@ -100,6 +100,9 @@ class YelpAPIService(object):
                     if cached:
                         continue
 
+                    if not restaurant.get('image_url'):
+                        continue
+
                     # Fetch from the Reviews API
                     reviews = self.get_reviews(access_token, yelp_id)
                     restaurant['reviews'] = reviews

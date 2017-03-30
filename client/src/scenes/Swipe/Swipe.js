@@ -116,6 +116,12 @@ class Swipe extends Component {
         }
     };
 
+    shouldComponentUpdate(nextProps, nextState) {
+        /*  navigate in props triggers a re-render
+            so only update if have not navigated away */
+        return nextProps == this.props;
+    }
+
     render() {
         return (
             <View style={styles.container}>

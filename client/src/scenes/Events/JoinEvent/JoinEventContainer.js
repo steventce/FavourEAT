@@ -12,6 +12,7 @@ class JoinEventContainer extends Component {
     this.state = {
       appAccessToken: '',
       userId: '',
+      userEvents: []
     }
   }
 
@@ -28,19 +29,9 @@ class JoinEventContainer extends Component {
     }
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    console.log(this.props);
-    console.log(nextProps);
-    if (this.props.events && nextProps.events) {
-      if (this.props.events.length < nextProps.events.length) {
-        console.log('transition to some page');
-        return true;
-      }
-    }
-    return false;
-  }
-
   async componentWillMount() {
+    // Save the user's events
+    this.setState({ userEvents: this.props.events });
     try {
       const appAccessToken = await AsyncStorage.getItem('app_access_token');
       if (appAccessToken) {
@@ -55,6 +46,23 @@ class JoinEventContainer extends Component {
     }
   }
 
+  componentWillReceiveProps(nextProps) {
+    const { events }  = nextProps;
+    if (events && events.length > 0) {
+      /*  Instead of comparing the 2 arrays to find the joined event,
+      *   have the joined event be added to the last index thus if
+      *   there's a diff in length, then the last index is the joined event
+      */
+      if (this.state.userEvents.length < events.length) {
+        console.log(events[events.length - 1]);
+        this.props.navigation.navigate('EventDetails',  { userEvent: events[events.length - 1] });
+      } else {
+        // already participating in this event
+        Alert.alert('Error', 'Already registered in this event.');
+      }
+    }
+  }
+
   render() {
     return (
       <JoinEvent eventJoin={ this.eventJoin.bind(this) }/>
@@ -62,5 +70,8 @@ class JoinEventContainer extends Component {
   }
 }
 
+const mapStateToProps = function (state) {
+  return state.event;
+}
 
-export default connect()(JoinEventContainer);
+export default connect(mapStateToProps)(JoinEventContainer);

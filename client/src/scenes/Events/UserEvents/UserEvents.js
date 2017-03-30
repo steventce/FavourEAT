@@ -22,14 +22,11 @@ import {
 } from 'native-base';
 import moment from 'moment';
 import ParallaxScrollView from 'react-native-parallax-scroll-view';
+import { isUpcoming } from '../../../utils/common';
 
 import backgroundImg from '../../../images/suika.jpg';
 import { colors } from '../../../styles/common';
 import styles, { PARALLAX_HEADER_HEIGHT } from './styles';
-
-const isUpcoming = function(event) {
-  return moment(event.event_detail.datetime).isSameOrAfter(moment(new Date()));
-}
 
 class UserEvents extends Component {
   static navigationOptions = {
@@ -61,12 +58,14 @@ class UserEvents extends Component {
     const sections = [{
       id: 'upcoming',
       title: 'Upcoming Events',
+      isEmpty: true,
       belongs: (event) => {
         return isUpcoming(event);
       }
     }, {
       id: 'past',
       title: 'Past Events',
+      isEmpty: true,
       belongs: (event) => {
         return moment(event.event_detail.datetime).isBefore(moment(new Date()));
       }
@@ -74,10 +73,13 @@ class UserEvents extends Component {
     const rowIds = [];
 
     for (var i = 0; i < sections.length; i++) {
-      const { id, title, belongs } = sections[i];
-      dataBlob[id] = { title };
+      const { id, title, belongs, isEmpty } = sections[i];
+      dataBlob[id] = { title, isEmpty };
 
       filteredEvents = events.filter(belongs);
+      if (filteredEvents.length > 0) {
+        dataBlob[id]['isEmpty'] = false;
+      }
       // Add the eventId: eventData into the blob
       for (var j = 0; j < filteredEvents.length; j++) {
         const event = filteredEvents[j];
@@ -130,7 +132,7 @@ class UserEvents extends Component {
     return (
       <Card style={StyleSheet.flatten(styles.sectionHeader)}>
         <View style={styles.container}>
-          <Text>{section.title}</Text>
+          <Text>{section.isEmpty ? `No ${section.title}` : section.title}</Text>
         </View>
       </Card>
     );

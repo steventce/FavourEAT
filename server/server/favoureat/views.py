@@ -118,8 +118,7 @@ class FcmTokenView(APIView):
         try:
             user = User.objects.get(pk=request.user.id)
             fcm_token = request.data.get('fcm_token')
-            if user.id != request.user.id:
-                return Response('Invalid user id', status=status.HTTP_401_UNAUTHORIZED)
+
             if fcm_token is None:
                 return Response('Bad request', status=status.HTTP_400_BAD_REQUEST)
             user_fcm, created = UserFcm.objects.get_or_create(user_id=request.user.id)
@@ -362,6 +361,8 @@ class JoinEventView(APIView):
                 body = '{first_name} has joined the event {name}'.format(
                     first_name=user.first_name, name=event_detail.name)
                 fcm_service.notify_creator(user, title, body)
+            else:
+                return Response("User has already joined the event", status=status.HTTP_409_CONFLICT)
 
             serializer = EventSerializer(event)
             resp = serializer.data
@@ -519,7 +520,7 @@ class IndividualTournamentView(APIView):
                     winner = tournament1.restaurant
                     tournament2.delete()
                 else:
-                    tournament2 = Tournament.objects.get(pk=t[1]['id'])
+                    tournament2.vote_count = 0
                     tournament2.save()
                     num_remaining += 1
                     winner = tournament2.restaurant
@@ -552,11 +553,10 @@ class IndividualTournamentView(APIView):
         event = self.get_object(event_id)
 
         # Check if user has already voted for this round
-        if 'user_id' in request.data.keys():
-            user = self.get_user(request.data['user_id'])
-            event_user_attach = EventUserAttach.objects.get(event=event, user=user)
-            if event_user_attach.last_round_voted == event.round_num:
-                return Response("User has already voted", status=status.HTTP_409_CONFLICT)
+        user = request.user
+        event_user_attach = EventUserAttach.objects.get(event=event, user=user)
+        if event_user_attach.last_round_voted == event.round_num:
+            return Response("User has already voted", status=status.HTTP_409_CONFLICT)
 
         tournaments = Tournament.objects.filter(event_id=event_id)
         data = TournamentSerializer(tournaments, many=True).data
@@ -603,22 +603,18 @@ class IndividualTournamentView(APIView):
 
 
 class EventUserAttachView(APIView):
-    def get_object(self, user_id, event_id):
+    def put(self, request, user_id, event_id):
+        """Updates rating of a user's event. User can rate the restaurant that the event is attached to"""
         try:
             event = Event.objects.get(pk=event_id)
             user = User.objects.get(pk=user_id)
             attach = EventUserAttach.objects.get(event=event, user=user)
-            return attach
+            attach.rating = request.data['rating']
+            attach.save()
+            return Response({'rating': attach.rating}, status=status.HTTP_200_OK)
         except Event.DoesNotExist:
             return Response("Event does not exist", status=status.HTTP_404_NOT_FOUND)
         except User.DoesNotExist:
             return Response("User does not exist", status=status.HTTP_404_NOT_FOUND)
         except EventUserAttach.DoesNotExist:
             return Response("EventUserAttach does not exist", status=status.HTTP_404_NOT_FOUND)
-
-    def put(self, request, user_id, event_id):
-        """Updates rating of a user's event. User can rate the restaurant that the event is attached to"""
-        attach = self.get_object(user_id, event_id)
-        attach.rating = request.data['rating']
-        attach.save()
-        return Response({'rating': attach.rating}, status=status.HTTP_200_OK)

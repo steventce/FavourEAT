@@ -24,6 +24,8 @@ class LoginContainer extends Component {
     this.handleResponseInfo = this.handleResponseInfo.bind(this);
   }
 
+  static navigationOptions = { header: { visible: false } }
+
   handleFacebookLogin() {
     LoginManager.logInWithReadPermissions(['public_profile']).then((result) => {
       if (!result.isCancelled) {
