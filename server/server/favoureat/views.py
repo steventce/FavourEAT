@@ -119,8 +119,7 @@ class FcmTokenView(APIView):
         try:
             user = User.objects.get(pk=request.user.id)
             fcm_token = request.data.get('fcm_token')
-            if user.id != request.user.id:
-                return Response('Invalid user id', status=status.HTTP_401_UNAUTHORIZED)
+
             if fcm_token is None:
                 return Response('Bad request', status=status.HTTP_400_BAD_REQUEST)
             user_fcm, created = UserFcm.objects.get_or_create(user_id=request.user.id)
