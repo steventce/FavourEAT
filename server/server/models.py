@@ -30,6 +30,7 @@ class Swipe(models.Model):
     yelp_id = models.CharField(max_length=200, null=False)
     right_swipe_count = models.IntegerField(default=0)
     left_swipe_count = models.IntegerField(default=0)
+    avg_rating = models.IntegerField(default=0)
 
 
 class Restaurant(models.Model):

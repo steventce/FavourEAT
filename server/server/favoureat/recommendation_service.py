@@ -1,20 +1,24 @@
+from django.contrib.auth.models import User
 from server.favoureat.yelp_api_service import YelpAPIService
 from server.favoureat.geo_utils import GeoUtils
-from server.models import Swipe, Restaurant, Cuisine
+from recommends.providers import recommendation_registry
+import copy
+from itertools import chain
+
+from server.models import Swipe, Restaurant, Cuisine, EventUserAttach
 
 class RecommendationService(object):
     """
     Provides restaurant recommendations to users.
     """
-    QUERY_LIMIT = 5 # counts from 0
+    QUERY_LIMIT = 20 # counts from 0
 
     def get_restaurants(self, user_id, preference):
         """
         Gets recommended restaurants. If there is previous swipe data
-        available, use it to make a recommendation. Otherwise, query
-        the Yelp API.
+        available, use it to make a recommendation. 
         """
-        # Avoid sending additional API requests for unused restaurants
+        self.recommender = recommendation_registry.get_provider_for_content(Restaurant)
 
         # retrieve restaurants filtered by preference
         current_lat = preference.get('latitude')
@@ -31,16 +35,27 @@ class RecommendationService(object):
             category__in=cuisine_types
         ).values_list('pk', flat=True)
 
+        current_user = User.objects.get(pk=user_id)
+        recommendations = self.recommender.storage.get_recommendations_for_user(current_user).values_list('object_id', flat=True)
         # TODO: have to do a more complicated query to get restaurants within a circular radius rather than a bounding box
-        restaurants = Restaurant.objects.filter(
-            latitude__range=(min_lat, max_lat),
-            longitude__range=(min_lon, max_lon),
-            price=price,
-            cuisine__in=list(cuisines)
-        )
+        restaurants = []
+        kwargs = {
+            'latitude__range': (min_lat, max_lat),
+            'longitude__range': (min_lon, max_lon),
+            'price': price
+        }
 
-        # print 'User doesnt exist... call the Yelp API Service'
-        # restaurants = YelpAPIService().get_and_save_restaurants(preference, self.QUERY_LIMIT)
+        if len(cuisines) > 0:
+            kwargs['cuisines__in'] = list(cuisines)
 
-        # Make recommendation
+        # retrieve recommended restaurants that fit preferences
+        rec_kwargs = copy.copy(kwargs)
+        rec_kwargs['pk__in'] = list(recommendations)
+        recommended_restaurants = Restaurant.objects.filter(**rec_kwargs)[:self.QUERY_LIMIT]
+
+        # if number of recommendations isn't enough, get more restaurants
+        num_other = self.QUERY_LIMIT - len(recommended_restaurants)
+        other_restaurants = Restaurant.objects.filter(**kwargs)[:num_other]
+        restaurants = list(chain(recommended_restaurants, other_restaurants))
+
         return restaurants

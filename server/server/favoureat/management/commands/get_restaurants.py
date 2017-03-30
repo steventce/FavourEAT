@@ -12,20 +12,27 @@ class Command(BaseCommand):
         """
         Populates restaurants table.
         """
+        # an arbitrary list of locations to determine where to search for restaurants
+        locations = [
+            (49.222036, -123.044693)
+        ]
+
         YELP_LIMIT = 50
         YELP_OVERALL_LIMIT = 500
-        # latitude and longitude is an arbitrary center where to start searching
-        preference = {
-            'term': 'restaurants',
-            'latitude': 49.222036, 
-            'longitude': -123.044693,
-            'limit': YELP_LIMIT,
-            'sort_by': 'rating'
-        }
 
-        for i in range(0, YELP_OVERALL_LIMIT/YELP_LIMIT):
-            preference['offset'] = i*YELP_LIMIT
-            YelpAPIService().get_and_save_restaurants(preference, YELP_OVERALL_LIMIT)
+        for location in locations:
+            preference = {
+                'term': 'restaurants',
+                'latitude': location[0], 
+                'longitude': location[1],
+                'radius': 40000,
+                'limit': YELP_LIMIT,
+                'sort_by': 'rating'
+            }
+
+            for i in range(0, YELP_OVERALL_LIMIT/YELP_LIMIT):
+                preference['offset'] = i*YELP_LIMIT
+                YelpAPIService().get_and_save_restaurants(preference, YELP_OVERALL_LIMIT)
 
         msg = 'Successfully got Restaurants data!'
         self.stdout.write(self.style.SUCCESS(msg))
