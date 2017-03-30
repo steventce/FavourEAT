@@ -6,7 +6,9 @@ import {
   Alert,
   AsyncStorage,
   Image,
-  TextInput
+  TextInput,
+  Modal,
+  Slider
 } from 'react-native';
 import {
   Button,
@@ -24,6 +26,7 @@ import DatePicker from 'react-native-datepicker';
 import ParallaxScrollView from 'react-native-parallax-scroll-view';
 import ParticipantListItem from '../../../components/ParticipantListItem';
 import { isUpcoming } from '../../../utils/common';
+import PopupModal from '../../../components/PopupModal';
 
 import styles from './styles';
 import { colors, colorsList } from '../../../styles/common';
@@ -44,12 +47,15 @@ class EventDetails extends Component {
       date: moment(datetime).format('YYYY-MM-DD'),
       time: moment(datetime).format('HH:mm'),
       active: false,
-      eventName: name
+      eventName: name,
+      ratingModal: false,
+      userRating: 0
     };
     this.hasEventDetailsChanged = this.hasEventDetailsChanged.bind(this);
     this.handleContinueVoting = this.handleContinueVoting.bind(this);
     this.handleSaveChanges = this.handleSaveChanges.bind(this);
     this.handleCancelEvent = this.handleCancelEvent.bind(this);
+    this.submitRating = this.submitRating.bind(this);
   }
 
   hasEventDetailsChanged() {
@@ -92,6 +98,13 @@ class EventDetails extends Component {
       eventId,
       { name: eventName, datetime: eventDateTime.format('YYYY-MM-DD HH:mmZ') },
     );
+  }
+
+  submitRating() {
+    const { access_token: accessToken, user_id: userId } = this.props.auth.token;
+    const { id: eventId } = this.props.userEvent;
+    this.setState({ ratingModal: !this.state.ratingModal});
+    this.props.eventRating(accessToken, userId, eventId, this.state.userRating);
   }
 
   renderCardTitle(title) {
@@ -241,14 +254,44 @@ class EventDetails extends Component {
             );
           })}
         </Card>
-        <Fab
+
+        { /* Display FAB only when there's a winning restaurant */ }
+        {votingComplete && (<Fab
           active={this.state.active}
           direction="up"
           position="bottomRight"
           style={{ backgroundColor: colors.APP_PRIMARY_LIGHT }}
           onPress={() => this.setState({ active: !this.state.active })}>
-          <Icon name="md-star" />
-        </Fab>
+          <Icon name="menu" />
+          <Button 
+            style={{ backgroundColor: '#EFBE79' }}
+            onPress={() => Communications.phonecall(restaurant.phone, true)}>
+              <Icon name='call' />
+          </Button>
+          <Button 
+            style={{ backgroundColor: '#EFBE79' }}
+            onPress={() => this.setState({ ratingModal: !this.state.ratingModal })}>
+              <Icon name='md-star' />
+          </Button>
+        </Fab>)}
+
+        <PopupModal
+          visible={this.state.ratingModal}
+          onClose={() => this.setState({ ratingModal: false })}>
+          <View>
+            <View style={{alignItems: 'center'}}>
+              <Text>{this.state.userRating}</Text>
+            </View>
+            <Slider 
+              value={0}
+              minimumValue={0}
+              maximumValue={5}
+              step={0.5}
+              onSlidingComplete={(value) => this.setState({ userRating: value })} />
+              <Button onPress={() => this.submitRating()}><Text>OK</Text></Button>
+          </View>
+        </PopupModal>
+
       </ParallaxScrollView>
     );
   }

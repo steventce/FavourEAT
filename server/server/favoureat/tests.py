@@ -14,7 +14,9 @@ from server.models import (
     Preference,
     UserFcm,
     EventUserAttach,
-    Tournament
+    Tournament,
+    Cuisine,
+    PreferenceCuisine
 )
 from django.contrib.auth.models import User
 from server.favoureat import views
@@ -87,7 +89,6 @@ class TokenTests(APITestCase):
 
 class UserFcmTests(APITestCase):
     FCM_TOKEN = 'ALJG1ZlLY1K01'
-    USER_ID = 10
     URL = '/v1/users/{id}/fcm-token/'
 
     def request_fcm_helper(self, user, method):
@@ -125,7 +126,8 @@ class UserFcmTests(APITestCase):
 
     def test_error_no_token(self):
         """ Ensure that an invalid client token throws an error """
-        user = User(pk=self.USER_ID)
+        user = User(username='bob_jones')
+        user.save()
 
         response = self.request_fcm_helper(user, {'name': 'PUT', 'authenticate': False})
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -133,30 +135,41 @@ class UserFcmTests(APITestCase):
         response = self.request_fcm_helper(user, {'name': 'DELETE', 'authenticate': False})
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_error_no_fcm_token(self):
+        """ Ensure that without a FCM token it throws an error """
+        user = User(username='bob_jones')
+        user.save()
+
+        response = self.request_fcm_helper(user, {
+            'name': 'PUT',
+            'data': {}
+        })
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_save_fcm_token(self):
         """ Ensure that an fcm token can be saved successfully """
-        user_id = self.USER_ID
-        user = User(pk=user_id)
+        user = User(username='bob_jones')
         user.save()
 
         response = self.request_fcm_helper(user, {
             'name': 'PUT',
             'data': {'fcm_token': self.FCM_TOKEN}
         })
-        fcm_token = User.objects.get(pk=user_id).userfcm.fcm_token
+        fcm_token = User.objects.get(pk=user.id).userfcm.fcm_token
 
         self.assertEqual(fcm_token, self.FCM_TOKEN)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_delete_fcm_token(self):
         """ Ensure that an fcm token can be deleted successfully """
-        user = User(pk=self.USER_ID)
+        user = User(username='bob_jones')
         user.save()
+
         user_fcm = UserFcm(fcm_token=self.FCM_TOKEN, user=user)
         user_fcm.save()
 
         response = self.request_fcm_helper(user, {'name': 'DELETE'})
-        self.assertFalse(hasattr(User.objects.get(pk=self.USER_ID), 'userfcm'))
+        self.assertFalse(hasattr(User.objects.get(pk=user.id), 'userfcm'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.request_fcm_helper(user, {'name': 'DELETE'})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -242,11 +255,9 @@ class EventTests(APITestCase):
         'datetime': timezone.now(), 'round_duration': 5
     }
 
-    def event_helper(self, user_id, data, authenticate, method='GET'):
+    def event_helper(self, user, data, authenticate, method='GET'):
         """ Helper to post to the create event endpoint """
-        user = User(pk=user_id)
-        user.save()
-
+        user_id = user.id
         url = 'v1/users/{user_id}/events'.format(user_id=str(user_id))
         factory = APIRequestFactory()
         request = factory.post(url, data, format='json') if method == 'POST' else factory.get(url)
@@ -257,39 +268,10 @@ class EventTests(APITestCase):
         response = view(request, user_id=user_id)
         return response
 
-    def create_restaurants(self):
-        restaurants = Restaurant.objects.bulk_create([
-            Restaurant(yelp_id='Cheap Foods'),
-            Restaurant(yelp_id='Some Pizza'),
-            Restaurant(yelp_id='Good Rice')
-        ])
-        return restaurants
-
-    @patch('server.favoureat.recommendation_service.RecommendationService.get_restaurants')
-    def test_generate_invite_code(self, get_restaurants_mock):
-        """ Ensure that an 8-digit unique invite code is generated when creating an event """
-        user = User(pk=10)
-        user.save()
-        preference = Preference(radius=1, latitude=2, longitude=3)
-        preference.save()
-
-        get_restaurants_mock.return_value = self.create_restaurants()
-        response = self.event_helper(10, self.data, True, method='POST')
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(response.data['invite_code']), 8)
-
-    def test_get_user_events(self):
-        """ Ensures that a user can successfully retrieve their events """
-        expected_len = 5
-        user = User(pk=10)
-        user.save()
-        for index in xrange(expected_len):
-            preference = Preference(
-                radius=1,
-                latitude=2,
-                longitude=3
-            )
+    def create_events(self, user, num_events):
+        events = []
+        for index in xrange(num_events):
+            preference = Preference(radius=1, latitude=2, longitude=3)
             preference.save()
 
             event_detail = EventDetail(
@@ -307,34 +289,80 @@ class EventTests(APITestCase):
                 round_duration=0
             )
             event.save()
+            events.append(event)
             user.eventuserattach_set.create(event=event, user=user)
+        return events
 
-        response = self.event_helper(10, None, True)
+    def create_restaurants(self):
+        restaurants = Restaurant.objects.bulk_create([
+            Restaurant(yelp_id='Cheap Foods'),
+            Restaurant(yelp_id='Some Pizza'),
+            Restaurant(yelp_id='Good Rice')
+        ])
+        return restaurants
+
+    @patch('server.favoureat.recommendation_service.RecommendationService.get_restaurants')
+    def test_generate_invite_code(self, get_restaurants_mock):
+        """ Ensure that an 8-digit unique invite code is generated when creating an event """
+        user = User(username='bob_jones')
+        user.save()
+        preference = Preference(radius=1, latitude=2, longitude=3)
+        preference.save()
+
+        get_restaurants_mock.return_value = self.create_restaurants()
+        response = self.event_helper(user, self.data, True, method='POST')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(len(response.data['invite_code']), 8)
+
+    def test_get_user_events(self):
+        """ Ensures that a user can successfully retrieve their events """
+        expected_len = 5
+        user = User(username='bob_jones')
+        user.save()
+
+        events = self.create_events(user, expected_len)
+        response = self.event_helper(user, None, True)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), expected_len)
 
+        event_data_ids = [e['id'] for e in response.data]
+        event_ids = [e.id for e in events]
+        # Check ordered by date desc
+        self.assertSequenceEqual(event_data_ids, event_ids[::-1])
+
+        for event_data in response.data:
+            self.assertEqual(event_data['round_duration'], 0)
+            self.assertEqual(event_data['is_group'], True)
+            self.assertEqual(event_data['round_duration'], 0)
+
     def test_event_save_no_token(self):
         """ Ensure that an unauthorized error occurs with no authentication """
-        response = self.event_helper(10, None, False, 'POST')
+        user = User(username='bob_jones')
+        user.save()
+        response = self.event_helper(user, None, False, 'POST')
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_event_save_no_params(self):
         """ Ensure that a 400 response is returned when there are no params """
-        response = self.event_helper(10, {}, True, 'POST')
+        user = User(username='bob_jones')
+        user.save()
+        response = self.event_helper(user, {}, True, 'POST')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     @patch('server.favoureat.recommendation_service.RecommendationService.get_restaurants')
     def test_event_save_pref(self, get_restaurants_mock):
         """ Ensure that preferences are saved correctly when creating an event """
-        user_id = 10
+        user = User(username='bob_jones')
+        user.save()
         # Mock out the Yelp API call
         get_restaurants_mock.return_value = self.create_restaurants()
 
-        response = self.event_helper(user_id, self.data, True, 'POST')
-        event = Event.objects.get(creator=user_id)
+        response = self.event_helper(user, self.data, True, 'POST')
+        event = Event.objects.get(creator=user.id)
         self.assertEqual(event.event_detail.name, self.data['name'])
 
         preference = event.event_detail.preference
@@ -347,43 +375,68 @@ class EventTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     @patch('server.favoureat.recommendation_service.RecommendationService.get_restaurants')
-    def test_event_save_detail(self, get_restaurants_mock):
-        """ Ensure that event details are saved correctly when creating an event """
-        user_id = 10
+    def test_event_save_pref_cuisines(self, get_restaurants_mock):
+        """ Ensure that cuisine preferences are saved correctly when creating an event """
+        user = User(username='bob_jones')
+        user.save()
         # Mock out the Yelp API call
         get_restaurants_mock.return_value = self.create_restaurants()
 
-        response = self.event_helper(user_id, self.data, True, 'POST')
-        event = Event.objects.get(creator=user_id)
+        # Add cuisines
+        pizza_cuisine = Cuisine(category='pizza', name='Pizza')
+        chinese_cuisine = Cuisine(category='chinese', name='Chinese')
+        pizza_cuisine.save()
+        chinese_cuisine.save()
+
+        self.event_helper(user, self.data, True, 'POST')
+        pizza_pref_qs = PreferenceCuisine.objects.filter(cuisine=pizza_cuisine)
+        pizza_pref = pizza_pref_qs.first()
+
+        self.assertEqual(pizza_pref_qs.count(), 1)
+        self.assertEqual(pizza_pref.cuisine.category, 'pizza')
+        self.assertEqual(pizza_pref.cuisine.name, 'Pizza')
+
+    @patch('server.favoureat.recommendation_service.RecommendationService.get_restaurants')
+    def test_event_save_detail(self, get_restaurants_mock):
+        """ Ensure that event details are saved correctly when creating an event """
+        user = User(username='bob_jones')
+        user.save()
+        # Mock out the Yelp API call
+        get_restaurants_mock.return_value = self.create_restaurants()
+
+        response = self.event_helper(user, self.data, True, 'POST')
+        event = Event.objects.get(creator=user.id)
         self.assertEqual(event.event_detail.name, self.data['name'])
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     @patch('server.favoureat.recommendation_service.RecommendationService.get_restaurants')
     def test_event_save_attach(self, get_restaurants_mock):
         """ Ensure that event user attach is saved correctly when creating an event """
-        user_id = 10
+        user = User(username='bob_jones')
+        user.save()
         # Mock out the Yelp API call
         get_restaurants_mock.return_value = self.create_restaurants()
 
-        response = self.event_helper(user_id, self.data, True, 'POST')
-        event = Event.objects.get(creator=user_id)
-        self.assertEqual(event.eventuserattach_set.first().user_id, user_id)
+        response = self.event_helper(user, self.data, True, 'POST')
+        event = Event.objects.get(creator=user.id)
+        self.assertEqual(event.eventuserattach_set.first().user_id, user.id)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     @patch('server.favoureat.recommendation_service.RecommendationService.get_restaurants')
     def test_event_save_tournament(self, get_restaurants_mock):
         """ Ensure that tournaments are saved correctly when creating an event """
-        user_id = 10
-        restaurants = Restaurant.objects.bulk_create([
-            Restaurant(yelp_id='Cheap Foods'),
-            Restaurant(yelp_id='Some Pizza'),
-            Restaurant(yelp_id='Good Rice')
-        ])
-        get_restaurants_mock.return_value = self.create_restaurants()
+        user = User(username='bob_jones')
+        user.save()
+        restaurants = self.create_restaurants()
+        restaurant_ids = [r.id for r in restaurants]
+        get_restaurants_mock.return_value = restaurants
 
-        response = self.event_helper(user_id, self.data, True, 'POST')
-        event = Event.objects.get(creator=user_id)
+        response = self.event_helper(user, self.data, True, 'POST')
+        event = Event.objects.get(creator=user.id)
+
         self.assertEqual(len(event.tournament_set.values()), len(restaurants))
+        for tournament in event.tournament_set.values():
+            self.assertTrue(tournament['restaurant_id'] in restaurant_ids)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
