@@ -190,7 +190,7 @@ class EventDetails extends Component {
             Invite Code: {inviteCode}
           </Text>
           <Text>
-            Status: {votingComplete ? 'Complete' : `In Progress (Round ${roundNumber})`}
+            Status: {votingComplete || isPast ? 'Complete' : `In Progress (Round ${roundNumber})`}
           </Text>
           {!votingComplete &&
             <Button success block style={StyleSheet.flatten(styles.btn)}
