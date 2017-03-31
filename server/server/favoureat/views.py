@@ -26,6 +26,7 @@ from server.models import (
 )
 from server.favoureat.recommendation_service import RecommendationService
 from server.favoureat.fcm_service import FcmService
+from server.favoureat.tasks import update_next_round
 import string
 import random
 from rest_framework.views import APIView
@@ -303,6 +304,9 @@ class EventView(APIView):
             )
             event.save()
 
+            # Schedule a job to be run later
+            update_next_round.apply_async(args=[event], countdown=event.round_duration * 3600)
+
             # Attach the user with the event
             event_user_attach = EventUserAttach(user=user, event=event)
             event_user_attach.save()
@@ -490,6 +494,8 @@ class IndividualTournamentView(APIView):
         event.round_num += 1
         event.round_start = timezone.now()
         event.save()
+        # Schedule a job to be run later
+        update_next_round.apply_async(args=[event], countdown=event.round_duration * 3600)
 
         num_remaining = 0
         winner = None
@@ -582,6 +588,16 @@ class IndividualTournamentView(APIView):
         # Tournament restaurants swiping stage
         paired_tournaments_data = [list(x) for x in zip(
             data[:len(data)/2], data[len(data)/2:])]
+
+        # Store pairings in database
+        for p in paired_tournaments_data:
+            t1 = Tournament.objects.get(pk=p[0]['id'])
+            t2 = Tournament.objects.get(pk=p[1]['id'])
+            t1.competitor = t2
+            t2.competitor = t1
+            t1.save()
+            t2.save()
+
         # If there are odd number of restaurants, then carry the extra one to next round.
         if len(data) % 2 != 0:
             num_votes = EventUserAttach.objects.filter(event=event_id).count()
