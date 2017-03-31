@@ -4,6 +4,7 @@ from server.favoureat.geo_utils import GeoUtils
 from recommends.providers import recommendation_registry
 import copy
 from itertools import chain
+import random
 
 from server.models import Swipe, Restaurant, Cuisine, EventUserAttach
 
@@ -12,6 +13,7 @@ class RecommendationService(object):
     Provides restaurant recommendations to users.
     """
     QUERY_LIMIT = 20 # counts from 0
+    RECOMMENDATION_LIMIT = QUERY_LIMIT / 2
 
     def get_restaurants(self, user_id, preference):
         """
@@ -51,11 +53,21 @@ class RecommendationService(object):
         # retrieve recommended restaurants that fit preferences
         rec_kwargs = copy.copy(kwargs)
         rec_kwargs['pk__in'] = list(recommendations)
-        recommended_restaurants = Restaurant.objects.filter(**rec_kwargs)[:self.QUERY_LIMIT]
+        recommended_restaurants = Restaurant.objects.filter(**rec_kwargs)[:self.RECOMMENDATION_LIMIT]
+
+        print "recommended restaurants", len(recommended_restaurants)
+        for r in recommended_restaurants:
+            print r.yelp_id
+        recommended_restaurants_ids = recommended_restaurants.values_list('yelp_id', flat=True)
 
         # if number of recommendations isn't enough, get more restaurants
         num_other = self.QUERY_LIMIT - len(recommended_restaurants)
-        other_restaurants = Restaurant.objects.filter(**kwargs)[:num_other]
+        other_restaurants = Restaurant.objects.filter(**kwargs).exclude(
+            yelp_id__in=recommended_restaurants_ids
+        ).order_by('?')[:num_other]
         restaurants = list(chain(recommended_restaurants, other_restaurants))
+
+        # randomize order to prevent list from looking always the same
+        random.shuffle(restaurants)
 
         return restaurants
