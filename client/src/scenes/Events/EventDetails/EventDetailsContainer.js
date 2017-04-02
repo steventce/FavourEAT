@@ -26,14 +26,16 @@ const mapStateToProps = function(state, props) {
   };
 };
 
-const mapDispatchToProps = function(dispatch) {
+const mapDispatchToProps = function(dispatch, props) {
   return {
     editEventDetails: (accessToken, userId, eventId, eventDetails) => {
       if (!validateEditEvent(eventDetails)) return;
       dispatch(editEventDetails(accessToken, userId, eventId, eventDetails));
     },
     cancelEvent: (accessToken, userId, eventId) => {
-      dispatch(cancelEvent(accessToken, userId, eventId));
+      dispatch(cancelEvent(accessToken, userId, eventId)).then(() => {
+        props.navigation.goBack();
+      });
     },
     getRound: (accessToken, eventId) => {
       dispatch(getRound(accessToken, eventId));
