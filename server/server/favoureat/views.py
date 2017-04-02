@@ -365,7 +365,7 @@ class JoinEventView(APIView):
                 title = '{name} updated'.format(name=event_detail.name)
                 body = '{first_name} has joined the event {name}'.format(
                     first_name=user.first_name, name=event_detail.name)
-                fcm_service.notify_creator(user, title, body)
+                fcm_service.notify_creator(event.creator, title, body)
             else:
                 return Response("User has already joined the event", status=status.HTTP_409_CONFLICT)
 
@@ -553,14 +553,15 @@ class IndividualTournamentView(APIView):
             event_details.save()
 
             # Notify participants of update
-            fcm_service = FcmService()
-            title = '{name} updated'.format(name=event_details.name)
-            restaurant_data = json.loads(event_details.restaurant.json)
-            winner_str = restaurant_data['name']
-            body = '{first_name} updated the winning restaurant to {name}'.format(
-                first_name=event.creator.first_name, name=winner_str)
+            if event.is_group:
+                fcm_service = FcmService()
+                title = '{name} updated'.format(name=event_details.name)
+                restaurant_data = json.loads(event_details.restaurant.json)
+                winner_str = restaurant_data['name']
+                body = '{first_name} updated the winning restaurant to {name}'.format(
+                    first_name=event.creator.first_name, name=winner_str)
 
-            fcm_service.notify_all_participants(event.id, title, body)
+                fcm_service.notify_all_participants(event.id, title, body)
 
         return True
 
