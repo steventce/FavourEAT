@@ -65,11 +65,12 @@ class TournamentContainer extends Component {
       */
       if (tournamentArr.length == 1 && !Array.isArray(tournamentArr[0])) {
         this.props.navigation.navigate('Winner', { restaurant: tournamentArr[0] });
-      } else if (this.state.cards.length == 0 || this.state.cards.length > this.props.tournamentArr.length) {
+      } else if (this.state.cards.length == 0 || this.state.cards.length >= tournamentArr.length) {
         /*  A tournament rounds is returned in an array of pairs
         *   of restaurants i.e. [ [a,b], [c,d] ... ].
         *   Since only one restaurant from the pairing can advance,
-        *   the next round's array must be shorter length.
+        *   the next round's array must be shorter length
+        *   or equal if there are 3 remaining restaurants.
         */
         this.setState({ cards: tournamentArr });
         var top = [];
