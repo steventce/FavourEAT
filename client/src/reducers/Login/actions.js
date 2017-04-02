@@ -1,4 +1,5 @@
 import { AsyncStorage } from 'react-native';
+import { NavigationActions } from 'react-navigation';
 import * as actionTypes from './actionTypes';
 import { API_BASE_URL } from '../../config/env';
 import { LoginManager } from 'react-native-fbsdk';
@@ -62,6 +63,15 @@ export function logout(accessToken, userId) {
     })
     .catch((error) => console.error(error));
   }
+}
+
+export function resetToLogout() {
+  return NavigationActions.reset({
+    index: 0,
+    actions: [
+      NavigationActions.navigate({ routeName: 'Login' })
+    ]
+  });
 }
 
 export function setToken(token) {
