@@ -79,4 +79,26 @@ To execute the Python unit tests, run:
 python manage.py test
 ```
 
+To allow scheduled jobs to run on celery, do the following:
+Install redis into <path-to-repo>/server/ : https://redis.io/topics/quickstart
+
+```
+export PYTHONPATH=<path-to-repo>/server:$PYTHONPATH
+
+cd <path-to-repo>/server/redis-stable
+redis-server
+```
+In a separate terminal, run:
+```
+cd <path-to-repo>/server
+env/bin/celery --app=server.celery:app worker --loglevel=INFO
+```
+
+To test if the job ran correctly:
+```
+python manage.py shell
+from server.favoureat.tasks import update_next_round
+update_next_round.apply_async(args=[<event_id>], countdown=<time in seconds>)
+```
+
 

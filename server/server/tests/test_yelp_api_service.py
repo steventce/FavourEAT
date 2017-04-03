@@ -43,7 +43,9 @@ class YelpApiTests(TestCase):
         default_restaurants = [{
             'name': 'Sandy Diner',
             'id': x,
-            'image_url': 'http://...'
+            'image_url': 'http://...',
+            'price': '$',
+            'coordinates': {}
         } for x in xrange(self.MAX_RESTAURANTS + 1)]
         get_token_mock.return_value = 'ABC'
         get_restaurants_mock.return_value = {'businesses': default_restaurants}
