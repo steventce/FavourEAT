@@ -114,12 +114,13 @@ class YelpAPIService(object):
 
                     cuisines = restaurant.get("categories")
                     saved_cuisines = []
-                    for cuisine in cuisines:
-                        saved_cuisine, created = Cuisine.objects.get_or_create(
-                            name=cuisine.get('title'),
-                            category=cuisine.get('alias')
-                        )
-                        saved_cuisines.append(saved_cuisine)
+                    if cuisines != None:
+                        for cuisine in cuisines:
+                            saved_cuisine, created = Cuisine.objects.get_or_create(
+                                name=cuisine.get('title'),
+                                category=cuisine.get('alias')
+                            )
+                            saved_cuisines.append(saved_cuisine)
 
                     coordinates = restaurant.get('coordinates')
                     price = restaurant.get('price').count('$')

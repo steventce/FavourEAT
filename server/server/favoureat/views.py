@@ -27,6 +27,7 @@ from server.models import (
 )
 from server.favoureat.recommendation_service import RecommendationService
 from server.favoureat.fcm_service import FcmService
+from server.favoureat.tasks import update_next_round
 import string
 import random
 from rest_framework.views import APIView
@@ -57,16 +58,18 @@ class UserSwipeView(APIView):
     POST: add a swipe decision for user
     """
     def post(self, request, user, format=None):
-        user = User.objects.get(pk=user)
-        if user.id != request.user.id:
-            return Response('Invalid user id', status=status.HTTP_401_UNAUTHORIZED)
-        swipe, created = Swipe.objects.get_or_create(yelp_id=request.data['yelp_id'], user=user)
-
-        if 'right_swipe_count' in request.data.keys():
-            request.data['right_swipe_count'] += swipe.right_swipe_count
-        if 'left_swipe_count' in request.data.keys():
-            request.data['left_swipe_count'] += swipe.left_swipe_count
-        serializer = SwipeSerializer(swipe, data=request.data, partial=True)
+        if User.objects.filter(id=user).count() == 0:
+            return Response("User not found", status=status.HTTP_404_NOT_FOUND)
+        request.data['user'] = user
+        swipe = Swipe.objects.filter(yelp_id=request.data['yelp_id'], user=request.data['user']).first()
+        if swipe is not None:
+            if 'right_swipe_count' in request.data.keys():
+               request.data['right_swipe_count'] += swipe.right_swipe_count
+            if 'left_swipe_count' in request.data.keys():
+               request.data['left_swipe_count'] += swipe.left_swipe_count
+            serializer = SwipeSerializer(swipe, data=request.data)
+        else:
+            serializer = SwipeSerializer(None, data=request.data)
      
         if serializer.is_valid():
             serializer.save()
@@ -304,6 +307,9 @@ class EventView(APIView):
             )
             event.save()
 
+            # Schedule a job to be run later
+            update_next_round.apply_async(args=[event], countdown=event.round_duration * 3600)
+
             # Attach the user with the event
             event_user_attach = EventUserAttach(user=user, event=event)
             event_user_attach.save()
@@ -362,7 +368,7 @@ class JoinEventView(APIView):
                 title = '{name} updated'.format(name=event_detail.name)
                 body = '{first_name} has joined the event {name}'.format(
                     first_name=user.first_name, name=event_detail.name)
-                fcm_service.notify_creator(user, title, body)
+                fcm_service.notify_creator(event.creator, title, body)
             else:
                 return Response("User has already joined the event", status=status.HTTP_409_CONFLICT)
 
@@ -491,6 +497,8 @@ class IndividualTournamentView(APIView):
         event.round_num += 1
         event.round_start = timezone.now()
         event.save()
+        # Schedule a job to be run later
+        update_next_round.apply_async(args=[event], countdown=event.round_duration * 3600)
 
         num_remaining = 0
         winner = None
@@ -542,20 +550,21 @@ class IndividualTournamentView(APIView):
                     tournament1.delete()
 
         # If only 1 restaurant left, then update event details with the winner.
-        if num_remaining == 1:
+        if Tournament.objects.filter(event=event).count() == 1:
             event_details = event.event_detail
             event_details.restaurant = winner
             event_details.save()
 
             # Notify participants of update
-            fcm_service = FcmService()
-            title = '{name} updated'.format(name=event_details.name)
-            restaurant_data = json.loads(event_details.restaurant.json)
-            winner_str = restaurant_data['name']
-            body = '{first_name} updated the winning restaurant to {name}'.format(
-                first_name=event.creator.first_name, name=winner_str)
+            if event.is_group:
+                fcm_service = FcmService()
+                title = '{name} updated'.format(name=event_details.name)
+                restaurant_data = json.loads(event_details.restaurant.json)
+                winner_str = restaurant_data['name']
+                body = '{first_name} updated the winning restaurant to {name}'.format(
+                    first_name=event.creator.first_name, name=winner_str)
 
-            fcm_service.notify_all_participants(event.id, title, body)
+                fcm_service.notify_all_participants(event.id, title, body)
 
         return True
 
@@ -583,6 +592,16 @@ class IndividualTournamentView(APIView):
         # Tournament restaurants swiping stage
         paired_tournaments_data = [list(x) for x in zip(
             data[:len(data)/2], data[len(data)/2:])]
+
+        # Store pairings in database
+        for p in paired_tournaments_data:
+            t1 = Tournament.objects.get(pk=p[0]['id'])
+            t2 = Tournament.objects.get(pk=p[1]['id'])
+            t1.competitor = t2
+            t2.competitor = t1
+            t1.save()
+            t2.save()
+
         # If there are odd number of restaurants, then carry the extra one to next round.
         if len(data) % 2 != 0:
             num_votes = EventUserAttach.objects.filter(event=event_id).count()

@@ -72,3 +72,4 @@ class Tournament(models.Model):
     event = models.ForeignKey(Event)
     restaurant = models.ForeignKey(Restaurant)
     vote_count = models.IntegerField(default=0)
+    competitor = models.ForeignKey('server.Tournament', null=True, blank=True)
