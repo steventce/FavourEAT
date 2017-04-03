@@ -56,6 +56,7 @@ class EventDetails extends Component {
     this.hasEventDetailsChanged = this.hasEventDetailsChanged.bind(this);
     this.handleContinueVoting = this.handleContinueVoting.bind(this);
     this.handleSaveChanges = this.handleSaveChanges.bind(this);
+    this.verifyCancelEvent = this.verifyCancelEvent.bind(this);
     this.handleCancelEvent = this.handleCancelEvent.bind(this);
     this.submitRating = this.submitRating.bind(this);
   }
@@ -80,6 +81,18 @@ class EventDetails extends Component {
     } else {
       this.props.navigation.navigate('Tournament', { eventId });
     }
+  }
+
+  verifyCancelEvent() {
+    const isPast = !isUpcoming(this.props.userEvent);
+    const cancelOrDelete = isPast ? 'delete' : 'cancel';
+    Alert.alert(
+      `Are you sure you want to ${cancelOrDelete} this event?`,
+      'Participants will be notified.',
+      [
+        { text: 'Cancel' },
+        { text: 'Ok', onPress: this.handleCancelEvent }
+      ]);
   }
 
   handleCancelEvent() {
@@ -256,7 +269,7 @@ class EventDetails extends Component {
               <Text>Save Changes</Text>
             </Button>
             <Button success block style={StyleSheet.flatten(styles.btn)}
-              onPress={this.handleCancelEvent}>
+              onPress={this.verifyCancelEvent}>
               <Text>{isPast ? 'Delete Event' : 'Cancel Event'}</Text>
             </Button>
           </View>
