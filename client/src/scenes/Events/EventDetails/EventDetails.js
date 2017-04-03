@@ -9,7 +9,8 @@ import {
   TextInput,
   Modal,
   Slider,
-  Linking
+  Linking,
+  Dimensions
 } from 'react-native';
 import {
   Button,
@@ -31,7 +32,7 @@ import PopupModal from '../../../components/PopupModal';
 
 import styles from './styles';
 import { colors, colorsList } from '../../../styles/common';
-import { logo } from '../../../config/images';
+import { inProgress } from '../../../config/images';
 
 const PARALLAX_HEADER_HEIGHT = 225;
 
@@ -155,9 +156,11 @@ class EventDetails extends Component {
         parallaxHeaderHeight={PARALLAX_HEADER_HEIGHT}
         renderBackground={() => {
           return (
+            <View style={{flex: 1, width: null, height: null}}>
             <Image
-              source={votingComplete ? {uri: restaurant.image_url} : logo}
-              resizeMode="cover" style={{ height: PARALLAX_HEADER_HEIGHT }} />
+              source={votingComplete ? {uri: restaurant.image_url} : inProgress}
+              resizeMode="cover" style={{height: PARALLAX_HEADER_HEIGHT, width: Dimensions.get('window').width }}/>
+            </View>
           );
         }}
         renderForeground={() => {
@@ -192,7 +195,7 @@ class EventDetails extends Component {
           <Text>
             Status: {votingComplete || isPast ? 'Complete' : `In Progress (Round ${roundNumber})`}
           </Text>
-          {!votingComplete &&
+          {(!votingComplete && !isPast) &&
             <Button success block style={StyleSheet.flatten(styles.btn)}
               onPress={this.handleContinueVoting}>
               <Text>Start Round</Text>
@@ -259,7 +262,6 @@ class EventDetails extends Component {
           </View>
         </Card>)}
 
-        { /* TODO: Show a list of participants */ }
         <Card style={StyleSheet.flatten(styles.card)}>
           {this.renderCardTitle('Participants')}
           {participants.map((participant, i) => {

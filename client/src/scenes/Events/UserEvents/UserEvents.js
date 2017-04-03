@@ -7,7 +7,8 @@ import {
   TouchableNativeFeedback,
   ListView,
   RefreshControl,
-  Image
+  Image,
+  Dimensions
 } from 'react-native';
 import {
   Container,
@@ -24,7 +25,7 @@ import moment from 'moment';
 import ParallaxScrollView from 'react-native-parallax-scroll-view';
 import { isUpcoming } from '../../../utils/common';
 
-import backgroundImg from '../../../images/suika.jpg';
+import { homeBackground } from '../../../config/images';
 import { colors } from '../../../styles/common';
 import styles, { PARALLAX_HEADER_HEIGHT } from './styles';
 
@@ -186,8 +187,11 @@ class UserEvents extends Component {
               renderBackground={() => {
                 return (
                   <Image
-                    source={backgroundImg}
-                    resizeMode="cover" style={{ height: PARALLAX_HEADER_HEIGHT }} />
+                    source={homeBackground}
+                    resizeMode="cover" style={{
+                      height: PARALLAX_HEADER_HEIGHT,
+                      width: Dimensions.get('window').width
+                    }} />
                 );
               }}
               renderForeground={() => {

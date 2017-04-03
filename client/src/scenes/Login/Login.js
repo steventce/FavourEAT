@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import { Image, View, Button } from 'react-native';
+import { Image, View, Button, Dimensions, StyleSheet } from 'react-native';
 import { Container, Content } from 'native-base';
 import LoginButton from '../../components/LoginButton';
 
 import styles from './styles';
-import { logo } from '../../config/images';
+import { logo, splash } from '../../config/images';
 
 class Login extends Component {
   static navigationOptions = { header: { visible: false } }
@@ -13,6 +13,11 @@ class Login extends Component {
     return (
       <Container>
         <Content contentContainerStyle={styles.container}>
+          <Image source={splash} resizeMode="cover"
+            style={styles.background}>
+          </Image>
+          <View style={{...StyleSheet.flatten(styles.background), backgroundColor: 'rgba(0,0,0,0.7)' }}>
+          </View>
           <View style={styles.imageContainer}>
             <Image style={styles.logo} source={logo} />
           </View>

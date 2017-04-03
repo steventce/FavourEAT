@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
     marginBottom: 15
   },
   foreground: {
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     height: PARALLAX_HEADER_HEIGHT
   },
   thumbnail: {
