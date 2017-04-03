@@ -48,6 +48,10 @@ class RecommendationService(object):
             'longitude__range': (min_lon, max_lon),
             'price': price
         }
+        distance_query = {
+            'where': ['acos(sin(radians(%s)) * sin(radians(latitude)) + cos(radians(%s)) * cos(radians(latitude)) * cos(radians(longitude - %s))) <= %s'],
+            'params': [current_lat, current_lat, current_lon, ang_radius]
+        }
 
         if len(cuisines) > 0:
             kwargs['cuisines__in'] = list(cuisines)
@@ -55,18 +59,16 @@ class RecommendationService(object):
         # retrieve recommended restaurants that fit preferences
         rec_kwargs = copy.copy(kwargs)
         rec_kwargs['pk__in'] = list(recommendations)
-        recommended_restaurants = Restaurant.objects.filter(**rec_kwargs).extra(where=['acos(sin(%s) * sin(latitude) + cos(%s) * cos(latitude) * cos(longitude - %s)) <= %s'], params=[current_lat, current_lat, current_lon, ang_radius])[:self.RECOMMENDATION_LIMIT]
+        recommended_restaurants = Restaurant.objects.filter(**rec_kwargs).extra(**distance_query)[:self.RECOMMENDATION_LIMIT]
 
-        print "recommended restaurants", len(recommended_restaurants)
-        for r in recommended_restaurants:
-            print r.yelp_id
         recommended_restaurants_ids = recommended_restaurants.values_list('yelp_id', flat=True)
 
         # if number of recommendations isn't enough, get more restaurants
         num_other = self.QUERY_LIMIT - len(recommended_restaurants)
         other_restaurants = Restaurant.objects.filter(**kwargs).exclude(
             yelp_id__in=recommended_restaurants_ids
-        ).order_by('?')[:num_other]
+        ).extra(**distance_query).order_by('?')[:num_other]
+
         restaurants = list(chain(recommended_restaurants, other_restaurants))
 
         # randomize order to prevent list from looking always the same
