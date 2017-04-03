@@ -3,27 +3,49 @@ import { NavigationActions } from 'react-navigation';
 import * as actionTypes from './actionTypes';
 import { API_BASE_URL } from '../../config/env';
 import { LoginManager } from 'react-native-fbsdk';
+import moment from 'moment';
 
-export function login(accessToken) {
+export const grantTypes = {
+  CONVERT: 'convert_token',
+  REFRESH: 'refresh_token'
+}
+
+export function login(token, grantType) {
+  let url = '';
+  const headers = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+  }
+
+  const body = {};
+  if (grantType === grantTypes.CONVERT) {
+    headers.Authorization = `Bearer facebook ${token}`;
+    body.access_token = token;
+    url = `${API_BASE_URL}v1/token/`;
+  } else {
+    body.refresh_token = token;
+    url = `${API_BASE_URL}v1/refresh-token/`;
+  }
+
   return function(dispatch) {
     AsyncStorage.removeItem('app_access_token');
-    return fetch(`${API_BASE_URL}v1/token/`, {
+    AsyncStorage.removeItem('token');
+    return globalFetch(url, {
       method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer facebook ${accessToken}`
-      },
-      body: JSON.stringify({ access_token: accessToken })
+      headers,
+      body: JSON.stringify(body)
     }).then((response) => {
       if (!response.ok) throw Error();
       return response.json();
     }).then((json) => {
+      // Calculate the token expiry
+      json.expires_on = moment().add(json.expires_in, 's').toDate();
       AsyncStorage.setItem('token', JSON.stringify(json));
       AsyncStorage.setItem('app_access_token', json.access_token);
       AsyncStorage.setItem('user_id', String(json.user_id));
       dispatch(loginSuccess(json));
-    }).catch(() => {
+    }).catch((err) => {
+      console.log(err);
       dispatch(loginError());
     });
   }
@@ -41,6 +63,16 @@ export function saveFcmToken(accessToken, userId, fcmToken) {
       body: JSON.stringify({ fcm_token: fcmToken })
     })
     .catch((error) => console.error(error));
+  }
+}
+
+export function simpleLogout() {
+  return function(dispatch) {
+    LoginManager.logOut();
+    AsyncStorage.removeItem('token');
+    AsyncStorage.removeItem('app_access_token');
+    AsyncStorage.removeItem('user_id');
+    dispatch(logoutSuccess());
   }
 }
 
@@ -95,7 +127,8 @@ function loginSuccess(token) {
     type: actionTypes.LOGIN_SUCCESS,
     status: 'success',
     msg: '',
-    token
+    token,
+    isLoggedIn: true
   };
 }
 
@@ -113,6 +146,7 @@ function logoutSuccess() {
   return {
     type: actionTypes.LOGOUT_SUCCESS,
     status: 'success',
-    msg: ''
+    msg: '',
+    isLoggedIn: false
   };
 }

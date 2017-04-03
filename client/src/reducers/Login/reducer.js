@@ -1,6 +1,6 @@
 import * as actionTypes from './actionTypes';
 
-const initialState = { token: {}, status: '', msg: '' };
+const initialState = { token: {}, status: '', msg: '', isLoggedIn: false };
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
@@ -9,7 +9,8 @@ const reducer = (state = initialState, action) => {
         ...state,
         status: action.status,
         msg: action.msg,
-        token: { ...action.token }
+        token: { ...action.token },
+        isLoggedIn: action.isLoggedIn
       };
     case actionTypes.LOGIN_ERROR:
       return {
@@ -21,7 +22,8 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         status: action.status,
-        msg: action.msg
+        msg: action.msg,
+        isLoggedIn: action.isLoggedIn
       };
     case actionTypes.SET_TOKEN:
       return {

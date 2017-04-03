@@ -14,7 +14,7 @@ import FCM, {
   NotificationType
 } from 'react-native-fcm';
 
-import { login, saveFcmToken, setToken, setProfilePicture } from '../../reducers/Login/actions';
+import { login, saveFcmToken, setToken, setProfilePicture, grantTypes } from '../../reducers/Login/actions';
 import Login from './Login';
 
 class LoginContainer extends Component {
@@ -31,7 +31,7 @@ class LoginContainer extends Component {
       if (!result.isCancelled) {
         AccessToken.getCurrentAccessToken().then((data) => {
           const accessToken = data.accessToken.toString();
-          this.props.dispatch(login(accessToken));
+          this.props.dispatch(login(accessToken, grantTypes.CONVERT));
         });
       }
     },
@@ -72,10 +72,10 @@ class LoginContainer extends Component {
 
   componentWillReceiveProps(nextProps) {
     const { navigate } = this.props.navigation;
-    const { status, msg, token } = nextProps;
+    const { status, msg, token, isLoggedIn } = nextProps;
 
     // If the user logins into the app successfully
-    if (status === 'success') {
+    if (isLoggedIn && !this.props.isLoggedIn) {
       this.handleFCMInit(token.access_token, token.user_id);
       navigate('HomeDrawer');
     }
@@ -87,6 +87,7 @@ class LoginContainer extends Component {
 
   loadInitialState = async() => {
     const { navigate } = this.props.navigation;
+
     try {
       const tokenStr = await AsyncStorage.getItem('token');
       if (tokenStr) {
@@ -107,8 +108,11 @@ class LoginContainer extends Component {
   }
 
   componentWillUnmount() {
-    this.notificationListener.remove();
-    this.refreshTokenListener.remove();
+    if (this.notificationListener)
+      this.notificationListener.remove();
+
+    if (this.refreshTokenListener)
+      this.refreshTokenListener.remove();
   }
 
   render() {

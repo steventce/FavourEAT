@@ -3,7 +3,6 @@ import {
   StyleSheet,
   Text,
   View,
-  Alert,
   TouchableNativeFeedback,
   ListView,
   RefreshControl,
