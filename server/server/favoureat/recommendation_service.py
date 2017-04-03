@@ -28,7 +28,9 @@ class RecommendationService(object):
         radius = preference.get('radius')
         price = preference.get('price')
         cuisine_types = preference.get('categories').split(',')
-        min_coords, max_coords = GeoUtils().get_bounding_box((current_lat, current_lon), radius)
+        geo_utils = GeoUtils()
+        ang_radius = geo_utils.get_angular_radius(radius)
+        min_coords, max_coords = geo_utils.get_bounding_box((current_lat, current_lon), radius)
 
         min_lat, min_lon = min_coords
         max_lat, max_lon = max_coords
@@ -39,7 +41,7 @@ class RecommendationService(object):
 
         current_user = User.objects.get(pk=user_id)
         recommendations = self.recommender.storage.get_recommendations_for_user(current_user).values_list('object_id', flat=True)
-        # TODO: have to do a more complicated query to get restaurants within a circular radius rather than a bounding box
+
         restaurants = []
         kwargs = {
             'latitude__range': (min_lat, max_lat),
@@ -53,7 +55,7 @@ class RecommendationService(object):
         # retrieve recommended restaurants that fit preferences
         rec_kwargs = copy.copy(kwargs)
         rec_kwargs['pk__in'] = list(recommendations)
-        recommended_restaurants = Restaurant.objects.filter(**rec_kwargs)[:self.RECOMMENDATION_LIMIT]
+        recommended_restaurants = Restaurant.objects.filter(**rec_kwargs).extra(where=['acos(sin(%s) * sin(latitude) + cos(%s) * cos(latitude) * cos(longitude - %s)) <= %s'], params=[current_lat, current_lat, current_lon, ang_radius])[:self.RECOMMENDATION_LIMIT]
 
         print "recommended restaurants", len(recommended_restaurants)
         for r in recommended_restaurants:
