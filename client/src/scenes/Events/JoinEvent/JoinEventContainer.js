@@ -31,8 +31,9 @@ class JoinEventContainer extends Component {
 
   componentWillMount() {
     const { access_token, user_id } = this.props.auth.token;
+    const { events } = this.props.event;
     // Save the user's events
-    this.setState({ userEvents: this.props.events, access_token, user_id });
+    this.setState({ userEvents: events, access_token, user_id });
   }
 
   componentWillReceiveProps(nextProps) {
@@ -47,9 +48,6 @@ class JoinEventContainer extends Component {
       if (this.state.userEvents.length < events.length) {
         console.log(events[events.length - 1]);
         this.props.navigation.navigate('EventDetails',  { userEvent: events[events.length - 1] });
-      } else {
-        // already participating in this event
-        Alert.alert('Error', 'Already registered in this event.');
       }
     }
   }
