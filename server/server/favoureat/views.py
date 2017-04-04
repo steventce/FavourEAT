@@ -612,14 +612,17 @@ class IndividualTournamentView(APIView):
 
         return Response(paired_tournaments_data)
 
-    def put(self, request, event_id, tournament_id, format=None):
+    def put(self, request, event_id, format=None):
         """
         Increments the vote count of a tournament restaurant.
         """
         try:
-            tournament = Tournament.objects.get(pk=tournament_id)
-            tournament.vote_count += 1
-            tournament.save()
+            tournaments = Tournament.objects.filter(event=event_id)
+            for t in tournaments:
+                if t.id in request.data['tournaments']:
+                    t.vote_count += 1
+                    t.save()
+
             # Check if tournament round is over. If so, handle it.
             if 'is_finished' in request.data.keys() and request.data['is_finished']:
                 event = self.get_object(event_id)
