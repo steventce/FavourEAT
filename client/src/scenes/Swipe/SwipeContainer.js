@@ -45,15 +45,21 @@ class SwipeContainer extends Component {
       // last restaurant needs to include specific data
       this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId,
         restaurants[restaurants.length - 1].id, true, this.state.cards,
-        () => this.gotoTournament()));
+        (isNext) => this.gotoTournament(isNext)));
     } catch (error) {
       Alert.alert('Error', error.message);
     }
   }
 
-  gotoTournament() {
-    // TODO: handle back button
-    this.props.navigation.navigate('Tournament', { eventId: this.state.eventId });
+  gotoTournament(isNext) {
+    // can continue?
+    if (isNext) {
+      this.props.navigation.navigate('Tournament', { eventId: this.state.eventId });
+    } else {
+      Alert.alert('Votes casted!', 'Please wait for next round.',
+        [{text:'OK', onPress: () => this.props.navigation.navigate('HomeDrawer')}],
+        {cancelable: false});
+    }
   }
 
   async componentDidMount() {

@@ -35,11 +35,22 @@ class TournamentContainer extends Component {
       // last restaurant needs to include specific data
       this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId,
         restaurants[restaurants.length - 1].id, true, this.state.cards,
-        () => {
-          this.setState({ topCards: [], botCards: [] }, () => this.getTournamentRound());
+        (isNext) => {
+          this.setState({ topCards: [], botCards: [] }, () => this.callbackFunction(isNext));
         }));
     } catch (error) {
       Alert.alert('Error', error.message);
+    }
+  }
+
+  callbackFunction(isNext) {
+    // can continue?
+    if (isNext) {
+      this.getTournamentRound();
+    } else {
+      Alert.alert('Votes casted!', 'Please wait for next round.',
+        [{text:'OK', onPress: () => this.props.navigation.navigate('HomeDrawer')}],
+        {cancelable: false});
     }
   }
 
