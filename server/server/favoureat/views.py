@@ -587,7 +587,7 @@ class IndividualTournamentView(APIView):
                     tournament1.delete()
 
         # If only 1 restaurant left, then update event details with the winner.
-        if num_remaining == 1:
+        if Tournament.objects.filter(event=event).count() == 1:
             event_details = event.event_detail
             event_details.restaurant = winner
             event_details.save()
