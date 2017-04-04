@@ -4,6 +4,7 @@ export const colors = {
   APP_PRIMARY_LIGHT: '#ffb318',
   APP_PRIMARY_DARK: '#5A5A5A',
   FADED_TEXT_DARK: '#989898',
+  LINK: '#03A9F4',
   NOPE_COLOR: '#6C8CE6',
   YUP_COLOR: '#F36D6D',
   RATING_COLOR: '#bd081c'
