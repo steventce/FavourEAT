@@ -28,19 +28,10 @@ class TournamentContainer extends Component {
   }
 
   putTournamentRound(restaurants) {
-    try {
-      for (var i = 0; i < restaurants.length - 1; i++) {
-        this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId, restaurants[i].id));
-      }
-      // last restaurant needs to include specific data
-      this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId,
-        restaurants[restaurants.length - 1].id, true, this.state.cards,
-        () => {
-          this.setState({ topCards: [], botCards: [] }, () => this.getTournamentRound());
-        }));
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
+    var idArr = [];
+    restaurants.map((r) => idArr.push(r.id));
+    this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId, idArr, this.state.cards,
+      () => {this.setState({ topCards: [], botCards: [] }, () => this.getTournamentRound())}));
   }
 
   async componentWillMount() {

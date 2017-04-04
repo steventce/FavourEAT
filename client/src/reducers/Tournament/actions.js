@@ -22,24 +22,20 @@ export function getRound(accessToken, eventId) {
     }
 };
 
-export function putRound(accessToken, eventId, tournamentId, isFinished=false, tournamentData=null, callback) {
-    console.log('putRound ' + tournamentId);
-    var requestBody = null;
-    if (isFinished) {
-        requestBody = JSON.stringify({
-            is_finished: 1,
-            tournament_data: tournamentData
-        })
-    }
+export function putRound(accessToken, eventId, tournamentArr, tournamentData, callback) {
     return function (dispatch) {
-        fetch(`${API_BASE_URL}v1/events/${eventId}/tournament/${tournamentId}/`, {
+        fetch(`${API_BASE_URL}v1/events/${eventId}/tournament/`, {
             method: 'PUT',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`
             },
-            body: requestBody
+            body: JSON.stringify({
+                is_finished: 1,
+                tournament_data: tournamentData,
+                tournaments: tournamentArr
+            })
         })
         .then((response) => {
             if (!response.ok) throw Error();            
