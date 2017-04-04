@@ -84,10 +84,10 @@ class RestaurantDetails extends Component {
       return (
         <View key={index} style={[styles.hours]}>
           <Left>
-            <Text style={[styles.txtColor, { fontSize: 16 }]}>{displayedDay}</Text>
+            <Text style={[styles.txtColor, { fontSize: 15 }]}>{displayedDay}</Text>
           </Left>
           <Right>
-            <Text style={[styles.txtColor, { fontSize: 16 }]}>{displayedTime}</Text>
+            <Text style={[styles.txtColor, { fontSize: 15 }]}>{displayedTime}</Text>
           </Right>
         </View>
       );
@@ -110,7 +110,7 @@ class RestaurantDetails extends Component {
             <Text style={[styles.reviewRating, styles.txtColor]}>{rev['user']['name']} </Text>
             {this.getReviewRating(rev)}
           </View>
-          <Text style={styles.reviewTime}>{rev['time_created']}</Text>
+          <Text style={styles.reviewTime}>{moment(rev['time_created']).format('h:mm A on ddd, MMM Do')}</Text>
           <Text style={[styles.reviewTxt, styles.txtColor]}>{rev['text']}</Text>
         </View>)
     }
@@ -167,7 +167,7 @@ class RestaurantDetails extends Component {
                   {restaurant.name}
                 </Text>
                 {this.getRating(restaurant.rating, restaurant)}
-                <Text style={{ fontSize: 16, color: '#444' }}>{restaurant.address}</Text>
+                <Text style={{ fontSize: 15, color: '#444' }}>{restaurant.address}</Text>
               </View>
             </Card>
             {swipeable &&
@@ -221,11 +221,6 @@ class RestaurantDetails extends Component {
               onPress={() => navigate('Map', { restaurant: restaurant })}>
               <Icon name='locate' />
             </NBButton>
-            {/*
-                <NBButton style={{ backgroundColor: '#EFBE79' }}>
-                  <Icon name='restaurant' />
-                </NBButton>
-              */}
           </Fab>
         </Container>
       );
