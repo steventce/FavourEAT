@@ -171,7 +171,11 @@ class Preferences extends Component {
 
   handleDoneClick()  {
     this.props.createEvent(this.state.appAccessToken, this.state.userId, this.state.preferences);
-    this.props.startTournament();
+    const currentLocation = {
+      latitude: this.state.preferences.latitude,
+      longitude: this.state.preferences.longitude,
+    }
+    this.props.startTournament(currentLocation);
   }
 
   render() {

@@ -83,7 +83,7 @@ class SwipeContainer extends Component {
   }
 
   render() {
-    const { navigate } = this.props.navigation;
+    const { navigate, state } = this.props.navigation;
     if (this.state.cards.length == 0) {
       return <Spinner color='red' style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} />
     }
@@ -92,6 +92,7 @@ class SwipeContainer extends Component {
       <Swipe postSwipe={this.postSwipe.bind(this)}
         nextRound={this.nextRound.bind(this)}
         navigate={navigate}
+        currentLocation={state.params.currentLocation}
         Cards={this.state.cards} />
     );
   }

@@ -15,8 +15,8 @@ const mapDispatchToProps = (dispatch, ownProps) => {
       let eventDetail = (ownProps.navigation.state.params) ? ownProps.navigation.state.params.eventDetail : null;
       dispatch(createEvent(access_token, user_id, eventDetail, preferences));
     },
-    startTournament: () => {
-      ownProps.navigation.navigate('Swipe');
+    startTournament: (currentLocation) => {
+      ownProps.navigation.navigate('Swipe', {currentLocation});
     }
   }
 };
