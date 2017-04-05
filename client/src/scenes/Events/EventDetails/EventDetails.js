@@ -28,6 +28,7 @@ import {
 import moment from 'moment';
 import DatePicker from 'react-native-datepicker';
 import ParallaxScrollView from 'react-native-parallax-scroll-view';
+import Communications from 'react-native-communications';
 import ParticipantListItem from '../../../components/ParticipantListItem';
 import { isUpcoming } from '../../../utils/common';
 import PopupModal from '../../../components/PopupModal';
@@ -160,6 +161,7 @@ class EventDetails extends Component {
 
   render() {
     const { user_id: userId } = this.props.auth.token;
+    const { navigate } = this.props.navigation;
     const {
       round_num: roundNumber,
       event_detail, creator,
@@ -180,175 +182,170 @@ class EventDetails extends Component {
     const votingComplete = !!restaurant;
 
     return (
-      <Container>
-        <Content>
-          <ParallaxScrollView
-            parallaxHeaderHeight={PARALLAX_HEADER_HEIGHT}
-            renderBackground={() => {
-              return (
-                <View style={{ flex: 1, width: null, height: null }}>
-                  <Image
-                    source={votingComplete ? { uri: restaurant.image_url } : inProgress}
-                    resizeMode="cover" style={{ height: PARALLAX_HEADER_HEIGHT, width: Dimensions.get('window').width }} />
-                </View>
-              );
-            }}
-            renderForeground={() => {
-              return (
-                <View style={styles.foreground}>
-                  <View style={styles.foregroundContent}>
-                    <Text style={styles.foregroundTitle}>
-                      {name}
-                    </Text>
-                    {restaurant && (
-                      <Text style={styles.foregroundSubTitle}>
-                        {restaurant.name}
-                      </Text>
-                    )}
-                  </View>
-                </View>
-              );
-            }}
-          >
-
-            { /* Show a restaurant panel if there is a winning restaurant */}
-            {votingComplete && this.renderRestaurantPanel(restaurant)}
-
-            <Card style={StyleSheet.flatten(styles.card)}>
-              {this.renderCardTitle('Details')}
-              <View style={styles.detail}>
-                <Icon name="calendar" style={StyleSheet.flatten(styles.detailIcon)} />
-                <Text style={{ marginLeft: ICON_TEXT_MARGIN }}>
-                  Starts {moment(datetime).format('h:mm A on ddd, MMM Do')}
+      <View style={{flex: 1}}>
+      <ParallaxScrollView
+        parallaxHeaderHeight={PARALLAX_HEADER_HEIGHT}
+        renderBackground={() => {
+          return (
+            <View style={{ flex: 1, width: null, height: null }}>
+              <Image
+                source={votingComplete ? { uri: restaurant.image_url } : inProgress}
+                resizeMode="cover" style={{ height: PARALLAX_HEADER_HEIGHT, width: Dimensions.get('window').width }} />
+            </View>
+          );
+        }}
+        renderForeground={() => {
+          return (
+            <View style={styles.foreground}>
+              <View style={styles.foregroundContent}>
+                <Text style={styles.foregroundTitle}>
+                  {name}
                 </Text>
-              </View>
-              <View style={styles.detail}>
-                <Icon name="paper-plane" style={StyleSheet.flatten(styles.detailIcon)} />
-                <Text style={{ marginLeft: ICON_TEXT_MARGIN }}>
-                  Invite Code: {inviteCode}
-                </Text>
-              </View>
-              <View style={styles.detail}>
-                <Icon name="stats" style={StyleSheet.flatten(styles.detailIcon)} />
-                <Text style={{ marginLeft: ICON_TEXT_MARGIN }}>
-                  Status: {votingComplete || isPast ? 'Complete' : `In Progress (Round ${roundNumber})`}
-                </Text>
-              </View>
-              {(!votingComplete && !isPast) &&
-                <View style={styles.detail}>
-                  <Icon name="stopwatch" style={StyleSheet.flatten(styles.detailIcon)} />
-                  <Text style={{ marginLeft: ICON_TEXT_MARGIN }}>
-                    Round Ends: {moment(round_start).add(round_duration, 'h').format('h:mm A on ddd, MMM Do')}
+                {restaurant && (
+                  <Text style={styles.foregroundSubTitle}>
+                    {restaurant.name}
                   </Text>
-                </View>
-              }
-              {(!votingComplete && !isPast) &&
-                <Button success block style={StyleSheet.flatten(styles.btn)}
-                  onPress={this.handleContinueVoting}>
-                  <Text style={{ color: 'white' }}>Start Round</Text>
-                </Button>
-              }
-            </Card>
-
-            { /* Show an 'admin' panel if the user is the event creator */}
-            {String(creator.id) === String(userId) &&
-              (<Card style={StyleSheet.flatten(styles.card)}>
-                {this.renderCardTitle('Admin')}
-                <Text style={{ marginTop: 15 }}>
-                  Event Name:
-          </Text>
-                <TextInput
-                  onChangeText={(name) => this.setState({ eventName: name })}
-                  editable={!isPast}
-                  value={this.state.eventName} />
-                <Text style={{ marginTop: 20 }}>
-                  Event Date: {moment(datetime).format('h:mm A on ddd, MMM Do')}
-                </Text>
-                <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
-                  <DatePicker
-                    date={this.state.date}
-                    mode="date"
-                    style={StyleSheet.flatten(styles.datePicker)}
-                    customStyles={{ dateInput: StyleSheet.flatten(styles.dateInput) }}
-                    format="YYYY-MM-DD"
-                    confirmBtnText="Confirm"
-                    cancelBtnText="Cancel"
-                    minDate={new Date()}
-                    disabled={isPast}
-                    showIcon={false}
-                    onDateChange={(date) => { this.setState({ date }) }} />
-                  <DatePicker
-                    date={this.state.time}
-                    mode="time"
-                    style={StyleSheet.flatten(styles.datePicker)}
-                    customStyles={{ dateInput: StyleSheet.flatten(styles.dateInput) }}
-                    format="HH:mm"
-                    confirmBtnText="Confirm"
-                    cancelBtnText="Cancel"
-                    minDate={new Date()}
-                    disabled={isPast}
-                    showIcon={false}
-                    onDateChange={(time) => { this.setState({ time }) }} />
-                </View>
-                <View style={styles.btnContainer}>
-                  <Button
-                    success
-                    block
-                    disabled={!this.hasEventDetailsChanged()}
-                    style={StyleSheet.flatten(styles.btn)}
-                    onPress={this.handleSaveChanges}>
-                    <Text style={{ color: 'white' }}>Save Changes</Text>
-                  </Button>
-                  <Button danger block style={StyleSheet.flatten(styles.btn)}
-                    onPress={this.verifyCancelEvent}>
-                    <Text style={{ color: 'white' }}>{isPast ? 'Delete Event' : 'Cancel Event'}</Text>
-                  </Button>
-                </View>
-              </Card>)}
-
-            <Card style={StyleSheet.flatten(styles.card)}>
-              {this.renderCardTitle('Participants')}
-              {participants.map((participant, i) => {
-                return (
-                  <ParticipantListItem
-                    key={participant.id}
-                    participant={participant}
-                    styles={{
-                      backgroundColor: colorsList[i % colorsList.length],
-                      height: 50,
-                      width: 50
-                    }}
-                  />
-                );
-              })}
-            </Card>
-
-            <PopupModal
-              visible={this.state.ratingModal}
-              onClose={() => this.setState({ ratingModal: false })}>
-              <View>
-                <View style={{ alignItems: 'center' }}>
-                  <Text>{this.state.userRating}</Text>
-                </View>
-                <Slider
-                  value={0}
-                  minimumValue={0}
-                  maximumValue={5}
-                  step={0.5}
-                  onSlidingComplete={(value) => this.setState({ userRating: value })} />
-                <Button onPress={() => this.submitRating()}><Text>OK</Text></Button>
+                )}
               </View>
-            </PopupModal>
+            </View>
+          );
+        }}>
+        { /* Show a restaurant panel if there is a winning restaurant */}
+        {votingComplete && this.renderRestaurantPanel(restaurant)}
 
-          </ParallaxScrollView>
-        </Content>
+        <Card style={StyleSheet.flatten(styles.card)}>
+          {this.renderCardTitle('Details')}
+          <View style={styles.detail}>
+            <Icon name="calendar" style={StyleSheet.flatten(styles.detailIcon)} />
+            <Text style={{ marginLeft: ICON_TEXT_MARGIN }}>
+              Starts {moment(datetime).format('h:mm A on ddd, MMM Do')}
+            </Text>
+          </View>
+          <View style={styles.detail}>
+            <Icon name="paper-plane" style={StyleSheet.flatten(styles.detailIcon)} />
+            <Text style={{ marginLeft: ICON_TEXT_MARGIN }}>
+              Invite Code: {inviteCode}
+            </Text>
+          </View>
+          <View style={styles.detail}>
+            <Icon name="stats" style={StyleSheet.flatten(styles.detailIcon)} />
+            <Text style={{ marginLeft: ICON_TEXT_MARGIN }}>
+              Status: {votingComplete || isPast ? 'Complete' : `In Progress (Round ${roundNumber})`}
+            </Text>
+          </View>
+          {(!votingComplete && !isPast) &&
+            <View style={styles.detail}>
+              <Icon name="stopwatch" style={StyleSheet.flatten(styles.detailIcon)} />
+              <Text style={{ marginLeft: ICON_TEXT_MARGIN }}>
+                Round Ends: {moment(round_start).add(round_duration, 'h').format('h:mm A on ddd, MMM Do')}
+              </Text>
+            </View>
+          }
+          {(!votingComplete && !isPast) &&
+            <Button success block style={StyleSheet.flatten(styles.btn)}
+              onPress={this.handleContinueVoting}>
+              <Text style={{ color: 'white' }}>Start Round</Text>
+            </Button>
+          }
+        </Card>
+
+        { /* Show an 'admin' panel if the user is the event creator */}
+        {String(creator.id) === String(userId) &&
+          (<Card style={StyleSheet.flatten(styles.card)}>
+            {this.renderCardTitle('Admin')}
+            <Text style={{ marginTop: 15 }}>
+              Event Name:
+            </Text>
+            <TextInput
+              onChangeText={(name) => this.setState({ eventName: name })}
+              editable={!isPast}
+              value={this.state.eventName} />
+            <Text style={{ marginTop: 20 }}>
+              Event Date: {moment(datetime).format('h:mm A on ddd, MMM Do')}
+            </Text>
+            <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
+              <DatePicker
+                date={this.state.date}
+                mode="date"
+                style={StyleSheet.flatten(styles.datePicker)}
+                customStyles={{ dateInput: StyleSheet.flatten(styles.dateInput) }}
+                format="YYYY-MM-DD"
+                confirmBtnText="Confirm"
+                cancelBtnText="Cancel"
+                minDate={new Date()}
+                disabled={isPast}
+                showIcon={false}
+                onDateChange={(date) => { this.setState({ date }) }} />
+              <DatePicker
+                date={this.state.time}
+                mode="time"
+                style={StyleSheet.flatten(styles.datePicker)}
+                customStyles={{ dateInput: StyleSheet.flatten(styles.dateInput) }}
+                format="HH:mm"
+                confirmBtnText="Confirm"
+                cancelBtnText="Cancel"
+                minDate={new Date()}
+                disabled={isPast}
+                showIcon={false}
+                onDateChange={(time) => { this.setState({ time }) }} />
+            </View>
+            <View style={styles.btnContainer}>
+              <Button
+                success
+                block
+                disabled={!this.hasEventDetailsChanged()}
+                style={StyleSheet.flatten(styles.btn)}
+                onPress={this.handleSaveChanges}>
+                <Text style={{ color: 'white' }}>Save Changes</Text>
+              </Button>
+              <Button danger block style={StyleSheet.flatten(styles.btn)}
+                onPress={this.verifyCancelEvent}>
+                <Text style={{ color: 'white' }}>{isPast ? 'Delete Event' : 'Cancel Event'}</Text>
+              </Button>
+            </View>
+          </Card>)}
+
+          <Card style={StyleSheet.flatten(styles.card)}>
+            {this.renderCardTitle('Participants')}
+            {participants.map((participant, i) => {
+              return (
+                <ParticipantListItem
+                  key={participant.id}
+                  participant={participant}
+                  styles={{
+                    backgroundColor: colorsList[i % colorsList.length],
+                    height: 50,
+                    width: 50
+                  }}
+                />
+              );
+            })}
+          </Card>
+
+          <PopupModal
+            visible={this.state.ratingModal}
+            onClose={() => this.setState({ ratingModal: false })}>
+            <View>
+              <View style={{ alignItems: 'center' }}>
+                <Text>{this.state.userRating}</Text>
+              </View>
+              <Slider
+                value={0}
+                minimumValue={0}
+                maximumValue={5}
+                step={0.5}
+                onSlidingComplete={(value) => this.setState({ userRating: value })} />
+              <Button onPress={() => this.submitRating()}><Text>OK</Text></Button>
+            </View>
+          </PopupModal>
+        </ParallaxScrollView>
 
         { /* Display FAB only when there's a winning restaurant */}
         {votingComplete && (<Fab
           active={this.state.active}
           direction="up"
           position="bottomRight"
-          style={{ backgroundColor: colors.APP_PRIMARY_LIGHT }}
+          style={{ backgroundColor: colors.APP_PRIMARY_LIGHT, position: 'absolute' }}
           onPress={() => this.setState({ active: !this.state.active })}>
           <Icon name="menu" />
           <Button
@@ -367,7 +364,7 @@ class EventDetails extends Component {
             <Icon name='locate' />
           </Button>
         </Fab>)}
-      </Container>
+      </View>
     );
   }
 }
