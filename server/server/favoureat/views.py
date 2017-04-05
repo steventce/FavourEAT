@@ -671,9 +671,8 @@ class IndividualTournamentView(APIView):
 
         # If there are odd number of restaurants, then carry the extra one to next round.
         if len(data) % 2 != 0:
-            num_votes = EventUserAttach.objects.filter(event=event_id).count()
             tournament = Tournament.objects.get(pk=data[len(data) - 1]['id'])
-            tournament.vote_count = num_votes
+            tournament.vote_count = 0
             tournament.save()
             if len(paired_tournaments_data) == 0:
                 return Response(data)
