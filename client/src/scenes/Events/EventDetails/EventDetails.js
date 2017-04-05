@@ -21,11 +21,14 @@ import {
   Icon,
   Card,
   List,
-  ListItem
+  ListItem,
+  Container,
+  Content
 } from 'native-base';
 import moment from 'moment';
 import DatePicker from 'react-native-datepicker';
 import ParallaxScrollView from 'react-native-parallax-scroll-view';
+import Communications from 'react-native-communications';
 import ParticipantListItem from '../../../components/ParticipantListItem';
 import { isUpcoming } from '../../../utils/common';
 import PopupModal from '../../../components/PopupModal';
@@ -48,7 +51,7 @@ class EventDetails extends Component {
     const { datetime, name } = this.props.userEvent.event_detail;
     this.state = {
       date: moment(datetime).format('YYYY-MM-DD'),
-      time: moment(datetime).format('HH:mm'),
+      time: moment(datetime).format('h:mm A'),
       active: false,
       eventName: name,
       ratingModal: false,
@@ -66,7 +69,7 @@ class EventDetails extends Component {
     const { date, time, eventName: tempName } = this.state;
     const { datetime, name } = this.props.userEvent.event_detail;
 
-    const newMoment = moment(`${date} ${time}`, 'YYYY-MM-DD HH:mm');
+    const newMoment = moment(`${date} ${time}`, 'YYYY-MM-DD h:mm A');
     const initialMoment = moment(this.props.userEvent.event_detail.datetime);
     const hasDateTimeChanged = !newMoment.isSame(initialMoment, 'minute')
     const hasNameChanged = tempName !== name;
@@ -107,7 +110,7 @@ class EventDetails extends Component {
     const { access_token: accessToken, user_id: userId } = this.props.auth.token;
     const { date, time, eventName } = this.state;
     const { id: eventId } = this.props.userEvent;
-    const eventDateTime = moment(`${date} ${time}`, 'YYYY-MM-DD HH:mm');
+    const eventDateTime = moment(`${date} ${time}`, 'YYYY-MM-DD h:mm A');
     this.props.editEventDetails(
       accessToken,
       userId,
@@ -116,10 +119,26 @@ class EventDetails extends Component {
     );
   }
 
+  renderStars(rating) {
+    const isDecimal = rating % 1 !== 0;
+    const wholeRating = Math.floor(rating);
+    const ratings = Array.apply(null, {length: wholeRating}).map(Number.call, Number);
+    return (
+      <View style={styles.starContainer}>
+        {ratings.map((item) => {
+          return(
+          <Icon name="md-star" style={StyleSheet.flatten(styles.star)} />);
+        })}
+        {isDecimal &&
+          <Icon name="md-star-half" style={StyleSheet.flatten(styles.star)} />}
+      </View>
+    );
+  }
+
   submitRating() {
     const { access_token: accessToken, user_id: userId } = this.props.auth.token;
     const { id: eventId } = this.props.userEvent;
-    this.setState({ ratingModal: !this.state.ratingModal});
+    this.setState({ ratingModal: !this.state.ratingModal });
     this.props.eventRating(accessToken, userId, eventId, this.state.userRating);
   }
 
@@ -147,7 +166,7 @@ class EventDetails extends Component {
           </Text>
         </View>
         <View style={styles.detail}>
-          <Icon name="globe" style={{...StyleSheet.flatten(styles.detailIcon), marginLeft: -2}} />
+          <Icon name="globe" style={{ ...StyleSheet.flatten(styles.detailIcon), marginLeft: -2 }} />
           <Text style={{ marginLeft: ICON_TEXT_MARGIN, color: colors.LINK }} onPress={() => Linking.openURL(url)}>
             Website
           </Text>
@@ -158,6 +177,7 @@ class EventDetails extends Component {
 
   render() {
     const { user_id: userId } = this.props.auth.token;
+    const { navigate } = this.props.navigation;
     const {
       round_num: roundNumber,
       event_detail, creator,
@@ -178,14 +198,15 @@ class EventDetails extends Component {
     const votingComplete = !!restaurant;
 
     return (
+      <View style={{flex: 1}}>
       <ParallaxScrollView
         parallaxHeaderHeight={PARALLAX_HEADER_HEIGHT}
         renderBackground={() => {
           return (
-            <View style={{flex: 1, width: null, height: null}}>
-            <Image
-              source={votingComplete ? {uri: restaurant.image_url} : inProgress}
-              resizeMode="cover" style={{height: PARALLAX_HEADER_HEIGHT, width: Dimensions.get('window').width }}/>
+            <View style={{ flex: 1, width: null, height: null }}>
+              <Image
+                source={votingComplete ? { uri: restaurant.image_url } : inProgress}
+                resizeMode="cover" style={{ height: PARALLAX_HEADER_HEIGHT, width: Dimensions.get('window').width }} />
             </View>
           );
         }}
@@ -204,11 +225,9 @@ class EventDetails extends Component {
               </View>
             </View>
           );
-        }}
-        >
-
-        { /* Show a restaurant panel if there is a winning restaurant */ }
-        { votingComplete && this.renderRestaurantPanel(restaurant) }
+        }}>
+        { /* Show a restaurant panel if there is a winning restaurant */}
+        {votingComplete && this.renderRestaurantPanel(restaurant)}
 
         <Card style={StyleSheet.flatten(styles.card)}>
           {this.renderCardTitle('Details')}
@@ -231,12 +250,12 @@ class EventDetails extends Component {
             </Text>
           </View>
           {(!votingComplete && !isPast) &&
-          <View style={styles.detail}>
-            <Icon name="stopwatch" style={StyleSheet.flatten(styles.detailIcon)} />
-            <Text style={{ marginLeft: ICON_TEXT_MARGIN }}>
-              Round Ends: {moment(round_start).add(round_duration, 'h').format('h:mm A on ddd, MMM Do')}
-            </Text>
-          </View>
+            <View style={styles.detail}>
+              <Icon name="stopwatch" style={StyleSheet.flatten(styles.detailIcon)} />
+              <Text style={{ marginLeft: ICON_TEXT_MARGIN }}>
+                Round Ends: {moment(round_start).add(round_duration, 'h').format('h:mm A on ddd, MMM Do')}
+              </Text>
+            </View>
           }
           {(!votingComplete && !isPast) &&
             <Button success block style={StyleSheet.flatten(styles.btn)}
@@ -246,122 +265,126 @@ class EventDetails extends Component {
           }
         </Card>
 
-        { /* Show an 'admin' panel if the user is the event creator */ }
+        { /* Show an 'admin' panel if the user is the event creator */}
         {String(creator.id) === String(userId) &&
-        (<Card style={StyleSheet.flatten(styles.card)}>
-          {this.renderCardTitle('Admin')}
-          <Text style={{ marginTop: 15 }}>
-            Event Name:
-          </Text>
-          <TextInput
-            onChangeText={(name) => this.setState({ eventName: name })}
-            editable={!isPast}
-            value={this.state.eventName} />
-          <Text style={{ marginTop: 20 }}>
-            Event Date: {moment(datetime).format('h:mm A on ddd, MMM Do')}
-          </Text>
-          <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
-            <DatePicker
-              date={this.state.date}
-              mode="date"
-              style={StyleSheet.flatten(styles.datePicker)}
-              customStyles={{ dateInput: StyleSheet.flatten(styles.dateInput) }}
-              format="YYYY-MM-DD"
-              confirmBtnText="Confirm"
-              cancelBtnText="Cancel"
-              minDate={new Date()}
-              disabled={isPast}
-              showIcon={false}
-              onDateChange={(date) => { this.setState({ date }) }} />
-            <DatePicker
-              date={this.state.time}
-              mode="time"
-              style={StyleSheet.flatten(styles.datePicker)}
-              customStyles={{ dateInput: StyleSheet.flatten(styles.dateInput) }}
-              format="HH:mm"
-              confirmBtnText="Confirm"
-              cancelBtnText="Cancel"
-              minDate={new Date()}
-              disabled={isPast}
-              showIcon={false}
-              onDateChange={(time) => { this.setState({ time }) }} />
-          </View>
-          <View style={styles.btnContainer}>
-            <Button
-              success
-              block
-              disabled={!this.hasEventDetailsChanged()}
-              style={StyleSheet.flatten(styles.btn)}
-              onPress={this.handleSaveChanges}>
-              <Text style={{ color: 'white' }}>Save Changes</Text>
-            </Button>
-            <Button danger block style={StyleSheet.flatten(styles.btn)}
-              onPress={this.verifyCancelEvent}>
-              <Text style={{ color: 'white' }}>{isPast ? 'Delete Event' : 'Cancel Event'}</Text>
-            </Button>
-          </View>
-        </Card>)}
+          (<Card style={StyleSheet.flatten(styles.card)}>
+            {this.renderCardTitle('Admin')}
+            <Text style={{ marginTop: 15 }}>
+              Event Name:
+            </Text>
+            <TextInput
+              onChangeText={(name) => this.setState({ eventName: name })}
+              editable={!isPast}
+              value={this.state.eventName} />
+            <Text style={{ marginTop: 20 }}>
+              Event Date: {moment(datetime).format('h:mm A on ddd, MMM Do')}
+            </Text>
+            <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
+              <DatePicker
+                date={this.state.date}
+                mode="date"
+                style={StyleSheet.flatten(styles.datePicker)}
+                customStyles={{ dateInput: StyleSheet.flatten(styles.dateInput) }}
+                format="YYYY-MM-DD"
+                confirmBtnText="Confirm"
+                cancelBtnText="Cancel"
+                minDate={new Date()}
+                disabled={isPast}
+                showIcon={false}
+                onDateChange={(date) => { this.setState({ date }) }} />
+              <DatePicker
+                date={this.state.time}
+                mode="time"
+                style={StyleSheet.flatten(styles.datePicker)}
+                customStyles={{ dateInput: StyleSheet.flatten(styles.dateInput) }}
+                format="h:mm A"
+                confirmBtnText="Confirm"
+                cancelBtnText="Cancel"
+                minDate={new Date()}
+                disabled={isPast}
+                showIcon={false}
+                onDateChange={(time) => { this.setState({ time }) }} />
+            </View>
+            <View style={styles.btnContainer}>
+              <Button
+                success
+                block
+                disabled={!this.hasEventDetailsChanged()}
+                style={StyleSheet.flatten(styles.btn)}
+                onPress={this.handleSaveChanges}>
+                <Text style={{ color: 'white' }}>Save Changes</Text>
+              </Button>
+              <Button danger block style={StyleSheet.flatten(styles.btn)}
+                onPress={this.verifyCancelEvent}>
+                <Text style={{ color: 'white' }}>{isPast ? 'Delete Event' : 'Cancel Event'}</Text>
+              </Button>
+            </View>
+          </Card>)}
 
-        <Card style={StyleSheet.flatten(styles.card)}>
-          {this.renderCardTitle('Participants')}
-          {participants.map((participant, i) => {
-            return (
-              <ParticipantListItem
-                key={participant.id}
-                participant={participant}
-                styles={{
-                  backgroundColor: colorsList[i % colorsList.length],
-                  height: 50,
-                  width: 50
-                }}
-              />
-            );
-          })}
-        </Card>
+          <Card style={StyleSheet.flatten(styles.card)}>
+            {this.renderCardTitle('Participants')}
+            {participants.map((participant, i) => {
+              return (
+                <ParticipantListItem
+                  key={participant.id}
+                  participant={participant}
+                  styles={{
+                    backgroundColor: colorsList[i % colorsList.length],
+                    height: 50,
+                    width: 50
+                  }}
+                />
+              );
+            })}
+          </Card>
 
-        { /* Display FAB only when there's a winning restaurant */ }
+          <PopupModal
+            visible={this.state.ratingModal}
+            onClose={() => this.setState({ ratingModal: false })}>
+            <View style={{ padding: 20 }}>
+              <Text style={styles.ratingTitle}>Rate this Restaurant</Text>
+              {this.renderStars(this.state.userRating)}
+              <Slider
+                value={0}
+                minimumValue={0}
+                maximumValue={5}
+                step={0.5}
+                onSlidingComplete={(value) => this.setState({ userRating: value })} />
+              <Button
+                block
+                success
+                onPress={() => this.submitRating()}
+                style={StyleSheet.flatten(styles.okRatingBtn)}>
+                <Text style={{ color: 'white' }}>OK ({`${this.state.userRating} stars`})</Text></Button>
+            </View>
+          </PopupModal>
+        </ParallaxScrollView>
+
+        { /* Display FAB only when there's a winning restaurant */}
         {votingComplete && (<Fab
           active={this.state.active}
           direction="up"
           position="bottomRight"
-          style={{ backgroundColor: colors.APP_PRIMARY_LIGHT }}
+          style={{ backgroundColor: colors.APP_PRIMARY_LIGHT, position: 'absolute' }}
           onPress={() => this.setState({ active: !this.state.active })}>
           <Icon name="menu" />
           <Button
             style={{ backgroundColor: '#EFBE79' }}
             onPress={() => Communications.phonecall(restaurant.phone, true)}>
-              <Icon name='call' />
+            <Icon name='call' />
           </Button>
           <Button
             style={{ backgroundColor: '#EFBE79' }}
             onPress={() => this.setState({ ratingModal: !this.state.ratingModal })}>
-              <Icon name='md-star' />
+            <Icon name='md-star' />
           </Button>
           <Button
-              style={{ backgroundColor: '#EFBE79' }}
-              onPress={() => navigate('Map', { restaurant: restaurant })}>
+            style={{ backgroundColor: '#EFBE79' }}
+            onPress={() => navigate('Map', { restaurant: restaurant })}>
             <Icon name='locate' />
           </Button>
         </Fab>)}
-
-        <PopupModal
-          visible={this.state.ratingModal}
-          onClose={() => this.setState({ ratingModal: false })}>
-          <View>
-            <View style={{alignItems: 'center'}}>
-              <Text>{this.state.userRating}</Text>
-            </View>
-            <Slider
-              value={0}
-              minimumValue={0}
-              maximumValue={5}
-              step={0.5}
-              onSlidingComplete={(value) => this.setState({ userRating: value })} />
-              <Button onPress={() => this.submitRating()}><Text>OK</Text></Button>
-          </View>
-        </PopupModal>
-
-      </ParallaxScrollView>
+      </View>
     );
   }
 }

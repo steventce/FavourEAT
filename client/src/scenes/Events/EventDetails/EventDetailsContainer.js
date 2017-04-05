@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import EventDetails from './EventDetails';
-import { editEventDetails, cancelEvent } from '../../../reducers/Events/actions';
+import { editEventDetails, cancelEvent, fetchEvents } from '../../../reducers/Events/actions';
 import { getRound } from '../../../reducers/Tournament/actions';
 import { eventRating } from '../../../reducers/Events/actions';
 import {
@@ -10,8 +10,8 @@ import {
 import moment from 'moment';
 
 const validateEditEvent = function(eventDetails) {
-  const { name, datetime } = eventDetails
-  return validateEventName(name) && validateEventDatetime(moment(datetime));
+  const { name, datetime } = eventDetails;
+  return validateEventName(name) && validateEventDatetime(moment(datetime, 'YYYY-MM-DD HH:mm AZ'));
 }
 
 const mapStateToProps = function(state, props) {
@@ -34,7 +34,7 @@ const mapDispatchToProps = function(dispatch, props) {
     },
     cancelEvent: (accessToken, userId, eventId) => {
       dispatch(cancelEvent(accessToken, userId, eventId)).then(() => {
-        props.navigation.goBack();
+        props.navigation.goBack().then(dispatch(fetchEvents(accessToken, userId)));
       });
     },
     getRound: (accessToken, eventId) => {

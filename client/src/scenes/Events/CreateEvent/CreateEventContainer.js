@@ -15,7 +15,7 @@ class CreateEventContainer extends Component {
 
   validate(name, date, time, rndDuration) {
     if (!validateEventName(name)) return;
-    var event = moment(date+" "+time, 'YYYY-MM-DD  HH:mm');
+    var event = moment(date+" "+time, 'YYYY-MM-DD h:mm A');
     if (!validateEventDatetime(event)) return;
     if (!validateRndDuration(rndDuration)) return;
 

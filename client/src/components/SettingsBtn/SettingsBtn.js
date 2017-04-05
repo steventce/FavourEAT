@@ -2,7 +2,8 @@ import React, { Component, PropTypes } from 'react';
 import {
   Text,
   View,
-  TouchableNativeFeedback
+  TouchableNativeFeedback,
+  StyleSheet
 } from 'react-native';
 
 import styles from './styles';
@@ -20,10 +21,11 @@ class SettingsBtn extends Component {
 
   render() {
     return (
-      <TouchableNativeFeedback 
+      <TouchableNativeFeedback
           disabled={this.props.disabled}
           onPress={this.props.onPress}>
-        <View style={styles.settingsBtn}>
+        <View style={!this.props.style ? styles.settingsBtn :
+          {...StyleSheet.flatten(styles.settingsBtn), ...this.props.style}}>
           <Text style={styles.label}>
             {this.props.label}
           </Text>

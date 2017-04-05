@@ -1,24 +1,38 @@
 import React, { Component } from 'react';
-import { Text, Image, View } from 'react-native';
-import { Container, Content, Left, Button, Icon } from 'native-base';
+import { Text, Image, View, TouchableNativeFeedback, Dimensions, StyleSheet } from 'react-native';
+import { Container, Content, Left, Button, Icon, ListItem } from 'native-base';
 
 import styles from './styles';
 import { logo } from '../../config/images';
+import { colors } from '../../styles/common';
 
-const navItem = ['Home','CreateEvent','JoinEvent'];
+const navItem = [
+  'Home',
+  'CreateEvent',
+  'JoinEvent',
+  'Signout'
+];
 
 const navItemConfig = {
   Home: {
-    color: 'black',
-    iconName: 'md-home'
+    name: 'Home',
+    iconName: 'md-home',
+    onPress: (navigate) => navigate('Home')
   },
   CreateEvent: {
-    color: 'black', 
-    iconName: 'md-add'
+    name: 'Create Event',
+    iconName: 'md-add',
+    onPress: (navigate) => navigate('CreateEvent')
   },
   JoinEvent: {
-    color: 'black',
-    iconName: 'md-people'
+    name: 'Join Event',
+    iconName: 'md-people',
+    onPress: (navigate) => navigate('JoinEvent')
+  },
+  Signout: {
+    name: 'Sign Out',
+    iconName: 'md-log-out',
+    onPress: function() { console.log(this); this.handleLogout(); }
   }
 }
 
@@ -34,33 +48,29 @@ class Drawer extends Component {
   }
 
   render() {
-    const { navigate } = this.props.navigation;
+    const { navigate, state: navState } = this.props.navigation;
+    console.log(navState);
 
     return (
       <Container>
         <Content contentContainerStyle={styles.container}>
-          <View style={{ marginTop: 25, height: 150 }}>
-            <Image style={styles.logo} source={logo} />
-          </View>
-          <View style={{ flex: 1, backgroundColor: 'white' }}>
-            {navItem.map((route) => {
-              const { iconName, color } = navItemConfig[route];
-              return (
-                <Button key={route} block transparent iconLeft
-                  onPress={() => navigate(route)}>
-                  <Icon name={iconName} style={{ color: color }} />
-                  <Left>
-                    <Text style={{ color: color, marginLeft: 15 }}>{route}</Text>
-                  </Left>
-                </Button>
-              );
-            })}
-            <Button block transparent onPress={this.handleLogout} iconLeft>
-              <Icon name="md-log-out" style={{ color: 'black' }} />
-              <Left>
-                <Text style={{ color: 'black', marginLeft: 15 }}>Sign Out</Text>
-              </Left>
-            </Button>
+          <View style={{ height: Dimensions.get('window').height, backgroundColor: 'white' }}>
+            <View style={{ backgroundColor: colors.APP_PRIMARY_DARK, height: 150 }}>
+              <Image style={styles.logo} source={logo} />
+            </View>
+            <View style={{ backgroundColor: 'white', height: 250 }}>
+              {navItem.map((route) => {
+                const { iconName, color, name , margin, onPress } = navItemConfig[route];
+                return (
+                  <TouchableNativeFeedback onPress={onPress.bind(this, navigate)} key={route}>
+                    <View style={styles.itemContainer}>
+                      <Icon name={iconName} style={StyleSheet.flatten(styles.icon)} />
+                      <Text style={styles.sectionTitle}>{name}</Text>
+                    </View>
+                  </TouchableNativeFeedback>
+                );
+              })}
+            </View>
           </View>
         </Content>
       </Container>
