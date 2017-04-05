@@ -31,6 +31,8 @@ def update_next_round(event_id):
     num_remaining = 0
     winner = None
     tournaments = Tournament.objects.filter(event=event)
+    if tournaments.count() == 0:
+        return False
     # Update restaurants for next tournament round
     if event.round_num == 1:
         for t in tournaments:

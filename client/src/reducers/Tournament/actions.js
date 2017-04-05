@@ -42,8 +42,9 @@ export function putRound(accessToken, eventId, tournamentArr, tournamentData, ca
             return response.json();
         })
         .then((json) => {
-            if (callback && json.Next && json.Next == 1)
-                callback();
+            console.log(json.Next);
+            if (callback)
+                callback(json.Next);
         })
         .catch((error) => console.error(error))
     }

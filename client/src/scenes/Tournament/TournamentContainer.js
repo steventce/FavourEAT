@@ -4,6 +4,7 @@ import { Spinner } from 'native-base';
 import { connect } from 'react-redux';
 import Tournament from './Tournament';
 import { getRound, putRound } from '../../reducers/Tournament/actions';
+import { saveSwipe } from '../../reducers/Swipe/actions';
 
 class TournamentContainer extends Component {
   constructor(props) {
@@ -13,7 +14,7 @@ class TournamentContainer extends Component {
       cards: [],
       topCards: [],
       botCards: [],
-      appAccessToken: '',
+      access_token: '',
     }
   }
 
@@ -21,7 +22,7 @@ class TournamentContainer extends Component {
 
   getTournamentRound() {
     try {
-      this.props.dispatch(getRound(this.state.appAccessToken, this.state.eventId));
+      this.props.dispatch(getRound(this.state.access_token, this.state.eventId));
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -30,25 +31,37 @@ class TournamentContainer extends Component {
   putTournamentRound(restaurants) {
     var idArr = [];
     restaurants.map((r) => idArr.push(r.id));
-    this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId, idArr, this.state.cards,
-      () => {this.setState({ topCards: [], botCards: [] }, () => this.getTournamentRound())}));
+    this.props.dispatch(putRound(this.state.access_token, this.state.eventId, idArr, this.state.cards, 
+      (isNext) => {this.setState({ topCards: [], botCards:[] }, () => this.callbackFunction(isNext))}));
+
+    var swipeArr = [];
+    restaurants.map((r) => swipeArr.push({
+      yelp_id: r.restaurant.yelp_id,
+      right_swipe_count: 1
+    }));
+    this.props.dispatch(saveSwipe(this.props.auth.token.user_id, this.state.access_token, swipeArr));
   }
 
-  async componentWillMount() {
-    try {
-      const appAccessToken = await AsyncStorage.getItem('app_access_token');
-      if (appAccessToken) {
-        this.setState({ appAccessToken });
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Loading Error. Please try again.');
+  callbackFunction(isNext) {
+    // can continue?
+    if (isNext) {
+      this.getTournamentRound();
+    } else {
+      Alert.alert('Votes casted!', 'Please wait for next round.',
+        [{ text: 'OK', onPress: () => this.props.navigation.navigate('HomeDrawer') }],
+        { cancelable: false });
     }
+  }
 
-    this.setState({ eventId: this.props.navigation.state.params.eventId }, () => this.getTournamentRound());
+  componentWillMount() {
+    const { access_token } = this.props.auth.token;
+
+    this.setState({ access_token, eventId: this.props.navigation.state.params.eventId },
+      () => this.getTournamentRound());
   }
 
   componentWillReceiveProps(nextProps) {
-    const { tournamentArr } = nextProps;
+    const { tournamentArr } = nextProps.rounds;
     if (tournamentArr) {
       /*  If there is only a single restaurant returned 
       *   and it isn't nested into an array,
@@ -75,23 +88,24 @@ class TournamentContainer extends Component {
     }
   }
 
-render() {
-  const { navigate } = this.props.navigation;
+  render() {
+    const { navigate } = this.props.navigation;
 
-  if (this.state.topCards.length == 0 || this.state.botCards.length == 0) {
-    return <Spinner color='red' style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} />
+    if (this.state.topCards.length == 0 || this.state.botCards.length == 0) {
+      return <Spinner color='red' style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} />
+    }
+
+    return (
+      <Tournament putTournamentRound={this.putTournamentRound.bind(this)}
+        top={this.state.topCards}
+        bot={this.state.botCards} />
+    );
   }
-
-  return (
-    <Tournament putTournamentRound={this.putTournamentRound.bind(this)}
-      top={this.state.topCards}
-      bot={this.state.botCards} />
-  );
-}
 }
 
 const mapStateToProps = function (state) {
-  return state.rounds;
+  const { auth, rounds } = state;
+  return { auth, rounds };
 }
 
 export default connect(mapStateToProps)(TournamentContainer);

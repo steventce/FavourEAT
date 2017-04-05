@@ -1,11 +1,11 @@
 import math
 
 class GeoUtils(object):
+  EARTH_RADIUS = 6371.0
   # Reference: http://janmatuschek.de/LatitudeLongitudeBoundingCoordinates
   def get_bounding_box(self, origin, radius):
     # radius of earth in km
-    EARTH_RADIUS = 6371.0
-    ang_radius = (float(radius)/1000)/EARTH_RADIUS
+    ang_radius = self.get_angular_radius(radius)
 
     # calculate using radians
     origin_lat, origin_lon = origin
@@ -24,3 +24,6 @@ class GeoUtils(object):
     # convert back to degrees for common use
     return ((math.degrees(min_lat), math.degrees(min_lon)), 
       (math.degrees(max_lat), math.degrees(max_lon))) 
+
+  def get_angular_radius(self, radius):
+    return (float(radius)/1000.0)/self.EARTH_RADIUS

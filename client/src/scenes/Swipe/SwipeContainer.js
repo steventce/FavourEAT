@@ -14,7 +14,7 @@ class SwipeContainer extends Component {
       eventId: -1,
       cards: [],
       user_id: '',
-      appAccessToken: '',
+      access_token: '',
     }
     this.gotoTournament = this.gotoTournament.bind(this);
   }
@@ -31,39 +31,35 @@ class SwipeContainer extends Component {
       yelp_id: r.restaurant.yelp_id,
       right_swipe_count: 1
     }));
-    this.props.dispatch(saveSwipe(this.state.userId, this.state.appAccessToken, swipeArr));
+    this.props.dispatch(saveSwipe(this.state.user_id, this.state.access_token, swipeArr));
   }
 
   nextRound(restaurants) {
     var idArr = [];
     restaurants.map((r) => idArr.push(r.id));
-    this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId, idArr, this.state.cards,
-      () => this.gotoTournament()));
+    this.props.dispatch(putRound(this.state.access_token, this.state.eventId, idArr, this.state.cards,
+      (isNext) => this.gotoTournament(isNext)));
   }
 
-  gotoTournament() {
-    // TODO: handle back button
-    this.props.navigation.navigate('Tournament', { eventId: this.state.eventId });
-  }
-
-  async componentDidMount() {
-    try {
-      const appAccessToken = await AsyncStorage.getItem('app_access_token');
-      if (appAccessToken) {
-        this.setState({ appAccessToken });
-      }
-      const userId = await AsyncStorage.getItem('user_id');
-      if (userId) {
-        this.setState({ userId });
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Loading Error. Please try again.');
+  gotoTournament(isNext) {
+    // can continue?
+    if (isNext) {
+      this.props.navigation.navigate('Tournament', { eventId: this.state.eventId });
+    } else {
+      Alert.alert('Votes casted!', 'Please wait for next round.',
+        [{text:'OK', onPress: () => this.props.navigation.navigate('HomeDrawer')}],
+        {cancelable: false});
     }
   }
 
+  componentDidMount() {
+    const { access_token, user_id } = this.props.auth.token;
+    this.setState({ access_token, user_id })
+  }
+
   componentWillReceiveProps(nextProps) {
-    const { eventId, tournamentArr } = nextProps;
-    if (tournamentArr.length === 0) {
+    const { eventId, tournamentArr } = nextProps.rounds;
+    if (tournamentArr && tournamentArr.length === 0) {
       Alert.alert('Error', 'Loading Error. Please try again.',
       [
         { text: 'OK', onPress: () => this.props.navigation.goBack() }
@@ -88,7 +84,8 @@ class SwipeContainer extends Component {
 }
 
 const mapStateToProps = function (state) {
-  return state.rounds;
+  const { auth, rounds } = state;
+  return { auth, rounds };
 }
 
 export default connect(mapStateToProps)(SwipeContainer);

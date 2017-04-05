@@ -1,6 +1,11 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 
 export default StyleSheet.create({
+  background: {
+    height: Dimensions.get('window').height,
+    position: 'absolute',
+    width: Dimensions.get('window').width,
+  },
   container: {
     backgroundColor: '#3d3d3d',
     flex: 1
