@@ -4,6 +4,7 @@ import { Spinner } from 'native-base';
 import { connect } from 'react-redux';
 import Tournament from './Tournament';
 import { getRound, putRound } from '../../reducers/Tournament/actions';
+import { saveSwipe } from '../../reducers/Swipe/actions';
 
 class TournamentContainer extends Component {
   constructor(props) {
@@ -31,6 +32,7 @@ class TournamentContainer extends Component {
     try {
       for (var i = 0; i < restaurants.length - 1; i++) {
         this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId, restaurants[i].id));
+        this.props.dispatch(saveSwipe(this.state.userId, this.state.appAccessToken, restaurants[i].restaurant.yelp_id, 1, 0));
       }
       // last restaurant needs to include specific data
       this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId,

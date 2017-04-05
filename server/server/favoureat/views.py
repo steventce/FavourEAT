@@ -2,6 +2,7 @@ import json
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.db.models import Avg
 from server.favoureat.serializers import (
     UserSerializer,
     SwipeSerializer,
@@ -644,6 +645,22 @@ class EventUserAttachView(APIView):
             attach = EventUserAttach.objects.get(event=event, user=user)
             attach.rating = request.data['rating']
             attach.save()
+
+            yelp_id = event.event_detail.restaurant.yelp_id
+
+            user_swipe = Swipe.objects.get(
+                user=user, 
+                yelp_id=yelp_id)
+
+            avg_rating = EventUserAttach.objects.filter(
+                user=user,
+                event__event_detail__restaurant__yelp_id=yelp_id,
+                rating__gt=0
+            ).aggregate(avg_rating=Avg('rating')).get('avg_rating')
+
+            user_swipe.avg_rating = avg_rating
+            user_swipe.save()
+            
             return Response({'rating': attach.rating}, status=status.HTTP_200_OK)
         except Event.DoesNotExist:
             return Response("Event does not exist", status=status.HTTP_404_NOT_FOUND)
