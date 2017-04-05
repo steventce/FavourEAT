@@ -34,8 +34,6 @@ urlpatterns = [
         views.JoinEventView.as_view()),
     url(r'^v1/events/(?P<event_id>[0-9]+)/tournament/$',
         views.IndividualTournamentView.as_view()),
-    url(r'^v1/events/(?P<event_id>[0-9]+)/tournament/(?P<tournament_id>[0-9]+)/$',
-        views.IndividualTournamentView.as_view()),
     url(r'^auth/', include('rest_framework_social_oauth2.urls')),
     url(r'^admin/', admin.site.urls)
 ]

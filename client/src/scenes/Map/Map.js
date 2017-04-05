@@ -11,19 +11,21 @@ const DEFAULT_LATITUDE_DELTA = 0.0922;
 const DEFAULT_LONGITUDE_DELTA = 0.0421;
 
 class Map extends Component {
+
+  static navigationOptions = {
+    title: (navigation) => {
+      return navigation.state.params.restaurant.name;
+    }
+  };
+
   constructor(props) {
     super(props);
     
-    const { restaurant } = this.props.navigation.state.params;
+    const { restaurant, currentLocation } = this.props.navigation.state.params;
 
     this.state = {
-      region: {
-        latitude: restaurant.coordinates.latitude,
-        longitude: restaurant.coordinates.longitude,
-        latitudeDelta: DEFAULT_LATITUDE_DELTA,
-        longitudeDelta: DEFAULT_LONGITUDE_DELTA,
-      },
-      position: null,
+      region: this.getRegion(currentLocation, restaurant.coordinates),
+      position: currentLocation,
       routePoints: [],
     }
   }
@@ -49,28 +51,44 @@ class Map extends Component {
     });
   }
 
+  getRegion = (currentLocation, restaurantLocation) => {
+    let region = {
+      latitude: restaurantLocation.latitude,
+      longitude: restaurantLocation.longitude,
+      latitudeDelta: DEFAULT_LATITUDE_DELTA,
+      longitudeDelta: DEFAULT_LONGITUDE_DELTA,
+    };
+
+    if (typeof currentLocation !== 'undefined') {
+      const { latitude, longitude } = currentLocation;
+      const { restaurant } = this.props.navigation.state.params;
+      const rLatitude = restaurant.coordinates.latitude;
+      const rLongitude = restaurant.coordinates.longitude;
+
+      region = {
+        latitude: (rLatitude + latitude) / 2,
+        longitude: (rLongitude + longitude) / 2,
+        latitudeDelta: Math.abs(rLatitude - latitude) * 1.5,
+        longitudeDelta: Math.abs(rLongitude - longitude) * 1.5,
+      }
+    } 
+
+    return region;
+  }
+
   componentDidMount() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        const region = this.getRegion(position.coords, this.props.navigation.state.params.restaurant.coordinates);
         const { latitude, longitude } = position.coords;
-        const { restaurant } = this.props.navigation.state.params;
-        const rLatitude = restaurant.coordinates.latitude;
-        const rLongitude = restaurant.coordinates.longitude;
-
-        const region = {
-          latitude: (rLatitude + latitude) / 2,
-          longitude: (rLongitude + longitude) / 2,
-          latitudeDelta: Math.abs(rLatitude - latitude) * 1.15,
-          longitudeDelta: Math.abs(rLongitude - longitude) * 1.15,
-        }
 
         this.setState({
           region: region,
           position: {latitude, longitude}
         }, this.setUpWatchPosition);
       },
-      (error) => alert(JSON.stringify(error)),
-      {enableHighAccuracy: false, timeout: 20000, maximumAge: 1000}
+      (error) => {},
+      {enableHighAccuracy: false, timeout: 5000, maximumAge: 1000}
     );
   }
 
@@ -102,14 +120,14 @@ class Map extends Component {
               strokeWidth={2}
               strokeColor={'#4985E9'} />
         </MapView>
-        <Button 
-            style={{ position: 'absolute', bottom: 20, right: 20 }}
-            onPress={this.getRoute}>
-          {(this.state.position !== null &&
-            <Icon name='navigate' />) ||
-            <Spinner /> 
-          }
-        </Button>
+        {
+          typeof this.state.position !== 'undefined' &&
+          <Button 
+              style={{ position: 'absolute', bottom: 20, right: 20 }}
+              onPress={this.getRoute}>
+            <Icon name='navigate' />
+          </Button>
+        }
       </View>
     );
   }

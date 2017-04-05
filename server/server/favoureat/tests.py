@@ -195,19 +195,20 @@ class UserSwipeTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Swipe.objects.count(), 1)
-        self.assertEqual(Swipe.objects.get().yelp_id, data['yelp_id'])
-        self.assertEqual(Swipe.objects.get().right_swipe_count, data['right_swipe_count'])
-        self.assertEqual(Swipe.objects.get().left_swipe_count, data['left_swipe_count'])
+        self.assertEqual(Swipe.objects.get().yelp_id, swipe_data[0]['yelp_id'])
+        self.assertEqual(Swipe.objects.get().right_swipe_count, swipe_data[0]['right_swipe_count'])
+        self.assertEqual(Swipe.objects.get().left_swipe_count, swipe_data[0]['left_swipe_count'])
 
     def test_error_save_swipe(self):
         """ Ensure that error occurs if we try to save a swipe decision with nonexisting user """
         user = User.objects.create(pk='139530')
         user.save()
 
-        data = {'user': 16,
+        swipe_data = [{
                 'yelp_id': 54623,
                 'right_swipe_count': 9,
-                'left_swipe_count': 0}
+                'left_swipe_count': 0}]
+        data = {'user': 16, 'swipes': swipe_data}
         url = '/v1/users/' + str(data['user']) + '/swipes/'
 
         factory = APIRequestFactory()
@@ -223,10 +224,11 @@ class UserSwipeTests(APITestCase):
         user = User(pk='139530')
         user.save()
 
-        data = {'user': user.id,
+        swipe_data = [{
                 'yelp_id': 54623,
                 'right_swipe_count': 'hello',
-                'left_swipe_count': 'goodbye'}
+                'left_swipe_count': 'goodbye'}]
+        data = {'user': user.id, 'swipes': swipe_data}
         url = '/v1/users/' + str(data['user']) + '/swipes/'
 
         factory = APIRequestFactory()
@@ -681,15 +683,15 @@ class IndividualTournamentTest(APITestCase):
         response = view(request, event_id=event.id)
         return response
 
-    def request_helper_put(self, user, event, tournament_id, authenticate, data):
+    def request_helper_put(self, user, event, authenticate, data):
         factory = APIRequestFactory()
-        url = 'v1/events/{event_id}/tournament/{tournament_id}'.format(event_id=str(event.id), tournament_id=str(tournament_id))
+        url = 'v1/events/{event_id}/tournament/'.format(event_id=str(event.id))
         request = factory.put(url, data, format='json')
 
         if authenticate:
             force_authenticate(request, user)
         view = views.IndividualTournamentView.as_view()
-        response = view(request, event_id=event.id, tournament_id=tournament_id)
+        response = view(request, event_id=event.id)
         return response
 
     def test_get_tournament_first_round_success(self):
@@ -784,7 +786,7 @@ class IndividualTournamentTest(APITestCase):
         tournament1 = Tournament(event=event, restaurant=restaurant1, vote_count=1)
         tournament1.save()
 
-        response = self.request_helper_put(user, event, tournament1.id, True, {})
+        response = self.request_helper_put(user, event, True, {"tournaments": [tournament1.id]})
         result = Tournament.objects.get(pk=tournament1.id)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['Next'], 0)
@@ -803,9 +805,14 @@ class IndividualTournamentTest(APITestCase):
         tournament2 = Tournament(event=event, restaurant=restaurant2, vote_count=0)
         tournament1.save()
         tournament2.save()
+        tournament1.competitor = tournament2
+        tournament2.competitor = tournament1
+        tournament1.save()
+        tournament2.save()
 
-        data = {"is_finished": True, "tournament_data": [[{'id': tournament1.id}, {'id': tournament2.id}]]}
-        response = self.request_helper_put(user, event, tournament1.id, True, data=data)
+        data = {"is_finished": True, "tournament_data": [[{'id': tournament1.id}, {'id': tournament2.id}]],
+                "tournaments": [tournament1.id]}
+        response = self.request_helper_put(user, event, True, data=data)
         tournament_result = Tournament.objects.get(pk=tournament1.id)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['Next'], 1)
@@ -824,9 +831,14 @@ class IndividualTournamentTest(APITestCase):
         tournament2 = Tournament(event=event, restaurant=restaurant2, vote_count=0)
         tournament1.save()
         tournament2.save()
+        tournament1.competitor = tournament2
+        tournament2.competitor = tournament1
+        tournament1.save()
+        tournament2.save()
 
-        data = {"is_finished": True, "tournament_data": [[{'id': tournament1.id}, {'id': tournament2.id}]]}
-        response = self.request_helper_put(user, event, tournament2.id, True, data=data)
+        data = {"is_finished": True, "tournament_data": [[{'id': tournament1.id}, {'id': tournament2.id}]],
+                "tournaments": [tournament2.id]}
+        response = self.request_helper_put(user, event, True, data=data)
         tournament_result = Tournament.objects.get(pk=tournament2.id)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['Next'], 1)
@@ -839,12 +851,17 @@ class TestEventUser(APITestCase):
         user.save()
         pref = Preference(radius=2, latitude=10, longitude=10)
         pref.save()
+        restaurant = Restaurant(yelp_id="12342")
+        restaurant.save()
         event_detail = EventDetail(preference=pref,
                                    datetime=timezone.now(),
                                    name="My event details",
                                    description="Cool event",
-                                   invite_code="8UF1H02P")
+                                   invite_code="8UF1H02P",
+                                   restaurant=restaurant)
         event_detail.save()
+        swipe = Swipe(user=user, yelp_id=restaurant.yelp_id)
+        swipe.save()
         event = Event(creator=user, event_detail=event_detail, round_num=0)
         event.save()
         user_attach = EventUserAttach(event=event, user=user)

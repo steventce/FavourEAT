@@ -29,20 +29,17 @@ class TournamentContainer extends Component {
   }
 
   putTournamentRound(restaurants) {
-    try {
-      for (var i = 0; i < restaurants.length - 1; i++) {
-        this.props.dispatch(putRound(this.state.access_token, this.state.eventId, restaurants[i].id));
-        this.props.dispatch(saveSwipe(this.props.auth.token.user_id, this.state.access_token, restaurants[i].restaurant.yelp_id, 1, 0));
-      }
-      // last restaurant needs to include specific data
-      this.props.dispatch(putRound(this.state.access_token, this.state.eventId,
-        restaurants[restaurants.length - 1].id, true, this.state.cards,
-        (isNext) => {
-          this.setState({ topCards: [], botCards: [] }, () => this.callbackFunction(isNext));
-        }));
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
+    var idArr = [];
+    restaurants.map((r) => idArr.push(r.id));
+    this.props.dispatch(putRound(this.state.access_token, this.state.eventId, idArr, this.state.cards, 
+      (isNext) => {this.setState({ topCards: [], botCards:[] }, () => this.callbackFunction(isNext))}));
+
+    var swipeArr = [];
+    restaurants.map((r) => swipeArr.push({
+      yelp_id: r.restaurant.yelp_id,
+      right_swipe_count: 1
+    }));
+    this.props.dispatch(saveSwipe(this.props.auth.token.user_id, this.state.access_token, swipeArr));
   }
 
   callbackFunction(isNext) {

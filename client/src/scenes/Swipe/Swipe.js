@@ -5,15 +5,17 @@ import SwipeContainer from './SwipeContainer';
 import SwipeCards from 'react-native-swipe-cards';
 
 import { colors as commonColors } from '../../styles/common';
+import { getDistance } from '../../services/mapService';
 
 class Swipe extends Component {
     constructor(props) {
         super(props);
-
+        console.log(props);
         this.state = {
             card: this.props.Cards,
             rightSwipes: [],
-            leftSwipes: []
+            leftSwipes: [],
+            currentLocation: this.props.currentLocation
         };
 
         this.handleYup = this.handleYup.bind(this);
@@ -55,6 +57,11 @@ class Swipe extends Component {
                   {restaurant.name}
                 </Text>
                 {this.getRating(restaurant)}
+                {(this.props.eventDetail === null && this.state.currentLocation) &&
+                    <Text>
+                        {getDistance(this.state.currentLocation, restaurant.coordinates)} km away
+                    </Text>
+                } 
               </View>
             </Card>
         )
@@ -110,9 +117,39 @@ class Swipe extends Component {
         if (this.swiper) {
             this.props.navigate('RestaurantDetails', {
                 restaurant: this.swiper.state.card,
+                currentLocation: this.state.currentLocation,
                 caller: this,
                 swipeable: true,
             });
+        }
+    };
+
+    componentDidMount() {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                this.setState({
+                    currentLocation: {latitude, longitude}
+                });
+            },
+            (error) => {},
+            {enableHighAccuracy: false, timeout: 3000, maximumAge: 1000}
+        );
+    }
+    
+    componentDidUpdate = (prevProps, prevState) => {
+        if (this.state.rightSwipes.length !== prevState.rightSwipes.length || 
+            this.state.leftSwipes.length !== prevState.leftSwipes.length) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    this.setState({
+                        currentLocation: {latitude, longitude}
+                    });
+                },
+                (error) => {},
+                {enableHighAccuracy: false, timeout: 3000, maximumAge: 1000}
+            );
         }
     };
 

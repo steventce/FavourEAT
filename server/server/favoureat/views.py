@@ -62,20 +62,23 @@ class UserSwipeView(APIView):
         if User.objects.filter(id=user).count() == 0:
             return Response("User not found", status=status.HTTP_404_NOT_FOUND)
         request.data['user'] = user
-        swipe = Swipe.objects.filter(yelp_id=request.data['yelp_id'], user=request.data['user']).first()
-        if swipe is not None:
-            if 'right_swipe_count' in request.data.keys():
-               request.data['right_swipe_count'] += swipe.right_swipe_count
-            if 'left_swipe_count' in request.data.keys():
-               request.data['left_swipe_count'] += swipe.left_swipe_count
-            serializer = SwipeSerializer(swipe, data=request.data)
-        else:
-            serializer = SwipeSerializer(None, data=request.data)
-     
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        for s in request.data['swipes']:
+            s['user'] = request.data['user']
+            swipe = Swipe.objects.filter(yelp_id=s['yelp_id'], user=request.data['user']).first()
+            if swipe is not None:
+                if 'right_swipe_count' in s.keys():
+                    swipe.right_swipe_count += s['right_swipe_count']
+                if 'left_swipe_count' in s.keys():
+                    swipe.left_swipe_count += s['left_swipe_count']
+                swipe.save()
+            else:
+                serializer = SwipeSerializer(None, data=s)
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class TokenView(ConvertTokenView):
@@ -413,6 +416,11 @@ class JoinEventView(APIView):
 
             serializer = EventSerializer(event)
             resp = serializer.data
+
+            participants = EventUserAttach.objects.filter(event=event)
+            resp['num_participants'] = participants.count()
+            resp['participants'] = EventUserAttachSerializer(participants, many=True).data
+            
             return Response(data=resp, status=status.HTTP_201_CREATED)
         except EventDetail.DoesNotExist:
             return Response("Event detail with this invite code does not exist", status=status.HTTP_404_NOT_FOUND)
@@ -525,7 +533,7 @@ class IndividualTournamentView(APIView):
         if event.is_group:
             if event.round_num == 0:
                 return False
-            if ((timezone.now() - event.round_start).total_seconds() / 3600) >= event.round_duration:
+            if ((timezone.now() - event.round_start).total_seconds() / 3600) < event.round_duration:
                 for t in tournament_data:
                     if t[0].vote_count + t[1].vote_count != num_participants:
                         round_completed = False
@@ -537,14 +545,16 @@ class IndividualTournamentView(APIView):
         event.round_start = timezone.now()
         event.save()
         # Schedule a job to be run later
-        update_next_round.apply_async(args=[event.id], countdown=event.round_duration * 3600)
+        if event.is_group:
+            update_next_round.apply_async(args=[event.id], countdown=event.round_duration * 3600)
 
         num_remaining = 0
         winner = None
         # Update restaurants for next tournament round
+        tournaments = Tournament.objects.filter(event=event)
         if event.round_num == 1:
-            for t in tournament_data:
-                tournament = Tournament.objects.get(pk=t['id'])
+            for t in tournaments:
+                tournament = Tournament.objects.get(pk=t.id)
                 if tournament.vote_count > 0:
                     tournament.vote_count = 0
                     num_remaining += 1
@@ -553,41 +563,59 @@ class IndividualTournamentView(APIView):
                 else:
                     tournament.delete()
         else:
-            for t in tournament_data:
-                tournament1 = Tournament.objects.get(pk=t[0]['id'])
-                tournament2 = Tournament.objects.get(pk=t[1]['id'])
+            computed = []
+            to_delete = []
+            for t in tournaments:
+                tournament1 = t
+                tournament2 = t.competitor if t is not None else None
+                
+                if tournament2 is None or tournament1.id in computed or tournament2.id in computed:
+                    continue
                 if tournament1.vote_count == tournament2.vote_count:
                     # Randomize winner if there is a tie
                     if len(tournament_data) == 1 and event.randomize_tie:
                         rand_index = random.choice([0, 1])
                         if rand_index:
                             tournament2.vote_count = 0
+                            tournament2.competitor = None
+                            tournament2.save()
                             winner = tournament2.restaurant
-                            tournament1.delete()
+                            to_delete.append(tournament1)
                         else:
                             tournament1.vote_count = 0
+                            tournament1.competitor = None
+                            tournament1.save()
                             winner = tournament1.restaurant
-                            tournament2.delete()
+                            to_delete.append(tournament2)
                         num_remaining += 1
                     else:
                         tournament1.vote_count = 0
+                        tournament1.competitor = None
                         tournament1.save()
                         tournament2.vote_count = 0
+                        tournament2.competitor = None
                         tournament2.save()
                         num_remaining += 2
                 elif tournament1.vote_count > tournament2.vote_count:
                     tournament1.vote_count = 0
+                    tournament1.competitor = None
                     tournament1.save()
                     num_remaining += 1
                     winner = tournament1.restaurant
-                    tournament2.delete()
+                    to_delete.append(tournament2)
                 else:
                     tournament2.vote_count = 0
+                    tournament2.competitor = None
                     tournament2.save()
                     num_remaining += 1
                     winner = tournament2.restaurant
-                    tournament1.delete()
+                    to_delete.append(tournament1)
+                    # tournament1.delete()
+                computed.append(tournament2.id)
+                computed.append(tournament1.id)
 
+            for t in to_delete:
+                t.delete()
         # If only 1 restaurant left, then update event details with the winner.
         if Tournament.objects.filter(event=event).count() == 1:
             event_details = event.event_detail
@@ -643,29 +671,32 @@ class IndividualTournamentView(APIView):
 
         # If there are odd number of restaurants, then carry the extra one to next round.
         if len(data) % 2 != 0:
-            num_votes = EventUserAttach.objects.filter(event=event_id).count()
             tournament = Tournament.objects.get(pk=data[len(data) - 1]['id'])
-            tournament.vote_count = num_votes
+            tournament.vote_count = 0
             tournament.save()
             if len(paired_tournaments_data) == 0:
                 return Response(data)
 
         return Response(paired_tournaments_data)
 
-    def put(self, request, event_id, tournament_id, format=None):
+    def put(self, request, event_id, format=None):
         """
         Increments the vote count of a tournament restaurant.
         """
         try:
-            tournament = Tournament.objects.get(pk=tournament_id)
-            tournament.vote_count += 1
-            tournament.save()
+            tournaments = Tournament.objects.filter(event=event_id)
+            for t in tournaments:
+                if t.id in request.data['tournaments']:
+                    t.vote_count += 1
+                    t.save()
+
             # Check if tournament round is over. If so, handle it.
             if 'is_finished' in request.data.keys() and request.data['is_finished']:
                 event = self.get_object(event_id)
                 user = request.user
                 event_user_attach = EventUserAttach.objects.get(event=event, user=user)
                 event_user_attach.last_round_voted += 1
+                event_user_attach.save()
 
                 is_round_over = self.update_next_round(event, request.data['tournament_data'])
                 if is_round_over:

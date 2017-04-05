@@ -123,6 +123,7 @@ class RestaurantDetails extends Component {
 
   render() {
     const { navigate } = this.props.navigation;
+    const currentLocation = this.props.navigation.state.params.currentLocation;
     const tournamentObj = this.props.navigation.state.params.restaurant;
     const restaurant = tournamentObj.restaurant;
     const swipeable = this.props.navigation.state.params.swipeable;
@@ -218,7 +219,7 @@ class RestaurantDetails extends Component {
             </NBButton>
             <NBButton
               style={{ backgroundColor: '#EFBE79' }}
-              onPress={() => navigate('Map', { restaurant: restaurant })}>
+              onPress={() => navigate('Map', { restaurant: restaurant, currentLocation: currentLocation })}>
               <Icon name='locate' />
             </NBButton>
           </Fab>
