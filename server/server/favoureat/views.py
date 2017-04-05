@@ -61,7 +61,7 @@ class UserSwipeView(APIView):
             return Response("User not found", status=status.HTTP_404_NOT_FOUND)
         request.data['user'] = user
         for s in request.data['swipes']:
-            swipe = Swipe.objects.filter(yelp_id=s['yelp_id'], user=s['user']).first()
+            swipe = Swipe.objects.filter(yelp_id=s['yelp_id'], user=request.data['user']).first()
             if swipe is not None:
                 if 'right_swipe_count' in s.keys():
                     swipe.right_swipe_count += s['right_swipe_count']
@@ -75,7 +75,7 @@ class UserSwipeView(APIView):
                 else:
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class TokenView(ConvertTokenView):

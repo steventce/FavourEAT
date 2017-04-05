@@ -21,20 +21,17 @@ class SwipeContainer extends Component {
 
   static navigationOptions = { header: { visible: false } }
 
-  // NOT USED FOR DEMO
-  // needs to be updated to use data properly
-  // i.e. leftSwipes.id
   postSwipe(leftSwipes, rightSwipes) {
-    try {
-      for (var i = 0; i < leftSwipes.length; i++) {
-        this.props.dispatch(saveSwipe(this.state.userId, this.state.appAccessToken, leftSwipes[i].restaurant.yelp_id, 1, 0));
-      }
-      for (var i = 0; i < rightSwipes.length; i++) {
-        this.props.dispatch(saveSwipe(this.state.userId, this.state.appAccessToken, rightSwipes[i].restaurant.yelp_id, 0, 1));
-      }
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
+    var swipeArr = []
+    leftSwipes.map((r) => swipeArr.push({
+      yelp_id: r.restaurant.yelp_id,
+      left_swipe_count: 1
+    }));
+    rightSwipes.map((r) => swipeArr.push({
+      yelp_id: r.restaurant.yelp_id,
+      right_swipe_count: 1
+    }));
+    this.props.dispatch(saveSwipe(this.state.userId, this.state.appAccessToken, swipeArr));
   }
 
   nextRound(restaurants) {
