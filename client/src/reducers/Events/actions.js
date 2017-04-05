@@ -1,3 +1,5 @@
+import { Alert } from 'react-native';
+
 import * as actionTypes from './actionTypes';
 import { API_BASE_URL } from '../../config/env';
 import { getRound } from '../Tournament/actions';
@@ -40,14 +42,24 @@ export function joinEvent(accessToken, userId, inviteCode) {
       }
     })
       .then((response) => {
-        if (!response.ok) throw Error();
+        if (!response.ok) throw Error(response.status);
         return response.json();
       })
       .then((json) => {
         // update store with new event
         dispatch(joinEventSuccess(json));
       })
-      .catch((error) => console.error(error));
+      .catch((error) => {
+        var alertMsg;
+        if (error.message == 409)
+          alertMsg = 'Already joined this event.'
+        else if (error.message == 404)
+          alertMsg = 'Event does not exist.'
+        else
+          alertMsg = 'Please try again.'
+        Alert.alert('Join failed!', alertMsg,
+        [{ text: 'OK'}], { cancelable: false});
+      });
   }
 }
 

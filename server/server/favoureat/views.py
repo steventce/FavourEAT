@@ -308,7 +308,8 @@ class EventView(APIView):
             event.save()
 
             # Schedule a job to be run later
-            update_next_round.apply_async(args=[event], countdown=event.round_duration * 3600)
+            if event.is_group:
+                update_next_round.apply_async(args=[event.id], countdown=event.round_duration * 3600)
 
             # Attach the user with the event
             event_user_attach = EventUserAttach(user=user, event=event)
@@ -498,7 +499,7 @@ class IndividualTournamentView(APIView):
         event.round_start = timezone.now()
         event.save()
         # Schedule a job to be run later
-        update_next_round.apply_async(args=[event], countdown=event.round_duration * 3600)
+        update_next_round.apply_async(args=[event.id], countdown=event.round_duration * 3600)
 
         num_remaining = 0
         winner = None

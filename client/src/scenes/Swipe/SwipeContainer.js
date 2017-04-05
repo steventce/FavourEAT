@@ -14,7 +14,7 @@ class SwipeContainer extends Component {
       eventId: -1,
       cards: [],
       user_id: '',
-      appAccessToken: '',
+      access_token: '',
     }
     this.gotoTournament = this.gotoTournament.bind(this);
   }
@@ -27,10 +27,10 @@ class SwipeContainer extends Component {
   postSwipe(leftSwipes, rightSwipes) {
     try {
       for (var i = 0; i < leftSwipes.length; i++) {
-        this.props.dispatch(saveSwipe(this.state.userId, this.state.appAccessToken, leftSwipes[i].restaurant.yelp_id, 1, 0));
+        this.props.dispatch(saveSwipe(this.state.user_id, this.state.access_token, leftSwipes[i].restaurant.yelp_id, 1, 0));
       }
       for (var i = 0; i < rightSwipes.length; i++) {
-        this.props.dispatch(saveSwipe(this.state.userId, this.state.appAccessToken, rightSwipes[i].restaurant.yelp_id, 0, 1));
+        this.props.dispatch(saveSwipe(this.state.user_id, this.state.access_token, rightSwipes[i].restaurant.yelp_id, 0, 1));
       }
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -40,40 +40,36 @@ class SwipeContainer extends Component {
   nextRound(restaurants) {
     try {
       for (var i = 0; i < restaurants.length - 1; i++) {
-        this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId, restaurants[i].id));
+        this.props.dispatch(putRound(this.state.access_token, this.state.eventId, restaurants[i].id));
       }
       // last restaurant needs to include specific data
-      this.props.dispatch(putRound(this.state.appAccessToken, this.state.eventId,
+      this.props.dispatch(putRound(this.state.access_token, this.state.eventId,
         restaurants[restaurants.length - 1].id, true, this.state.cards,
-        () => this.gotoTournament()));
+        (isNext) => this.gotoTournament(isNext)));
     } catch (error) {
       Alert.alert('Error', error.message);
     }
   }
 
-  gotoTournament() {
-    // TODO: handle back button
-    this.props.navigation.navigate('Tournament', { eventId: this.state.eventId });
-  }
-
-  async componentDidMount() {
-    try {
-      const appAccessToken = await AsyncStorage.getItem('app_access_token');
-      if (appAccessToken) {
-        this.setState({ appAccessToken });
-      }
-      const userId = await AsyncStorage.getItem('user_id');
-      if (userId) {
-        this.setState({ userId });
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Loading Error. Please try again.');
+  gotoTournament(isNext) {
+    // can continue?
+    if (isNext) {
+      this.props.navigation.navigate('Tournament', { eventId: this.state.eventId });
+    } else {
+      Alert.alert('Votes casted!', 'Please wait for next round.',
+        [{text:'OK', onPress: () => this.props.navigation.navigate('HomeDrawer')}],
+        {cancelable: false});
     }
   }
 
+  componentDidMount() {
+    const { access_token, user_id } = this.props.auth.token;
+    this.setState({ access_token, user_id })
+  }
+
   componentWillReceiveProps(nextProps) {
-    const { eventId, tournamentArr } = nextProps;
-    if (tournamentArr.length === 0) {
+    const { eventId, tournamentArr } = nextProps.rounds;
+    if (tournamentArr && tournamentArr.length === 0) {
       Alert.alert('Error', 'Loading Error. Please try again.',
       [
         { text: 'OK', onPress: () => this.props.navigation.goBack() }
@@ -98,7 +94,8 @@ class SwipeContainer extends Component {
 }
 
 const mapStateToProps = function (state) {
-  return state.rounds;
+  const { auth, rounds } = state;
+  return { auth, rounds };
 }
 
 export default connect(mapStateToProps)(SwipeContainer);
