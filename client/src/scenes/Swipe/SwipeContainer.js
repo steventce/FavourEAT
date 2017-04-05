@@ -21,34 +21,24 @@ class SwipeContainer extends Component {
 
   static navigationOptions = { header: { visible: false } }
 
-  // NOT USED FOR DEMO
-  // needs to be updated to use data properly
-  // i.e. leftSwipes.id
   postSwipe(leftSwipes, rightSwipes) {
-    try {
-      for (var i = 0; i < leftSwipes.length; i++) {
-        this.props.dispatch(saveSwipe(this.state.user_id, this.state.access_token, leftSwipes[i].restaurant.yelp_id, 1, 0));
-      }
-      for (var i = 0; i < rightSwipes.length; i++) {
-        this.props.dispatch(saveSwipe(this.state.user_id, this.state.access_token, rightSwipes[i].restaurant.yelp_id, 0, 1));
-      }
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
+    var swipeArr = []
+    leftSwipes.map((r) => swipeArr.push({
+      yelp_id: r.restaurant.yelp_id,
+      left_swipe_count: 1
+    }));
+    rightSwipes.map((r) => swipeArr.push({
+      yelp_id: r.restaurant.yelp_id,
+      right_swipe_count: 1
+    }));
+    this.props.dispatch(saveSwipe(this.state.user_id, this.state.access_token, swipeArr));
   }
 
   nextRound(restaurants) {
-    try {
-      for (var i = 0; i < restaurants.length - 1; i++) {
-        this.props.dispatch(putRound(this.state.access_token, this.state.eventId, restaurants[i].id));
-      }
-      // last restaurant needs to include specific data
-      this.props.dispatch(putRound(this.state.access_token, this.state.eventId,
-        restaurants[restaurants.length - 1].id, true, this.state.cards,
-        (isNext) => this.gotoTournament(isNext)));
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
+    var idArr = [];
+    restaurants.map((r) => idArr.push(r.id));
+    this.props.dispatch(putRound(this.state.access_token, this.state.eventId, idArr, this.state.cards,
+      (isNext) => this.gotoTournament(isNext)));
   }
 
   gotoTournament(isNext) {
