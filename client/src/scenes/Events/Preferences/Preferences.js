@@ -69,7 +69,8 @@ class Preferences extends Component {
           options: options.options,
           selectedOptions: options.selectedOptions,
           onSelect: options.onSelect,
-          renderLabel: options.renderLabel
+          renderLabel: options.renderLabel,
+          type: options.type || "radio"
         }
       });
     }
@@ -111,11 +112,22 @@ class Preferences extends Component {
     });
   };
 
+  handleClickCuisine = (value, selected) => {
+    if (!selected) {
+      this.handleAddCuisineType(value);
+    } else {
+      this.handleRemoveCuisineType(value);
+    }
+  }
+
   handleAddCuisineType = (value) => {
     const newCuisineTypes = new Set(this.state.preferences.cuisineTypes);
     newCuisineTypes.add(value);
     this.setState({
-      modalVisible: false,
+      modalOptions: {
+        ...this.state.modalOptions,
+        selectedOptions: Array.from(newCuisineTypes),
+      },
       preferences: {
         ...this.state.preferences,
         cuisineTypes: Array.from(newCuisineTypes)
@@ -127,6 +139,10 @@ class Preferences extends Component {
     const newCuisineTypes = new Set(this.state.preferences.cuisineTypes)
     newCuisineTypes.delete(value);
     this.setState({
+      modalOptions: {
+        ...this.state.modalOptions,
+        selectedOptions: Array.from(newCuisineTypes),
+      },
       preferences: {
         ...this.state.preferences,
         cuisineTypes: Array.from(newCuisineTypes)
@@ -197,8 +213,9 @@ class Preferences extends Component {
                 onPress={this.openModal({
                   options: this.props.allCuisineTypes,
                   selectedOptions: this.state.preferences.cuisineTypes,
-                  onSelect: this.handleAddCuisineType,
-                  renderLabel: (option) => <Text>{option.label}</Text>
+                  type: "checkbox",
+                  onSelect: this.handleClickCuisine,
+                  renderLabel: (option) => <Text>{option.label}</Text>,
                 })}
                 disabled={readOnly}
                 label="Cuisine Type" />
@@ -218,7 +235,8 @@ class Preferences extends Component {
                   options={this.state.modalOptions.options}
                   selectedOptions={this.state.modalOptions.selectedOptions}
                   onSelect={this.state.modalOptions.onSelect}
-                  renderLabel={this.state.modalOptions.renderLabel} />
+                  renderLabel={this.state.modalOptions.renderLabel}
+                  type={this.state.modalOptions.type} />
             </PopupModal>
 
             {!readOnly &&
