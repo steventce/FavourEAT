@@ -344,7 +344,7 @@ class EventDetails extends Component {
         </Content>
 
         { /* Display FAB only when there's a winning restaurant */}
-        {true && (<Fab
+        {votingComplete && (<Fab
           active={this.state.active}
           direction="up"
           position="bottomRight"
