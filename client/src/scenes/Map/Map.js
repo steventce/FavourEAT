@@ -7,6 +7,9 @@ import { getRoute } from '../../reducers/Map/actions';
 
 import styles from './styles';
 
+const DEFAULT_LATITUDE_DELTA = 0.0922;
+const DEFAULT_LONGITUDE_DELTA = 0.0421;
+
 class Map extends Component {
 
   static navigationOptions = {
@@ -49,17 +52,26 @@ class Map extends Component {
   }
 
   getRegion = (currentLocation, restaurantLocation) => {
-    const { latitude, longitude } = currentLocation;
-    const { restaurant } = this.props.navigation.state.params;
-    const rLatitude = restaurant.coordinates.latitude;
-    const rLongitude = restaurant.coordinates.longitude;
+    let region = {
+      latitude: restaurantLocation.latitude,
+      longitude: restaurantLocation.longitude,
+      latitudeDelta: DEFAULT_LATITUDE_DELTA,
+      longitudeDelta: DEFAULT_LONGITUDE_DELTA,
+    };
 
-    const region = {
-      latitude: (rLatitude + latitude) / 2,
-      longitude: (rLongitude + longitude) / 2,
-      latitudeDelta: Math.abs(rLatitude - latitude) * 1.5,
-      longitudeDelta: Math.abs(rLongitude - longitude) * 1.5,
-    }
+    if (typeof currentLocation !== 'undefined') {
+      const { latitude, longitude } = currentLocation;
+      const { restaurant } = this.props.navigation.state.params;
+      const rLatitude = restaurant.coordinates.latitude;
+      const rLongitude = restaurant.coordinates.longitude;
+
+      region = {
+        latitude: (rLatitude + latitude) / 2,
+        longitude: (rLongitude + longitude) / 2,
+        latitudeDelta: Math.abs(rLatitude - latitude) * 1.5,
+        longitudeDelta: Math.abs(rLongitude - longitude) * 1.5,
+      }
+    } 
 
     return region;
   }
@@ -76,7 +88,7 @@ class Map extends Component {
         }, this.setUpWatchPosition);
       },
       (error) => {},
-      {enableHighAccuracy: false, timeout: 3000, maximumAge: 1000}
+      {enableHighAccuracy: false, timeout: 5000, maximumAge: 1000}
     );
   }
 
@@ -108,11 +120,14 @@ class Map extends Component {
               strokeWidth={2}
               strokeColor={'#4985E9'} />
         </MapView>
-        <Button 
-            style={{ position: 'absolute', bottom: 20, right: 20 }}
-            onPress={this.getRoute}>
-          <Icon name='navigate' />
-        </Button>
+        {
+          typeof this.state.position !== 'undefined' &&
+          <Button 
+              style={{ position: 'absolute', bottom: 20, right: 20 }}
+              onPress={this.getRoute}>
+            <Icon name='navigate' />
+          </Button>
+        }
       </View>
     );
   }

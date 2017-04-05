@@ -57,9 +57,11 @@ class Swipe extends Component {
                   {restaurant.name}
                 </Text>
                 {this.getRating(restaurant)}
-                <Text>
-                    {this.state.currentLocation && getDistance(this.state.currentLocation, restaurant.coordinates)} km away
-                </Text>
+                {this.state.currentLocation &&
+                    <Text>
+                        {getDistance(this.state.currentLocation, restaurant.coordinates)} km away
+                    </Text>
+                } 
               </View>
             </Card>
         )
