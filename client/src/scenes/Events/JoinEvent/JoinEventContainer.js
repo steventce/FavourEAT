@@ -37,9 +37,7 @@ class JoinEventContainer extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    console.log(nextProps);
     const { events }  = nextProps.event;
-    console.log(events);
     if (events && events.length > 0) {
       /*  Instead of comparing the 2 arrays to find the joined event,
       *   have the joined event be added to the last index thus if

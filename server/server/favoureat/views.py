@@ -416,6 +416,11 @@ class JoinEventView(APIView):
 
             serializer = EventSerializer(event)
             resp = serializer.data
+
+            participants = EventUserAttach.objects.filter(event=event)
+            resp['num_participants'] = participants.count()
+            resp['participants'] = EventUserAttachSerializer(participants, many=True).data
+            
             return Response(data=resp, status=status.HTTP_201_CREATED)
         except EventDetail.DoesNotExist:
             return Response("Event detail with this invite code does not exist", status=status.HTTP_404_NOT_FOUND)
