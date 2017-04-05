@@ -44,6 +44,7 @@ def update_next_round(event_id):
                 tournament.delete()
     else:
         computed = []
+        to_delete = []
         for t in tournaments:
             tournament1 = t
             tournament2 = t.competitor if t is not None else None
@@ -64,16 +65,19 @@ def update_next_round(event_id):
                 tournament1.save()
                 num_remaining += 1
                 winner = tournament1.restaurant
-                tournament2.delete()
+                to_delete.append(tournament2)
             else:
                 tournament2.vote_count = 0
                 tournament2.competitor = None
                 tournament2.save()
                 num_remaining += 1
                 winner = tournament2.restaurant
-                tournament1.delete()
+                to_delete.append(tournament1)
             computed.append(tournament2.id)
             computed.append(tournament1.id)
+
+        for t in to_delete:
+            t.delete()
 
     # If only 1 restaurant left, then update event details with the winner.
     if num_remaining == 1:
