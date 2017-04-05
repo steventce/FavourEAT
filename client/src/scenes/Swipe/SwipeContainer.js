@@ -89,6 +89,7 @@ class SwipeContainer extends Component {
         nextRound={this.nextRound.bind(this)}
         navigate={navigate}
         currentLocation={state.params.currentLocation}
+        eventDetail={state.params.eventDetail}
         Cards={this.state.cards} />
     );
   }
