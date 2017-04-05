@@ -54,7 +54,16 @@ class Preferences extends Component {
         (position) => {
           const { latitude, longitude } = position.coords;
           this.handleChangeLocation({latitude, longitude});
-        }
+        },
+        (error) => Alert.alert(
+          'Error',
+          'Error getting current location. Please try again.',
+          [
+            {text: 'Go Back', onPress: () => this.props.navigation.goBack()}
+          ],
+          { cancelable: false }
+        ),
+        {enableHighAccuracy: false, timeout: 10000, maximumAge: 1000}
       );
     } catch (error) {
       Alert.alert('Error', 'Loading Error. Please try again.');
