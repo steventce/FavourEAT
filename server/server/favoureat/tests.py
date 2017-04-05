@@ -839,12 +839,17 @@ class TestEventUser(APITestCase):
         user.save()
         pref = Preference(radius=2, latitude=10, longitude=10)
         pref.save()
+        restaurant = Restaurant(yelp_id="12342")
+        restaurant.save()
         event_detail = EventDetail(preference=pref,
                                    datetime=timezone.now(),
                                    name="My event details",
                                    description="Cool event",
-                                   invite_code="8UF1H02P")
+                                   invite_code="8UF1H02P",
+                                   restaurant=restaurant)
         event_detail.save()
+        swipe = Swipe(user=user, yelp_id=restaurant.yelp_id)
+        swipe.save()
         event = Event(creator=user, event_detail=event_detail, round_num=0)
         event.save()
         user_attach = EventUserAttach(event=event, user=user)
