@@ -25,8 +25,6 @@ def update_next_round(event_id):
     event.round_num += 1
     event.round_start = timezone.now()
     event.save()
-    # Schedule a job to be run later for next round
-    update_next_round.apply_async(args=[event_id], countdown=event.round_duration * 3600)
 
     num_remaining = 0
     winner = None
@@ -97,6 +95,10 @@ def update_next_round(event_id):
                 first_name=event.creator.first_name, name=winner_str)
 
             fcm_service.notify_all_participants(event.id, title, body)
+    else:
+        # Schedule a job to be run later for next round if not past the event datetime
+        if timezone.now() < event.event_detail.datetime:
+            update_next_round.apply_async(args=[event_id], countdown=event.round_duration * 3600)
 
     return True
 

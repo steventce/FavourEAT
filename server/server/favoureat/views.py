@@ -533,7 +533,7 @@ class IndividualTournamentView(APIView):
         if event.is_group:
             if event.round_num == 0:
                 return False
-            if ((timezone.now() - event.round_start).total_seconds() / 3600) >= event.round_duration:
+            if ((timezone.now() - event.round_start).total_seconds() / 3600) < event.round_duration:
                 for t in tournament_data:
                     if t[0].vote_count + t[1].vote_count != num_participants:
                         round_completed = False
