@@ -19,14 +19,14 @@ def update_next_round(event_id):
         return False
     event = e[0]
 
-    if timezone.now() < event.round_start + timedelta(hours=event.round_duration):
+    if ((timezone.now() - event.round_start).total_seconds() / 3600) < event.round_duration:
         return False
 
     event.round_num += 1
     event.round_start = timezone.now()
     event.save()
     # Schedule a job to be run later for next round
-    # update_next_round.apply_async(args=[event_id], countdown=event.round_duration * 3600)
+    update_next_round.apply_async(args=[event_id], countdown=event.round_duration * 3600)
 
     num_remaining = 0
     winner = None
