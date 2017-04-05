@@ -309,7 +309,7 @@ class EventView(APIView):
             event.save()
 
             # Schedule a job to be run later
-            update_next_round.apply_async(args=[event], countdown=event.round_duration * 3600)
+            #update_next_round.apply_async(args=[event], countdown=event.round_duration * 3600)
 
             # Attach the user with the event
             event_user_attach = EventUserAttach(user=user, event=event)
@@ -499,14 +499,15 @@ class IndividualTournamentView(APIView):
         event.round_start = timezone.now()
         event.save()
         # Schedule a job to be run later
-        update_next_round.apply_async(args=[event], countdown=event.round_duration * 3600)
+        #update_next_round.apply_async(args=[event], countdown=event.round_duration * 3600)
 
         num_remaining = 0
         winner = None
         # Update restaurants for next tournament round
+        tournaments = Tournament.objects.filter(event=event)
         if event.round_num == 1:
-            for t in tournament_data:
-                tournament = Tournament.objects.get(pk=t['id'])
+            for t in tournaments:
+                tournament = Tournament.objects.get(pk=t.id)
                 if tournament.vote_count > 0:
                     tournament.vote_count = 0
                     num_remaining += 1
@@ -515,41 +516,59 @@ class IndividualTournamentView(APIView):
                 else:
                     tournament.delete()
         else:
-            for t in tournament_data:
-                tournament1 = Tournament.objects.get(pk=t[0]['id'])
-                tournament2 = Tournament.objects.get(pk=t[1]['id'])
+            computed = []
+            to_delete = []
+            for t in tournaments:
+                tournament1 = t
+                tournament2 = t.competitor if t is not None else None
+                
+                if tournament2 is None or tournament1.id in computed or tournament2.id in computed:
+                    continue
                 if tournament1.vote_count == tournament2.vote_count:
                     # Randomize winner if there is a tie
                     if len(tournament_data) == 1 and event.randomize_tie:
                         rand_index = random.choice([0, 1])
                         if rand_index:
                             tournament2.vote_count = 0
+                            tournament2.competitor = None
+                            tournament2.save()
                             winner = tournament2.restaurant
-                            tournament1.delete()
+                            to_delete.append(tournament1)
                         else:
                             tournament1.vote_count = 0
+                            tournament1.competitor = None
+                            tournament1.save()
                             winner = tournament1.restaurant
-                            tournament2.delete()
+                            to_delete.append(tournament2)
                         num_remaining += 1
                     else:
                         tournament1.vote_count = 0
+                        tournament1.competitor = None
                         tournament1.save()
                         tournament2.vote_count = 0
+                        tournament2.competitor = None
                         tournament2.save()
                         num_remaining += 2
                 elif tournament1.vote_count > tournament2.vote_count:
                     tournament1.vote_count = 0
+                    tournament1.competitor = None
                     tournament1.save()
                     num_remaining += 1
                     winner = tournament1.restaurant
-                    tournament2.delete()
+                    to_delete.append(tournament2)
                 else:
                     tournament2.vote_count = 0
+                    tournament2.competitor = None
                     tournament2.save()
                     num_remaining += 1
                     winner = tournament2.restaurant
-                    tournament1.delete()
+                    to_delete.append(tournament1)
+                    # tournament1.delete()
+                computed.append(tournament2.id)
+                computed.append(tournament1.id)
 
+            for t in to_delete:
+                t.delete()
         # If only 1 restaurant left, then update event details with the winner.
         if Tournament.objects.filter(event=event).count() == 1:
             event_details = event.event_detail
