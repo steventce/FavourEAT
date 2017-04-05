@@ -14,16 +14,17 @@ export default StyleSheet.create({
       flexDirection: 'row',
     },
     overlapBtn: {
-        width: 45,
-        height: 45,
+        width: 55,
+        height: 55,
         borderWidth: 5,
         borderColor: '#e7e7e7',
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 22,
+        borderRadius: 50,
+        marginBottom: 15,
         marginTop: -100,
         backgroundColor: '#f7f7f7',
-        marginRight: 5
+        marginLeft: 15
     },
     imgContainer: {
         flex: 1,
@@ -42,18 +43,16 @@ export default StyleSheet.create({
     },
     reviewTxt: {
       fontSize: 15,
-      marginLeft: 15,
+      marginLeft: 0,
       marginBottom: 5,
     },
     reviewTime: {
-      fontSize: 11,
-      fontStyle: 'italic',
-      marginLeft: 5 
+      fontSize: 12,
+      marginBottom: 5
     },
     reviewRating: {
       fontSize: 17,
-      fontWeight: 'bold',
-      marginLeft: 5
+      fontWeight: 'bold'
     },
     reviewMargin: {
       marginBottom: 75

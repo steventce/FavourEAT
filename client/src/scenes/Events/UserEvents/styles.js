@@ -2,12 +2,15 @@ import { StyleSheet } from 'react-native';
 import { colors } from '../../../styles/common';
 
 export const PARALLAX_HEADER_HEIGHT = 270;
+const ROW_CONTENT_MARGIN = 15;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'row',
-    padding: 15
+    paddingLeft: 20,
+    paddingRight: 20,
+    paddingTop: 20
   },
   btnContainer: {
     flex: 1,
@@ -15,13 +18,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 15
   },
+  sectionContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    padding: 20
+  },
   foreground: {
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     height: PARALLAX_HEADER_HEIGHT
   },
   thumbnail: {
     alignSelf: 'center',
     marginTop: 30
+  },
+  avatar: {
+    marginBottom: ROW_CONTENT_MARGIN,
+    marginTop: ROW_CONTENT_MARGIN
+  },
+  body: {
+    margin: ROW_CONTENT_MARGIN
   },
   event: {
     color: 'white',
@@ -41,10 +56,18 @@ const styles = StyleSheet.create({
     width: 140
   },
   sectionHeader: {
-    backgroundColor: colors.APP_PRIMARY_LIGHT,
+    backgroundColor: colors.APP_PRIMARY_DARK,
     margin: 0,
-    marginTop: 20,
+    marginTop: 0,
     padding: 0
+  },
+  bodyText: {
+    color: 'black',
+    fontSize: 18
+  },
+  sectionText: {
+    color: 'white',
+    fontSize: 18
   }
 });
 

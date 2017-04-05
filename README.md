@@ -88,17 +88,22 @@ export PYTHONPATH=<path-to-repo>/server:$PYTHONPATH
 cd <path-to-repo>/server/redis-stable
 redis-server
 ```
+
 In a separate terminal, run:
-```
+```bash
 cd <path-to-repo>/server
 env/bin/celery --app=server.celery:app worker --loglevel=INFO
 ```
 
 To test if the job ran correctly:
-```
+```python
 python manage.py shell
 from server.favoureat.tasks import update_next_round
 update_next_round.apply_async(args=[<event_id>], countdown=<time in seconds>)
 ```
 
-
+## Attributions
+Images by: 
+- [Elli O.](https://unsplash.com/collections/191435/glorious-food?photo=XoByiBymX20)
+- [Juja Han](https://unsplash.com/collections/386111/wine-and-food?photo=0NtItEQY2P8)
+- [Maria Mekht](https://unsplash.com/collections/386111/wine-and-food?photo=GuvimT4IFok)

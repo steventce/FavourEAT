@@ -33,7 +33,8 @@ import random
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework_social_oauth2.views import ConvertTokenView
+from rest_framework_social_oauth2.views import TokenView as SocialTokenView, ConvertTokenView
+from oauth2_provider.models import RefreshToken
 
 class UserView(APIView):
     """
@@ -104,6 +105,43 @@ class TokenView(ConvertTokenView):
         url, headers, body, var_status = self.create_token_response(request._request)
         data = json.loads(body)
         data['user_id'] = request.user.id
+
+        response = Response(data, status=var_status)
+
+        for k, v in headers.items():
+            response[k] = v
+        return response
+
+
+class RefreshTokenView(SocialTokenView):
+    """
+    Refreshes the access token.
+
+    Params: refresh_token
+
+    Adapted from:
+    https://github.com/PhilipGarnero/django-rest-framework-social-oauth2/issues/58
+    https://github.com/PhilipGarnero/django-rest-framework-social-oauth2/blob/master/rest_framework_social_oauth2/views.py
+    """
+    def post(self, request, format=None):
+        global var_status
+
+        request._request.POST = request._request.POST.copy()
+
+        request._request.POST['grant_type'] = 'refresh_token'
+        request._request.POST['client_id'] = settings.SOCIAL_AUTH_CLIENT_ID
+        request._request.POST['client_secret'] = settings.SOCIAL_AUTH_CLIENT_SECRET
+        request._request.POST['refresh_token'] = request.data.get('refresh_token')
+
+        url, headers, body, var_status = self.create_token_response(request._request)
+        data = json.loads(body)
+
+        refresh_token = RefreshToken.objects.filter(token=data.get('refresh_token'))
+        if refresh_token.count() != 1:
+            return Response('Unauthorized', status=status.HTTP_401_UNAUTHORIZED)
+
+        data['user_id'] = refresh_token[0].user_id
+
         response = Response(data, status=var_status)
 
         for k, v in headers.items():

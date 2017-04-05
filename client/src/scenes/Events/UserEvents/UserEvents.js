@@ -3,11 +3,11 @@ import {
   StyleSheet,
   Text,
   View,
-  Alert,
   TouchableNativeFeedback,
   ListView,
   RefreshControl,
-  Image
+  Image,
+  Dimensions
 } from 'react-native';
 import {
   Container,
@@ -24,7 +24,7 @@ import moment from 'moment';
 import ParallaxScrollView from 'react-native-parallax-scroll-view';
 import { isUpcoming } from '../../../utils/common';
 
-import backgroundImg from '../../../images/suika.jpg';
+import { homeBackground } from '../../../config/images';
 import { colors } from '../../../styles/common';
 import styles, { PARALLAX_HEADER_HEIGHT } from './styles';
 
@@ -130,11 +130,13 @@ class UserEvents extends Component {
 
   renderSectionHeader(section) {
     return (
-      <Card style={StyleSheet.flatten(styles.sectionHeader)}>
-        <View style={styles.container}>
-          <Text>{section.isEmpty ? `No ${section.title}` : section.title}</Text>
+      <View style={StyleSheet.flatten(styles.sectionHeader)}>
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionText}>
+            {section.isEmpty ? `No ${section.title}` : section.title}
+          </Text>
         </View>
-      </Card>
+      </View>
     );
   }
 
@@ -142,19 +144,25 @@ class UserEvents extends Component {
     const { id, name, datetime, restaurant } = event.event_detail;
 
     return (
-      <Card style={{ margin: 0, padding: 0 }}>
-        <TouchableNativeFeedback onPress={this.handleViewEventDetails.bind(null, event)}>
-          <View style={styles.container}>
-            <Left>
-              <Text>{name}</Text>
-              <Text>{restaurant ? restaurant.name : 'Voting in Progress'}</Text>
-            </Left>
-            <Right>
-              <Text>{moment(datetime).format('ddd, MMM Do @ h:mm A')}</Text>
-            </Right>
-          </View>
-        </TouchableNativeFeedback>
-      </Card>
+      <View style={{ margin: 0, padding: 0 }}>
+        <ListItem onPress={this.handleViewEventDetails.bind(null, event)}>
+          <Thumbnail
+            source={restaurant ? {uri: restaurant.image_url} : homeBackground}
+            style={StyleSheet.flatten(styles.avatar)}
+          />
+          <Body style={StyleSheet.flatten(styles.body)}>
+            <Text style={styles.bodyText}>
+              {name}
+            </Text>
+            <Text style={{ color: colors.FADED_TEXT_DARK }}>
+              {restaurant ? `${restaurant.name}` : 'Voting in Progress'}
+            </Text>
+            <Text style={{ color: colors.FADED_TEXT_DARK }}>
+              Starts {moment(datetime).format('h:mm A on ddd, MMM Do')}
+            </Text>
+          </Body>
+        </ListItem>
+      </View>
     );
   }
 
@@ -186,8 +194,11 @@ class UserEvents extends Component {
               renderBackground={() => {
                 return (
                   <Image
-                    source={backgroundImg}
-                    resizeMode="cover" style={{ height: PARALLAX_HEADER_HEIGHT }} />
+                    source={homeBackground}
+                    resizeMode="cover" style={{
+                      height: PARALLAX_HEADER_HEIGHT,
+                      width: Dimensions.get('window').width
+                    }} />
                 );
               }}
               renderForeground={() => {
