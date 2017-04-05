@@ -23,7 +23,7 @@ class CreateEvent extends Component {
     this.state = {
       eventName: '',
       date: moment().format('YYYY-MM-DD'),
-      time: moment().format('HH:mm'),
+      time: moment().format('h:mm A'),
       duration: roundDurationOptions[0],
       modalVisible: false,
       modalOptions: {

@@ -10,8 +10,8 @@ import {
 import moment from 'moment';
 
 const validateEditEvent = function(eventDetails) {
-  const { name, datetime } = eventDetails
-  return validateEventName(name) && validateEventDatetime(moment(datetime));
+  const { name, datetime } = eventDetails;
+  return validateEventName(name) && validateEventDatetime(moment(datetime, 'YYYY-MM-DD HH:mm AZ'));
 }
 
 const mapStateToProps = function(state, props) {

@@ -51,7 +51,7 @@ class EventDetails extends Component {
     const { datetime, name } = this.props.userEvent.event_detail;
     this.state = {
       date: moment(datetime).format('YYYY-MM-DD'),
-      time: moment(datetime).format('HH:mm'),
+      time: moment(datetime).format('h:mm A'),
       active: false,
       eventName: name,
       ratingModal: false,
@@ -69,7 +69,7 @@ class EventDetails extends Component {
     const { date, time, eventName: tempName } = this.state;
     const { datetime, name } = this.props.userEvent.event_detail;
 
-    const newMoment = moment(`${date} ${time}`, 'YYYY-MM-DD HH:mm');
+    const newMoment = moment(`${date} ${time}`, 'YYYY-MM-DD h:mm A');
     const initialMoment = moment(this.props.userEvent.event_detail.datetime);
     const hasDateTimeChanged = !newMoment.isSame(initialMoment, 'minute')
     const hasNameChanged = tempName !== name;
@@ -110,7 +110,7 @@ class EventDetails extends Component {
     const { access_token: accessToken, user_id: userId } = this.props.auth.token;
     const { date, time, eventName } = this.state;
     const { id: eventId } = this.props.userEvent;
-    const eventDateTime = moment(`${date} ${time}`, 'YYYY-MM-DD HH:mm');
+    const eventDateTime = moment(`${date} ${time}`, 'YYYY-MM-DD h:mm A');
     this.props.editEventDetails(
       accessToken,
       userId,
@@ -297,7 +297,7 @@ class EventDetails extends Component {
                 mode="time"
                 style={StyleSheet.flatten(styles.datePicker)}
                 customStyles={{ dateInput: StyleSheet.flatten(styles.dateInput) }}
-                format="HH:mm"
+                format="h:mm A"
                 confirmBtnText="Confirm"
                 cancelBtnText="Cancel"
                 minDate={new Date()}
