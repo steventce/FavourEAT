@@ -119,6 +119,22 @@ class EventDetails extends Component {
     );
   }
 
+  renderStars(rating) {
+    const isDecimal = rating % 1 !== 0;
+    const wholeRating = Math.floor(rating);
+    const ratings = Array.apply(null, {length: wholeRating}).map(Number.call, Number);
+    return (
+      <View style={styles.starContainer}>
+        {ratings.map((item) => {
+          return(
+          <Icon name="md-star" style={StyleSheet.flatten(styles.star)} />);
+        })}
+        {isDecimal &&
+          <Icon name="md-star-half" style={StyleSheet.flatten(styles.star)} />}
+      </View>
+    );
+  }
+
   submitRating() {
     const { access_token: accessToken, user_id: userId } = this.props.auth.token;
     const { id: eventId } = this.props.userEvent;
@@ -325,17 +341,21 @@ class EventDetails extends Component {
           <PopupModal
             visible={this.state.ratingModal}
             onClose={() => this.setState({ ratingModal: false })}>
-            <View>
-              <View style={{ alignItems: 'center' }}>
-                <Text>{this.state.userRating}</Text>
-              </View>
+            <View style={{ padding: 20 }}>
+              <Text style={styles.ratingTitle}>Rate this Restaurant</Text>
+              {this.renderStars(this.state.userRating)}
               <Slider
                 value={0}
                 minimumValue={0}
                 maximumValue={5}
                 step={0.5}
                 onSlidingComplete={(value) => this.setState({ userRating: value })} />
-              <Button onPress={() => this.submitRating()}><Text>OK</Text></Button>
+              <Button
+                block
+                success
+                onPress={() => this.submitRating()}
+                style={StyleSheet.flatten(styles.okRatingBtn)}>
+                <Text style={{ color: 'white' }}>OK ({`${this.state.userRating} stars`})</Text></Button>
             </View>
           </PopupModal>
         </ParallaxScrollView>
