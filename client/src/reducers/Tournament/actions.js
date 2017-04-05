@@ -22,7 +22,7 @@ export function getRound(accessToken, eventId) {
     }
 };
 
-export function putRound(accessToken, eventId, tournamentId, isFinished=false, tournamentData=null, callback) {
+export function putRound(accessToken, eventId, tournamentId, isFinished=false, tournamentData=null, callback=null) {
     console.log('putRound ' + tournamentId);
     var requestBody = null;
     if (isFinished) {
@@ -46,8 +46,8 @@ export function putRound(accessToken, eventId, tournamentId, isFinished=false, t
             return response.json();
         })
         .then((json) => {
-            if (callback && json.Next && json.Next == 1)
-                callback();
+            if (callback)
+                callback(json.Next);
         })
         .catch((error) => console.error(error))
     }

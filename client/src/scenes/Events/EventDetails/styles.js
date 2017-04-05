@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { colors } from '../../../styles/common';
 
 export default StyleSheet.create({
   foreground: {
@@ -21,8 +22,7 @@ export default StyleSheet.create({
     fontSize: 24
   },
   card: {
-    margin: 10,
-    padding: 10
+    padding: 20
   },
   dateInput: {
     borderWidth: 0
@@ -31,6 +31,15 @@ export default StyleSheet.create({
     margin: 15
   },
   btn: {
-    margin: 10
+    marginTop: 25
+  },
+  detail: {
+    alignItems: 'center',
+    flex: 1,
+    flexDirection: 'row',
+    marginTop: 10
+  },
+  detailIcon: {
+    color: colors.APP_PRIMARY_DARK
   }
 });

@@ -8,6 +8,9 @@ from django.conf import settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'server.settings')
 
 app = Celery('server', backend='redis://localhost:6379/0', broker='redis://localhost:6379/0')
+if os.environ.get('ENV') == 'PROD':
+	app.conf.update(BROKER_URL=os.environ['REDIS_URL'],
+		CELERY_RESULT_BACKEND=os.environ['REDIS_URL'])
 
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.

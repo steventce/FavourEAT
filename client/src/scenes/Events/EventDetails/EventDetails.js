@@ -9,7 +9,8 @@ import {
   TextInput,
   Modal,
   Slider,
-  Linking
+  Linking,
+  Dimensions
 } from 'react-native';
 import {
   Button,
@@ -31,9 +32,10 @@ import PopupModal from '../../../components/PopupModal';
 
 import styles from './styles';
 import { colors, colorsList } from '../../../styles/common';
-import { logo } from '../../../config/images';
+import { inProgress } from '../../../config/images';
 
 const PARALLAX_HEADER_HEIGHT = 225;
+const ICON_TEXT_MARGIN = 15;
 
 class EventDetails extends Component {
   static navigationOptions = {
@@ -55,6 +57,7 @@ class EventDetails extends Component {
     this.hasEventDetailsChanged = this.hasEventDetailsChanged.bind(this);
     this.handleContinueVoting = this.handleContinueVoting.bind(this);
     this.handleSaveChanges = this.handleSaveChanges.bind(this);
+    this.verifyCancelEvent = this.verifyCancelEvent.bind(this);
     this.handleCancelEvent = this.handleCancelEvent.bind(this);
     this.submitRating = this.submitRating.bind(this);
   }
@@ -79,6 +82,18 @@ class EventDetails extends Component {
     } else {
       this.props.navigation.navigate('Tournament', { eventId });
     }
+  }
+
+  verifyCancelEvent() {
+    const isPast = !isUpcoming(this.props.userEvent);
+    const cancelOrDelete = isPast ? 'delete' : 'cancel';
+    Alert.alert(
+      `Are you sure you want to ${cancelOrDelete} this event?`,
+      'Participants will be notified.',
+      [
+        { text: 'Cancel' },
+        { text: 'Ok', onPress: this.handleCancelEvent }
+      ]);
   }
 
   handleCancelEvent() {
@@ -110,7 +125,7 @@ class EventDetails extends Component {
 
   renderCardTitle(title) {
     return (
-      <Text style={{ fontSize: 24 }}>
+      <Text style={{ fontSize: 24, color: 'black' }}>
         {title}
       </Text>
     )
@@ -121,26 +136,38 @@ class EventDetails extends Component {
     return (
       <Card style={StyleSheet.flatten(styles.card)}>
         {this.renderCardTitle(name)}
-        <Text>
-          Phone: {display_phone}
-        </Text>
-        <Text>
-          Address: {`${location.address1} ${location.city}, ${location.state}`}
-        </Text>
-        <Text onPress={() => Linking.openURL(url)}>
-          Website
-        </Text>
+        <View style={styles.detail}>
+          <Icon name="call" style={StyleSheet.flatten(styles.detailIcon)} />
+          <Text style={{ marginLeft: ICON_TEXT_MARGIN }}>{display_phone}</Text>
+        </View>
+        <View style={styles.detail}>
+          <Icon name="navigate" style={StyleSheet.flatten(styles.detailIcon)} />
+          <Text style={{ marginLeft: ICON_TEXT_MARGIN }}>
+            {`${location.address1}, ${location.city}, ${location.state}`}
+          </Text>
+        </View>
+        <View style={styles.detail}>
+          <Icon name="globe" style={{...StyleSheet.flatten(styles.detailIcon), marginLeft: -2}} />
+          <Text style={{ marginLeft: ICON_TEXT_MARGIN, color: colors.LINK }} onPress={() => Linking.openURL(url)}>
+            Website
+          </Text>
+        </View>
       </Card>
     );
   }
 
   render() {
     const { user_id: userId } = this.props.auth.token;
-    const { round_num: roundNumber, event_detail, creator, participants } = this.props.userEvent;
+    const {
+      round_num: roundNumber,
+      event_detail, creator,
+      participants,
+      round_start,
+      round_duration
+    } = this.props.userEvent;
 
     const {
       name,
-      description,
       invite_code: inviteCode,
       voting_deadline: deadline,
       restaurant,
@@ -155,9 +182,11 @@ class EventDetails extends Component {
         parallaxHeaderHeight={PARALLAX_HEADER_HEIGHT}
         renderBackground={() => {
           return (
+            <View style={{flex: 1, width: null, height: null}}>
             <Image
-              source={votingComplete ? {uri: restaurant.image_url} : logo}
-              resizeMode="cover" style={{ height: PARALLAX_HEADER_HEIGHT }} />
+              source={votingComplete ? {uri: restaurant.image_url} : inProgress}
+              resizeMode="cover" style={{height: PARALLAX_HEADER_HEIGHT, width: Dimensions.get('window').width }}/>
+            </View>
           );
         }}
         renderForeground={() => {
@@ -183,19 +212,36 @@ class EventDetails extends Component {
 
         <Card style={StyleSheet.flatten(styles.card)}>
           {this.renderCardTitle('Details')}
-          <Text>
-            {description}
-          </Text>
-          <Text>
-            Invite Code: {inviteCode}
-          </Text>
-          <Text>
-            Status: {votingComplete ? 'Complete' : `In Progress (Round ${roundNumber})`}
-          </Text>
-          {!votingComplete &&
+          <View style={styles.detail}>
+            <Icon name="calendar" style={StyleSheet.flatten(styles.detailIcon)} />
+            <Text style={{ marginLeft: ICON_TEXT_MARGIN }}>
+              Starts {moment(datetime).format('h:mm A on ddd, MMM Do')}
+            </Text>
+          </View>
+          <View style={styles.detail}>
+            <Icon name="paper-plane" style={StyleSheet.flatten(styles.detailIcon)} />
+            <Text style={{ marginLeft: ICON_TEXT_MARGIN }}>
+              Invite Code: {inviteCode}
+            </Text>
+          </View>
+          <View style={styles.detail}>
+            <Icon name="stats" style={StyleSheet.flatten(styles.detailIcon)} />
+            <Text style={{ marginLeft: ICON_TEXT_MARGIN }}>
+              Status: {votingComplete || isPast ? 'Complete' : `In Progress (Round ${roundNumber})`}
+            </Text>
+          </View>
+          {(!votingComplete && !isPast) &&
+          <View style={styles.detail}>
+            <Icon name="stopwatch" style={StyleSheet.flatten(styles.detailIcon)} />
+            <Text style={{ marginLeft: ICON_TEXT_MARGIN }}>
+              Round Ends: {moment(round_start).add(round_duration, 'h').format('h:mm A on ddd, MMM Do')}
+            </Text>
+          </View>
+          }
+          {(!votingComplete && !isPast) &&
             <Button success block style={StyleSheet.flatten(styles.btn)}
               onPress={this.handleContinueVoting}>
-              <Text>Start Round</Text>
+              <Text style={{ color: 'white' }}>Start Round</Text>
             </Button>
           }
         </Card>
@@ -204,10 +250,7 @@ class EventDetails extends Component {
         {String(creator.id) === String(userId) &&
         (<Card style={StyleSheet.flatten(styles.card)}>
           {this.renderCardTitle('Admin')}
-          <Text>
-            You are the creator of this event.
-          </Text>
-          <Text style={{ marginTop: 20 }}>
+          <Text style={{ marginTop: 15 }}>
             Event Name:
           </Text>
           <TextInput
@@ -215,7 +258,7 @@ class EventDetails extends Component {
             editable={!isPast}
             value={this.state.eventName} />
           <Text style={{ marginTop: 20 }}>
-            Event Date: {moment(datetime).format('ddd, MMM Do @ h:mm A')}
+            Event Date: {moment(datetime).format('h:mm A on ddd, MMM Do')}
           </Text>
           <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
             <DatePicker
@@ -250,16 +293,15 @@ class EventDetails extends Component {
               disabled={!this.hasEventDetailsChanged()}
               style={StyleSheet.flatten(styles.btn)}
               onPress={this.handleSaveChanges}>
-              <Text>Save Changes</Text>
+              <Text style={{ color: 'white' }}>Save Changes</Text>
             </Button>
-            <Button success block style={StyleSheet.flatten(styles.btn)}
-              onPress={this.handleCancelEvent}>
-              <Text>{isPast ? 'Delete Event' : 'Cancel Event'}</Text>
+            <Button danger block style={StyleSheet.flatten(styles.btn)}
+              onPress={this.verifyCancelEvent}>
+              <Text style={{ color: 'white' }}>{isPast ? 'Delete Event' : 'Cancel Event'}</Text>
             </Button>
           </View>
         </Card>)}
 
-        { /* TODO: Show a list of participants */ }
         <Card style={StyleSheet.flatten(styles.card)}>
           {this.renderCardTitle('Participants')}
           {participants.map((participant, i) => {
