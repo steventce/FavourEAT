@@ -692,6 +692,7 @@ class IndividualTournamentView(APIView):
                 user = request.user
                 event_user_attach = EventUserAttach.objects.get(event=event, user=user)
                 event_user_attach.last_round_voted += 1
+                event_user_attach.save()
 
                 is_round_over = self.update_next_round(event, request.data['tournament_data'])
                 if is_round_over:
