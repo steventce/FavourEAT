@@ -1,11 +1,13 @@
 import React, { Component, PropTypes } from 'react';
-import { Text, Alert, AsyncStorage } from 'react-native';
-import { Container, Content, List, Body, Right, ListItem, Icon, Button, Spinner } from 'native-base';
+import { Text, Alert, AsyncStorage, View } from 'react-native';
+import { Container, Content, List, Body, Right, ListItem, Icon, Button, Spinner, Card, Fab } from 'native-base';
 
 import PopupModal from '../../../components/PopupModal';
 import SettingsBtn from '../../../components/SettingsBtn';
 import SelectList from '../../../components/SelectList';
 import RemovableItemsList from '../../../components/RemovableItemsList';
+
+import { colors } from '../../../styles/common';
 
 const priceOptions = [5, 15, 25, 40, 60, 100];
 const distanceOptions = [0.25, 0.5, 1, 2, 3, 5, 10, 20];
@@ -17,7 +19,7 @@ class Preferences extends Component {
   };
 
   static navigationOptions = {
-    title: 'Restaurant Preferences'
+    title: 'Edit Restaurant Preferences'
   }
 
   constructor(props) {
@@ -191,56 +193,94 @@ class Preferences extends Component {
     return (
       <Container>
         <Content contentContainerStyle={{backgroundColor: 'white'}}>
-          <List>
-            <SettingsBtn
-                onPress={this.openModal({
-                  options: distanceOptions,
-                  selectedOptions: [this.state.preferences.radius],
-                  onSelect: this.handleChangeDistance,
-                  renderLabel: (option) => <Text>{`${option} km`}</Text>
-                })}
-                label="Maximum Travel Distance"
-                disabled={readOnly}
-                value={`${this.state.preferences.radius} km`} />
-            <SettingsBtn
-                onPress={this.openModal({
-                  options: priceOptions.filter((value) => value < this.state.preferences.maxPrice),
-                  selectedOptions: [this.state.preferences.minPrice],
-                  onSelect: this.handleChangeMinPrice,
-                  renderLabel: (option) => <Text>{`$${option}`}</Text>
-                })}
-                label="Minimum Price"
-                disabled={readOnly}
-                value={`$${this.state.preferences.minPrice}`} />
-            <SettingsBtn
-                onPress={this.openModal({
-                  options: priceOptions.filter((value) => value > this.state.preferences.minPrice),
-                  selectedOptions: [this.state.preferences.maxPrice],
-                  onSelect: this.handleChangeMaxPrice,
-                  renderLabel: (option) => <Text>{`$${option}`}</Text>
-                })}
-                label="Maximum Price"
-                disabled={readOnly}
-                value={`$${this.state.preferences.maxPrice}`} />
-            <SettingsBtn
-                onPress={this.openModal({
-                  options: this.props.allCuisineTypes,
-                  selectedOptions: this.state.preferences.cuisineTypes,
-                  type: "checkbox",
-                  onSelect: this.handleClickCuisine,
-                  renderLabel: (option) => <Text>{option.label}</Text>,
-                })}
-                disabled={readOnly}
-                label="Cuisine Type" />
-            <RemovableItemsList
-              list={this.state.preferences.cuisineTypes}
-              onRemove={this.handleRemoveCuisineType}
-              readOnly={readOnly}
-              renderRow={(rowData) =>
-                <Text>
-                  {rowData.label}
-                </Text>
-            } />
+          <Card>
+            <View style={{ padding: 20 }}>
+                <View>
+                  <Text style={{ fontSize: 24, color: 'black' }}>General Preferences</Text>
+                </View>
+                <View style={{ marginTop: 20 }}>
+                  <SettingsBtn
+                      onPress={this.openModal({
+                        options: distanceOptions,
+                        selectedOptions: [this.state.preferences.radius],
+                        onSelect: this.handleChangeDistance,
+                        renderLabel: (option) => <Text>{`${option} km`}</Text>
+                      })}
+                      label="Maximum Travel Distance:"
+                      disabled={readOnly}
+                      value={`${this.state.preferences.radius} km`} />
+                </View>
+                <View>
+                  <SettingsBtn
+                      onPress={this.openModal({
+                        options: priceOptions.filter((value) => value < this.state.preferences.maxPrice),
+                        selectedOptions: [this.state.preferences.minPrice],
+                        onSelect: this.handleChangeMinPrice,
+                        renderLabel: (option) => <Text>{`$${option}`}</Text>
+                      })}
+                      label="Minimum Price:"
+                      disabled={readOnly}
+                      value={`$${this.state.preferences.minPrice}`} />
+                </View>
+                <View>
+                  <SettingsBtn
+                      onPress={this.openModal({
+                        options: priceOptions.filter((value) => value > this.state.preferences.minPrice),
+                        selectedOptions: [this.state.preferences.maxPrice],
+                        onSelect: this.handleChangeMaxPrice,
+                        renderLabel: (option) => <Text>{`$${option}`}</Text>
+                      })}
+                      label="Maximum Price:"
+                      disabled={readOnly}
+                      value={`$${this.state.preferences.maxPrice}`} />
+                </View>
+              </View>
+              {!readOnly &&
+                <Fab 
+                    active={false}
+                    position='topRight'
+                    style={{ backgroundColor: colors.APP_PRIMARY_LIGHT }}
+                    onPress={() => this.handleDoneClick()}>
+                  <Icon name='md-send' />
+                </Fab>
+              }
+            </Card>
+            <Card>
+              <View style={{ padding: 20 }}>
+                <View>
+                  <Text style={{ fontSize: 24, color: 'black' }}>
+                    Preferred Cuisines
+                  </Text>
+                </View>
+                <View style={{ marginTop: 10 }}>
+                  <Button
+                      block
+                      info 
+                      iconLeft
+                      disabled={readOnly}
+                      onPress={this.openModal({
+                          options: this.props.allCuisineTypes,
+                          selectedOptions: this.state.preferences.cuisineTypes,
+                          type: "checkbox",
+                          onSelect: this.handleClickCuisine,
+                          renderLabel: (option) => <Text>{option.label}</Text>,
+                        })}>
+                      <Icon name='md-add' />
+                      <Text style={{ color: 'white' }}>Add Cuisine</Text>
+                    </Button>
+                  
+                  <RemovableItemsList
+                    list={this.state.preferences.cuisineTypes}
+                    onRemove={this.handleRemoveCuisineType}
+                    readOnly={readOnly}
+                    renderRow={(rowData) =>
+                      <Text>
+                        {rowData.label}
+                      </Text>
+                  } />
+                </View>
+              </View>
+            </Card>              
             <PopupModal
                 visible={this.state.modalVisible}
                 onClose={this.handleCloseModal}>
@@ -249,19 +289,9 @@ class Preferences extends Component {
                   selectedOptions={this.state.modalOptions.selectedOptions}
                   onSelect={this.state.modalOptions.onSelect}
                   renderLabel={this.state.modalOptions.renderLabel}
-                  type={this.state.modalOptions.type} />
+                  type={this.state.modalOptions.type}
+                  onClose={this.handleCloseModal} />
             </PopupModal>
-
-            {!readOnly &&
-              <Button
-                  full success
-                  onPress={() => this.handleDoneClick()}>
-                <Text>
-                  DONE
-                </Text>
-              </Button>
-            }
-          </List>
         </Content>
       </Container>
     );
