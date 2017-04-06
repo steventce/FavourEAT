@@ -104,6 +104,8 @@ update_next_round.apply_async(args=[<event_id>], countdown=<time in seconds>)
 
 ## Attributions
 Images by: 
+- [Andrew Knechel](https://unsplash.com/search/party?photo=gG6yehL64fo)
 - [Elli O.](https://unsplash.com/collections/191435/glorious-food?photo=XoByiBymX20)
 - [Juja Han](https://unsplash.com/collections/386111/wine-and-food?photo=0NtItEQY2P8)
 - [Maria Mekht](https://unsplash.com/collections/386111/wine-and-food?photo=GuvimT4IFok)
+- [Mitchell Lawler](https://unsplash.com/search/party?photo=tbaoryUol_E)
