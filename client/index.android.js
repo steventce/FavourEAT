@@ -22,6 +22,7 @@ import Map from './src/scenes/Map';
 
 import { login, simpleLogout, grantTypes } from './src/reducers/Login/actions';
 import moment from 'moment';
+import { colors } from './src/styles/common';
 
 const HomeDrawer = DrawerNavigator({
   Home: { screen: UserEvents }
@@ -44,7 +45,15 @@ export const MainStack = StackNavigator({
   EventDetails: { screen: EventDetails },
   Map: { screen: Map }
 }, {
-  initialRouteName: 'Login'
+  initialRouteName: 'Login',
+  navigationOptions: {
+    header: {
+      tintColor: 'white',
+      style: {
+        backgroundColor: colors.APP_PRIMARY_DARK
+      }
+    }
+  }
 });
 
 class FavourEAT extends Component {

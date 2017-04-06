@@ -41,5 +41,25 @@ export default StyleSheet.create({
   },
   detailIcon: {
     color: colors.APP_PRIMARY_DARK
+  },
+  star: {
+    color: colors.APP_PRIMARY_LIGHT,
+    fontSize: 50
+  },
+  starContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    padding: 15
+  },
+  okRatingBtn: {
+    marginLeft: 15,
+    marginRight: 15,
+    marginTop: 45
+  },
+  ratingTitle: {
+    alignSelf: 'center',
+    color: 'black',
+    fontSize: 24
   }
 });
