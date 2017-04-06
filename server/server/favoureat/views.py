@@ -624,13 +624,14 @@ class IndividualTournamentView(APIView):
             for t in to_delete:
                 t.delete()
 
-            fcm_service = FcmService()
-            event_details = event.event_detail
-            title = '{name} updated'.format(name=event_details.name)
-            date = event.round_start + timedelta(minutes=event.round_num)
-            date_str = date.strftime(fcm_service.DATETIME_FORMAT)
-            body = 'The next round has started and ends at {date}'.format(date=date_str)
-            fcm_service.notify_all_participants(event.id, title, body)
+            if event.is_group:
+                fcm_service = FcmService()
+                event_details = event.event_detail
+                title = '{name} updated'.format(name=event_details.name)
+                date = event.round_start + timedelta(minutes=event.round_num)
+                date_str = date.strftime(fcm_service.DATETIME_FORMAT)
+                body = 'The next round has started and ends at {date}'.format(date=date_str)
+                fcm_service.notify_all_participants(event.id, title, body)
 
         # If only 1 restaurant left, then update event details with the winner.
         if Tournament.objects.filter(event=event).count() == 1:
