@@ -266,9 +266,9 @@ class EventView(APIView):
             'categories': ','.join(request_data.get('cuisine_types', ''))
         }
 
-        for threshold in self.PRICE_THRESHOLDS:
+        for i, threshold in enumerate(self.PRICE_THRESHOLDS):
             if prefs['max_price'] <= threshold['price']:
-                params['price'] = threshold['yelp_cd']
+                params['price'] = [pt['yelp_cd'] for pt in self.PRICE_THRESHOLDS[:i+1]]
                 break
 
         return prefs, params
@@ -420,7 +420,7 @@ class JoinEventView(APIView):
             participants = EventUserAttach.objects.filter(event=event)
             resp['num_participants'] = participants.count()
             resp['participants'] = EventUserAttachSerializer(participants, many=True).data
-            
+
             return Response(data=resp, status=status.HTTP_201_CREATED)
         except EventDetail.DoesNotExist:
             return Response("Event detail with this invite code does not exist", status=status.HTTP_404_NOT_FOUND)
@@ -568,7 +568,7 @@ class IndividualTournamentView(APIView):
             for t in tournaments:
                 tournament1 = t
                 tournament2 = t.competitor if t is not None else None
-                
+
                 if tournament2 is None or tournament1.id in computed or tournament2.id in computed:
                     continue
                 if tournament1.vote_count == tournament2.vote_count:
@@ -719,7 +719,7 @@ class EventUserAttachView(APIView):
             yelp_id = event.event_detail.restaurant.yelp_id
 
             user_swipe = Swipe.objects.get(
-                user=user, 
+                user=user,
                 yelp_id=yelp_id)
 
             avg_rating = EventUserAttach.objects.filter(
@@ -730,7 +730,7 @@ class EventUserAttachView(APIView):
 
             user_swipe.avg_rating = avg_rating
             user_swipe.save()
-            
+
             return Response({'rating': attach.rating}, status=status.HTTP_200_OK)
         except Event.DoesNotExist:
             return Response("Event does not exist", status=status.HTTP_404_NOT_FOUND)
