@@ -657,7 +657,9 @@ class IndividualTournamentView(APIView):
             if t in visited:
                 continue
             if t.competitor is not None:
-                pairings.append([t, t.competitor])
+                t1 = TournamentSerializer(t).data
+                t2 = TournamentSerializer(t2).data
+                pairings.append([t1, t2])
                 visited.append(t.competitor)
             visited.append(t)
         return pairings
