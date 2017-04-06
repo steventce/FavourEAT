@@ -8,7 +8,7 @@ from django.conf import settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'server.settings')
 
 if os.environ.get('ENV') == 'PROD':
-	app = Celery('server', backend=os.environ['REDIS_URL'], broker=os.environ['REDIS_URL'])
+	app = Celery('server', backend=os.environ.get('REDIS_URL'), broker=os.environ.get('REDIS_URL'))
 	# app.conf.update(BROKER_URL=os.environ['REDIS_URL'],
 	# 	CELERY_RESULT_BACKEND=os.environ['REDIS_URL'])
 else:
