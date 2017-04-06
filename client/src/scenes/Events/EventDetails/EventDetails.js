@@ -126,8 +126,9 @@ class EventDetails extends Component {
     return (
       <View style={styles.starContainer}>
         {ratings.map((item) => {
-          return(
-          <Icon name="md-star" style={StyleSheet.flatten(styles.star)} />);
+          return (
+            <Icon name="md-star" key={item} style={StyleSheet.flatten(styles.star)} />
+          );
         })}
         {isDecimal &&
           <Icon name="md-star-half" style={StyleSheet.flatten(styles.star)} />}

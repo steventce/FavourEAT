@@ -18,7 +18,7 @@ class RecommendationService(object):
     def get_restaurants(self, user_id, preference):
         """
         Gets recommended restaurants. If there is previous swipe data
-        available, use it to make a recommendation. 
+        available, use it to make a recommendation.
         """
         self.recommender = recommendation_registry.get_provider_for_content(Restaurant)
 
@@ -46,7 +46,7 @@ class RecommendationService(object):
         kwargs = {
             'latitude__range': (min_lat, max_lat),
             'longitude__range': (min_lon, max_lon),
-            'price': price
+            'price__in': price
         }
         distance_query = {
             'where': ['acos(sin(radians(%s)) * sin(radians(latitude)) + cos(radians(%s)) * cos(radians(latitude)) * cos(radians(longitude - %s))) <= %s'],

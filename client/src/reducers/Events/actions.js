@@ -151,7 +151,6 @@ export function cancelEvent(accessToken, userId, eventId) {
     .then((response) => {
       if (!response.ok) throw Error();
       dispatch(cancelEventSuccess());
-      return response.json();
     })
     .catch((error) => {
       console.log(error);
