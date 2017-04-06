@@ -23,11 +23,8 @@ class Tournament extends Component {
     this.botHandleYup = this.botHandleYup.bind(this);
     this.botHandleNope = this.botHandleNope.bind(this);
     this.noMore = this.noMore.bind(this);
+    this.empty = this.empty.bind(this);
   }
-
-  static navigationOptions = {
-    title: 'Showdown'
-  };
 
   Card(restaurant) {
     const cardStyles = {
@@ -43,19 +40,6 @@ class Tournament extends Component {
           <Text style={{ fontSize: 20, color: '#444' }}>{restaurant.name}</Text>
         </View>
       </Card>
-    )
-  }
-
-  CardReversed(restaurant) {
-    return (
-      <View style={{ flexDirection: 'row' }} >
-        <View style={styles.cardTextContainer}>
-          <Text style={{ fontSize: 20, color: '#444' }}>{restaurant.name}</Text>
-        </View>
-        <View style={styles.cardImageContainer}>
-          <Image source={{ uri: restaurant.image_url }} resizeMode="cover" style={styles.cardImage} />
-        </View>
-      </View>
     )
   }
 
@@ -89,8 +73,12 @@ class Tournament extends Component {
     console.log("Round over");
     this.props.putTournamentRound(this.state.swiped);
     return (
-      <Spinner color='red' />
+      <Spinner color='red' style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} />
     );
+  }
+
+  empty() {
+    <View />
   }
 
   render() {
@@ -115,7 +103,7 @@ class Tournament extends Component {
               cards={this.state.bottomCards}
 
               renderCard={(cardData) => this.Card(cardData.restaurant)}
-              //renderNoMoreCards={this.noMore}
+              renderNoMoreCards={this.empty}
               handleYup={this.botHandleYup}
               handleNope={this.botHandleNope}
             />

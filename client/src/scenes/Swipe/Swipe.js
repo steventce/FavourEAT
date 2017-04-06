@@ -138,8 +138,9 @@ class Swipe extends Component {
     }
     
     componentDidUpdate = (prevProps, prevState) => {
-        if (this.state.rightSwipes.length !== prevState.rightSwipes.length || 
-            this.state.leftSwipes.length !== prevState.leftSwipes.length) {
+        if (((this.state.leftSwipes.length + this.state.rightSwipes.length) < this.state.card.length) &&
+            (this.state.rightSwipes.length !== prevState.rightSwipes.length || 
+            this.state.leftSwipes.length !== prevState.leftSwipes.length)) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const { latitude, longitude } = position.coords;
