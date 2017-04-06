@@ -25,6 +25,8 @@ def update_next_round(event_id):
     event.round_num += 1
     event.round_start = timezone.now()
     event.save()
+    # Schedule a job to be run later for next round
+    update_next_round.apply_async(args=[event_id], countdown=event.round_duration * 3600)
 
     num_remaining = 0
     winner = None
@@ -52,6 +54,10 @@ def update_next_round(event_id):
             if tournament2 is None or tournament1.id in computed or tournament2.id in computed:
                 continue
             elif tournament1.vote_count == tournament2.vote_count:
+                if tournament1.vote_count == 0:
+                    to_delete.append(tournament1)
+                    to_delete.append(tournament2)
+                    continue
                 tournament1.vote_count = 0
                 tournament1.competitor = None
                 tournament1.save()

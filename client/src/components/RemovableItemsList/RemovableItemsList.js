@@ -1,6 +1,8 @@
 import React, { Component, PropTypes } from 'react';
 import { List, ListItem, Body, Right, Button, Icon } from 'native-base';
 
+import { colors } from '../../styles/common';
+
 class RemovableItemsList extends Component {
   static propTypes = {
     list: PropTypes.array.isRequired,
@@ -23,7 +25,7 @@ class RemovableItemsList extends Component {
               <Button 
                   transparent
                   onPress={() => this.props.onRemove(rowData)}>
-                <Icon name='md-trash' />
+                <Icon style={{ color: colors.APP_PRIMARY_DARK }} name='md-trash' />
               </Button>
             </Right>
           }

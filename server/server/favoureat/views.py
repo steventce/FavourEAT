@@ -350,7 +350,7 @@ class EventView(APIView):
 
             # Schedule a job to be run later
             if event.is_group:
-                update_next_round.apply_async(args=[event.id], countdown=event.round_duration * 3600)
+                update_next_round.apply_async(args=[event.id], countdown=event.round_duration * 60)
 
             # Attach the user with the event
             event_user_attach = EventUserAttach(user=user, event=event)
@@ -535,6 +535,8 @@ class IndividualTournamentView(APIView):
                 return False
             if ((timezone.now() - event.round_start).total_seconds() / 3600) < event.round_duration:
                 for t in tournament_data:
+                    if t[0] is None or t[1] is None or t[0].vote_count is None or t[1].vote_count is None:
+                        return False
                     if t[0].vote_count + t[1].vote_count != num_participants:
                         round_completed = False
 

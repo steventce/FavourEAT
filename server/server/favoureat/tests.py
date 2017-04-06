@@ -181,10 +181,11 @@ class UserSwipeTests(APITestCase):
         user = User.objects.create(pk='139530')
         user.save()
 
-        data = {'user': user.id,
+        swipe_data = [{
                 'yelp_id': 'yelp_business',
                 'right_swipe_count': 1,
-                'left_swipe_count': 0}
+                'left_swipe_count': 0}]
+        data = {'user': user.id, 'swipes': swipe_data}
         url = '/v1/users/' + str(data['user']) + '/swipes/'
 
         factory = APIRequestFactory()

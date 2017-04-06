@@ -70,7 +70,7 @@ class RestaurantDetails extends Component {
   }
 
   getHours(restaurant) {
-    if (!("hours" in restaurant)) {
+    if (!("hours" in restaurant) || restaurant.hours.length === 0) {
       return (<Text style={[styles.hours, styles.txtColor]}>No hours available</Text>);
     }
 
