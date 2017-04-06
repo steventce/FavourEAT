@@ -650,6 +650,21 @@ class IndividualTournamentView(APIView):
 
         return True
 
+    def get_pairings(self, tournaments):
+        pairings = []
+        visited = []
+        for t in tournaments:
+            if t in visited:
+                continue
+            if t.competitor is not None:
+                t1 = TournamentSerializer(t).data
+                t2 = TournamentSerializer(t.competitor).data
+                pairings.append([t1, t2])
+                visited.append(t.competitor)
+            visited.append(t)
+        return pairings
+
+
     def get(self, request, event_id, format=None):
         """
         Gets the tournament restaurants that will participate in a tournament
@@ -670,6 +685,11 @@ class IndividualTournamentView(APIView):
         # If round 0, then return list of restaurants (no pairings)
         if event.round_num == 0:
             return Response(data)
+        else:
+            for t in tournaments:
+                if t.competitor is not None:
+                    pairings = self.get_pairings(tournaments)
+                    return Response(pairings)
 
         # Tournament restaurants swiping stage
         paired_tournaments_data = [list(x) for x in zip(
