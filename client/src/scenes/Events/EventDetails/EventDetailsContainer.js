@@ -1,4 +1,5 @@
 import { connect } from 'react-redux';
+import { NavigationActions } from 'react-navigation';
 import EventDetails from './EventDetails';
 import { editEventDetails, cancelEvent, fetchEvents } from '../../../reducers/Events/actions';
 import { getRound } from '../../../reducers/Tournament/actions';
@@ -34,7 +35,8 @@ const mapDispatchToProps = function(dispatch, props) {
     },
     cancelEvent: (accessToken, userId, eventId) => {
       dispatch(cancelEvent(accessToken, userId, eventId)).then(() => {
-        props.navigation.goBack().then(dispatch(fetchEvents(accessToken, userId)));
+        props.navigation.goBack();
+        dispatch(fetchEvents(accessToken, userId));
       });
     },
     getRound: (accessToken, eventId) => {
