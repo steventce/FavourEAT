@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   },
   cardImageContainer: {
     width: width * 0.95,
-    height: 250,
+    height: height * 0.34,
   },
   cardTextContainer: {
     width: width * 0.95,
