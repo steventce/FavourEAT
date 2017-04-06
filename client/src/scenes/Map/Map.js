@@ -125,7 +125,7 @@ class Map extends Component {
           <Button 
               style={{ position: 'absolute', bottom: 20, right: 20 }}
               onPress={this.getRoute}>
-            <Icon name='navigate' />
+            <Icon name='car' />
           </Button>
         }
       </View>

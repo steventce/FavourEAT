@@ -14,6 +14,7 @@ class RecommendationService(object):
     """
     QUERY_LIMIT = 20 # counts from 0
     RECOMMENDATION_LIMIT = QUERY_LIMIT / 2
+    FALLBACK_LIMIT = 10
 
     def get_restaurants(self, user_id, preference):
         """
@@ -70,6 +71,11 @@ class RecommendationService(object):
         ).extra(**distance_query).order_by('?')[:num_other]
 
         restaurants = list(chain(recommended_restaurants, other_restaurants))
+
+        # if unable to get any restaurants in database, try to grab restaurants from Yelp directly
+        if (len(restaurants) == 0):
+            preference['price'] = ','.join(preference.get('price', []))
+            restaurants = YelpAPIService().get_and_save_restaurants(preference, self.FALLBACK_LIMIT)
 
         # randomize order to prevent list from looking always the same
         random.shuffle(restaurants)
