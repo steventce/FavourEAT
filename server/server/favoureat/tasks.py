@@ -19,7 +19,7 @@ def update_next_round(event_id):
         return False
     event = e[0]
 
-    if ((timezone.now() - event.round_start).total_seconds() / 3600) < event.round_duration:
+    if ((timezone.now() - event.round_start).total_seconds() / 60) < event.round_duration:
         return False
 
     event.round_num += 1

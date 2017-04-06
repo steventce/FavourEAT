@@ -534,10 +534,13 @@ class IndividualTournamentView(APIView):
             if event.round_num == 0:
                 return False
             if ((timezone.now() - event.round_start).total_seconds() / 3600) < event.round_duration:
-                for t in tournament_data:
-                    if t[0] is None or t[1] is None or t[0].vote_count is None or t[1].vote_count is None:
+                tournaments = Tournament.objects.filter(event=event)
+                for t in tournaments:
+                    tournament1 = t
+                    tournament2 = t.competitor if t is not None else None
+                    if tournament2 is None:
                         return False
-                    if t[0].vote_count + t[1].vote_count != num_participants:
+                    if tournament1.vote_count + tournament2.vote_count != num_participants:
                         round_completed = False
 
         if not round_completed:
