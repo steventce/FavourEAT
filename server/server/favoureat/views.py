@@ -650,7 +650,7 @@ class IndividualTournamentView(APIView):
 
         return True
 
-    def get_pairings(tournaments):
+    def get_pairings(self, tournaments):
         pairings = []
         visited = []
         for t in tournaments:
@@ -686,7 +686,7 @@ class IndividualTournamentView(APIView):
         else:
             for t in tournaments:
                 if t.competitor is not None:
-                    pairings = get_pairings(tournaments)
+                    pairings = self.get_pairings(tournaments)
                     return Response(pairings)
 
         # Tournament restaurants swiping stage
